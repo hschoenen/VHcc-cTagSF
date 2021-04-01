@@ -26,7 +26,7 @@ for fl in [i for i in os.listdir(inputdir) if os.path.isfile(os.path.join(inputd
 #  if "Single" in fl or "Double" in fl or "EGamma" in fl or "MuonEG" in fl:
     f3 = open(inputdir.rstrip('/')+"/"+fl,'r')
     for line in f3:
-	if 'Wc' in sel and ('DY' in fl or 'TT' in fl or 'ST' in fl) and '2018' in inputdir:
+        if 'Wc' in sel and ('DY' in fl or 'TT' in fl or 'ST' in fl) and '2018' in inputdir:
             if random() > 1: continue
         f2.write(sel+" "+line)
     f3.close()
