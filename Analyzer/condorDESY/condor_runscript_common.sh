@@ -1,4 +1,5 @@
-	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/201030_2016Nanov7_$4/
+#	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_$4_minimal/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
