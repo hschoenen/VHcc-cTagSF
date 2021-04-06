@@ -1,5 +1,5 @@
-	OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/systPlots/Plots_210225_MuBiasTestSemiTcEnrNoBTagger/
-	OUTPUTNAME=output_2017
+	OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/systPlots/Plots_210403_minimal/
+	OUTPUTNAME=output_2017_minimal
 
 	CONDOR_CLUSTER_ID=$1
 	CONDOR_PROCESS_ID=$2
