@@ -51,7 +51,7 @@ parser.add_argument('--force', action="store_true", default=False)
 parser.add_argument('-v','--verbose', action="store_true", default=False)
 
 args = parser.parse_args()
-print args
+print(args)
 
 maxbinstocombine = args.maxbinstocombine
 minbinstocombine = args.minbinstocombine
@@ -76,19 +76,19 @@ if inputrange!="" and inputrange!="m1": doMinus1 = False
 pseudoPre = ""
 if pseudo: pseudoPre = "pseudo"
 
-if inputrange == "": print "For faster processing, parallellize using: 'python X.py -r prep',\nthen 'parallel python X.py -i centraldir -r :::: rangelist.txt',\nthen 'python X.py -i centraldir -r comb',\nthen 'parallel python X.py -i ::: alldir* ::: -r :::: rangelist.txt',\nthen 'parallel python X.py -r comb -i ::: alldir*'"
+if inputrange == "": print("For faster processing, parallellize using: 'python X.py -r prep',\nthen 'parallel python X.py -i centraldir -r :::: rangelist.txt',\nthen 'python X.py -i centraldir -r comb',\nthen 'parallel python X.py -i ::: alldir* ::: -r :::: rangelist.txt',\nthen 'parallel python X.py -r comb -i ::: alldir*'")
 # ======================================================
     
 
 # ================== Create directories =====================
-print "\n"*2+"="*40 +"\nEntering directory: "+indir+"\n"+"="*40 +"\n"
+print("\n"*2+"="*40 +"\nEntering directory: "+indir+"\n"+"="*40 +"\n")
 
 workdir = indir+"/work_%d_%d_%.3f/"%(maxbinstocombine,minbinstocombine,maxrelerr)
 progdir = workdir + "prog/"
 resultsname="results_%d_%d_%.3f"%(maxbinstocombine,minbinstocombine,maxrelerr)
 
 if len(glob("%s/%s/*.root"%(indir,resultsname))) > 0 and not args.force:
-    print "Already ran on this directory. To rerun and overwrite, use --force."
+    print("Already ran on this directory. To rerun and overwrite, use --force.")
     sys.exit()
 
 os.system("mkdir -p "+progdir)
@@ -143,9 +143,9 @@ for rfile in sorted(rootlist):
     
     # ------------------- Load inclusive file --------------------
     inclmatch = [i for i in incllist if i.startswith('_'.join(rfile.split("_")[:5]))]
-    if len(inclmatch) > 1: print "WARNING: Ambiguous mapping to inclusive root file for %s."%rfile
+    if len(inclmatch) > 1: print("WARNING: Ambiguous mapping to inclusive root file for %s."%rfile)
     elif len(inclmatch) < 1:
-        print "\nERROR: Matching inclusive file not found for %s."%rfile
+        print("\nERROR: Matching inclusive file not found for %s."%rfile)
         continue
     
     inclfile = TFile.Open(indir+"/"+inclmatch[0], "READ")
@@ -220,7 +220,7 @@ if inputrange=="prep":
     for rng in rnglist:
         outtxt.write("\n"+rng)
     outtxt.close()
-    print "Written to rangelist.txt."
+    print("Written to rangelist.txt.")
     sys.exit(0)
 
 # ================== Merge channels of each selection =====================
@@ -269,7 +269,7 @@ SFm1Err = {'c':1., 'b':1., 'l':1.}
 # print mergedminus1Dict
 
 if doMinus1:
-    print "Starting with -1 bin"
+    print("Starting with -1 bin")
     
     if doDeepJet:
         # -------------------- Just a straightforward division ----------------------
@@ -296,7 +296,7 @@ if doMinus1:
             globchi2list.append(globchi2)
             if iIter > preStopIters+1:
                 if globchi2list.index(min(globchi2list)) < iIter - preStopIters:
-                    print "Iteration %d: Chi2 did not improve in the last %d iterations, stopping. Starting Chi2 = %f. Lowest Chi2 = %f."%(iIter,preStopIters,globchi2list[0],min(globchi2list))
+                    print("Iteration %d: Chi2 did not improve in the last %d iterations, stopping. Starting Chi2 = %f. Lowest Chi2 = %f."%(iIter,preStopIters,globchi2list[0],min(globchi2list)))
                     break
             for num, reg, flav in purityList:
                 flavdict = mergedminus1Dict[reg]
@@ -318,8 +318,8 @@ if doMinus1:
                     SFm1Err[flav] = newSF
         # ---------------------------------------------------------------------------
     
-    print SFm1
-    print SFm1Err
+    print(SFm1)
+    print(SFm1Err)
 if inputrange=="m1":
     pickle.dump([SFm1,SFm1Err],open("%s/SFs_%s.pkl"%(workdir,inputrange),"wb"))
     sys.exit(0)
@@ -361,7 +361,7 @@ for dist in mergedDict:
             if exporttemplates:
                 plt.savefig(outname)
                 plt.clf()
-                print "Exported "+outname
+                print( "Exported "+outname)
                 canv.SaveAs(outname)
             sortedlist = []
             for i in IntDict:
@@ -488,11 +488,11 @@ def getValsFromHist(hist):
 # ================== Begin main iterative fit ==================   
 SFResults = {}
 if plotProgress: os.system("rm -f %s/*"%progdir)
-print "Starting iterative fit..."
+print("Starting iterative fit...")
 for dist in mergedDict:
     if inputrange=="": 
         #--------------------- Norm crosscheck --------------------------
-        print "====================== Norm crosscheck ======================"
+        print("====================== Norm crosscheck ======================")
         Wcyield = mergedminus1Dict["Wc"]["c"]+mergedminus1Dict["Wc"]["b"]+mergedminus1Dict["Wc"]["l"]
         TTyield = mergedminus1Dict["TT"]["c"]+mergedminus1Dict["TT"]["b"]+mergedminus1Dict["TT"]["l"]
         DYyield = mergedminus1Dict["DY"]["c"]+mergedminus1Dict["DY"]["b"]+mergedminus1Dict["DY"]["l"]
@@ -522,10 +522,10 @@ for dist in mergedDict:
             TTDataYield += mergedDict[dist][rng]["TT"]["data"].Integral()
             DYDataYield += mergedDict[dist][rng]["DY"]["data"].Integral()
         
-        print Wcyield,WcDataYield,Wcf
-        print TTyield,TTDataYield,TTf
-        print DYyield,DYDataYield,DYf
-        print "==========================================================="
+        print(Wcyield,WcDataYield,Wcf)
+        print(TTyield,TTDataYield,TTf)
+        print(DYyield,DYDataYield,DYf)
+        print("===========================================================")
         print
     #----------------------------------------------------------
     
@@ -542,15 +542,15 @@ for dist in mergedDict:
             matchfl = centdir+'/work*/*%s*.pkl'%rng
             matchlist = glob(matchfl)
             if len(matchlist) == 0:
-                print "Did not find %s. Did you run bin-wise on central?"%matchfl
+                print("Did not find %s. Did you run bin-wise on central?"%matchfl)
                 sys.exit(0)
             elif len(matchlist) > 1:
-                print "Found multiple matches for %s. Choosing first of %s."%(matchfl,matchlist)
+                print("Found multiple matches for %s. Choosing first of %s."%(matchfl,matchlist))
             unpack = pickle.load(open(matchlist[0],'rb'))
             centdict = unpack[dist][rng]
 
         #--------------------- Start fit per range --------------------------
-        print "Doing %s, in range %s."%(dist,rng)
+        print("Doing %s, in range %s."%(dist,rng))
         purityWc = getPurity(mergedDict[dist][rng]["Wc"],"c")
         purityTT = getPurity(mergedDict[dist][rng]["TT"],"b")
         purityDY = getPurity(mergedDict[dist][rng]["DY"],"l")
@@ -611,10 +611,10 @@ for dist in mergedDict:
                     bincontsig = getBinCont(sig2)
                     bincontmcsum = getBinCont(mcsum)
                     if verb:
-                        print "Stat examination:", sel, flav, bincontsig
-                        print "Stat examination:", sel, "mcsum", bincontmcsum
-                        print "Stat examination:", sel, "purity", bincontsig/bincontmcsum
-                        print
+                        print("Stat examination:", sel, flav, bincontsig)
+                        print("Stat examination:", sel, "mcsum", bincontmcsum)
+                        print("Stat examination:", sel, "purity", bincontsig/bincontmcsum)
+                        print()
                 
                 if iIter > 0:
                     for fl in ["c", "b", "l"]:
@@ -777,7 +777,7 @@ for dist in mergedDict:
             paramsList.append(params.copy())
             if iIter > preStopIters+1:
                 if GlobalChi2List.index(min(GlobalChi2List)) < iIter - preStopIters:
-                    print "Iteration %d: Chi2 did not improve in the last %d iterations, stopping. Starting Chi2 = %f. Lowest Chi2 = %f."%(iIter,preStopIters,GlobalChi2List[0],min(GlobalChi2List))
+                    print("Iteration %d: Chi2 did not improve in the last %d iterations, stopping. Starting Chi2 = %f. Lowest Chi2 = %f."%(iIter,preStopIters,GlobalChi2List[0],min(GlobalChi2List)))
                     break
             
         iBest = GlobalChi2List.index(min(GlobalChi2List))
@@ -852,7 +852,7 @@ if inputrange == "comb":
                 if key not in SFResults: SFResults[key] = {}
                 for key2 in unpack[key]:
                     SFResults[key][key2] = unpack[key][key2]
-                    print "Reading:", key, key2
+                    print("Reading:", key, key2)
 
 elif inputrange!="":
     pickle.dump(SFResults,open("%s/SFs_%s.pkl"%(workdir,inputrange),"wb"))

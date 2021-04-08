@@ -426,7 +426,6 @@ for systname in systs:
                         #line = line.replace("DYSELE",'DYSELE+[["jet_CvsL",0],["jet_CvsB[0]"]]').replace("DYSELM",'DYSELM+[["jet_CvsL",0],["jet_CvsB[0]"]]')
                         #for cut in ["ECUT","MCUT","TTCUTEE","TTCUTMM","TTCUTME","TTSEMICUTM","TTSEMICUTE","DYCUTE","DYCUTM"]:
                             #line = line.replace(cut,cut+'+[['+str(varBin1[i])+','+str(varBin1[i+1])+'],['+str(varBin2[j])+','+str(varBin2[j+1])+']]')
-                        #cmdList.write("Stacker.plotStack("+applyCuts(line).strip()+")\n")                        
-       
+                        #cmdList.write("Stacker.plotStack("+applyCuts(line).strip()+")\n")    
 
 cmdList.close()
