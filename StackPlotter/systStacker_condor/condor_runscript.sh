@@ -1,4 +1,4 @@
-	OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/systPlots/Plots_210403_minimal/
+	OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/systPlots_210408_new/Plots_210408_minimal_DeepCSV/
 	OUTPUTNAME=output_2017_minimal
 
 	CONDOR_CLUSTER_ID=$1
