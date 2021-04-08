@@ -99,7 +99,7 @@ for subdir in sorted([i for i in os.listdir(maindir) if os.path.isdir(maindir+"/
     if not os.path.isdir(indir) or len(os.listdir(indir)) == 0:
         print "Skipping %s/%s. Did you run the fit for this directory?"%(maindir,subdir)
         continue
-    #print "Entering directory: "+indir
+    print "Entering directory: "+indir
     
     systName = '_'.join(subdir.split("_")[2:])
     allSFDict[systName] = {}
@@ -129,7 +129,7 @@ if interp: interptext = "_interp"
 symmtext = ""
 if symmetrize: symmtext = "_symm"
 
-outSFs = TFile.Open(maindir+"/ctagSF_2017_Spandan_%s_%s%s%s.root"%(skipSuff,args.outputSuffix,interptext,symmtext),"RECREATE")
+outSFs = TFile.Open(maindir+"/ctagSF_2017_%s_%s%s%s.root"%(skipSuff,args.outputSuffix,interptext,symmtext),"RECREATE")
 UncDictUp = {}
 UncDictDown = {}
 SystOnlyUp = {}

@@ -109,9 +109,12 @@ if not doDeepJet:
 else:
     rootlist = [i for i in os.listdir(indir) if i.endswith('.root')         \
                 and "%sCvsL"%deepSuff in i and "%sCvsB_0."%deepSuff in i]
-            
+#print 'rootlist\n', rootlist
+    
 incllist = [i for i in os.listdir(indir) if i.endswith('.root')         \
             and (("jet_%sCvsL"%deepSuff in i and "%sCvsB"%deepSuff not in i) or ("jet_%sCvsB"%deepSuff in i and "%sCvsL"%deepSuff not in i)) ]
+
+#print 'incllist:\n', incllist
 # ======================================================
 
 
@@ -126,6 +129,7 @@ for rfile in sorted(rootlist):
     #if "TT" in rfile and "semi" not in rfile:
     #    print "WARNING: Skipped",rfile
     #    continue
+    print 'Now reading:\n', indir+"/"+rfile
     ifile = TFile.Open(indir+"/"+rfile, "READ") 
     c = ifile.Get("c")
     b = ifile.Get("b")
@@ -209,7 +213,7 @@ for rfile in sorted(rootlist):
 #        canv.SaveAs("%s/%s_%s.png"%(workdir,outname,label))
     if dist == "%sCvsL"%deepSuff:
         minus1bindict[name] = minus1temp.copy()
-
+    
     ifile.Close()
     # ------------------------------------------------------------
 # ======================================================
@@ -243,14 +247,14 @@ for dist in distdict:
 # -1 bin
 mergedminus1Dict = {"Wc":{}, "TT":{}, "DY":{} }
 for reg in minus1bindict:
-    if reg == "Wc_m": continue
+    #if reg == "Wc_m": continue
     mreg = reg.split('_')[0]
     for flav in minus1bindict[reg]:
         if flav not in mergedminus1Dict[mreg]: mergedminus1Dict[mreg][flav] = 0.
         mergedminus1Dict[mreg][flav] += minus1bindict[reg][flav]
 # ======================================================
 
-
+print mergedminus1Dict
 # ================== Get purity =====================
 def getMCSum(flavdict):
     return flavdict['b']+flavdict['c']+flavdict['l']
