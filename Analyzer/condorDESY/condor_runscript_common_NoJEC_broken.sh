@@ -8,7 +8,7 @@
 	INPFILE=$3
 
         if  [[ $4 == "Wc" ]]; then
-             PYFILE="WcSelection_new.py"
+             PYFILE="WcSelection.py"
         elif  [[ $4 == "DY" ]]; then
              PYFILE="DYJetSelection.py"
         elif  [[ $4 == "TT" ]]; then
@@ -18,7 +18,11 @@
         elif  [[ $4 == "WcNoMu" ]]; then
              PYFILE="WcNoMuSelection.py"
         fi
-
+        
+        #echo "conda and python path initial"
+        #which conda
+        #which python3
+        # maybe add /afs/desy.de/user/a/anstein/miniconda3/envs/my-env/bin/python3:
         export PATH=/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/bin:/cvmfs/grid.cern.ch/emi3ui-latest/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/bin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/sbin:$PATH
         echo "echo PATH:"
         echo $PATH
@@ -30,7 +34,31 @@
         echo "creating tempdir and copy"
         tmp_dir=$(mktemp -d)
         cp -r ../${PYFILE} ../nuSolutions.py ../scalefactors* $tmp_dir
-
+#        echo "run custom tagger on root file:"
+#        echo $3
+#        echo "conda and python path after adding to path"
+#        which conda
+#        which python3
+#        source /afs/desy.de/user/a/anstein/miniconda3/etc/profile.d/conda.sh
+#       # eval "$(conda shell.bash hook)"
+#       echo "conda and python path after sourcing conda.sh"
+#       which conda
+#        which python3
+#        source /afs/desy.de/user/a/anstein/miniconda3/bin/activate
+#        echo "conda and python path after sourcing miniconda3/bin/activate"
+#        which conda
+ #       which python3
+ #       conda activate base
+       # source activate
+       # CONDA_BASE=$(conda info --base)
+       # source $CONDA_BASE/etc/profile.d/conda.sh
+#       echo "conda and python path after activating base"
+#       which conda
+#        which python3
+#        conda activate my-env
+#        echo "conda and python path after activating my-env"
+#        which conda
+#        which python3
         echo "setting up the environment"
         cd /cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_10_2_0_pre6/src
         source /cvmfs/cms.cern.ch/cmsset_default.sh
@@ -43,8 +71,16 @@
         cd $tmp_dir
         pwd
         ls
-
-        #xrdcp root://xrootd-cms.infn.it//${INPFILE} ./infile.root
+#       which python
+#       which python2
+#       which python3
+#       python --version
+#       python2 --version
+#       python3 --version
+#       python customTaggerHelper.py ${INPFILE} '_as_is'
+#       python2 customTaggerHelper.py ${INPFILE} '_as_is'
+#       python3 customTaggerHelper.py ${INPFILE} '_as_is'
+#        #xrdcp root://xrootd-cms.infn.it//${INPFILE} ./infile.root
         echo "running python script"
         python ${PYFILE} ${INPFILE}
         rc=$?
@@ -69,7 +105,6 @@
 		sleep 60
 	done
 	echo "copied output successfully"
-
 #        python -c "import sys,ROOT; f=ROOT.TFile(''); sys.exit(int(f.IsZombie() and 99))"
 #        rc=$?
 #        if [[ $rc != 0 ]]
@@ -77,7 +112,6 @@
 #            echo "copy failed (either bad output from cp or file is Zombie)"
 #            exit $rc
 #        fi
-
         echo "delete tmp dir"
         cd $TMP
         rm -r $tmp_dir

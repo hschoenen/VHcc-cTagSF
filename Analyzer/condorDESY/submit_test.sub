@@ -10,4 +10,4 @@ Notification = never
 on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
 
 
-queue SEL,INFILE from cmdList_new_test.txt
+queue SEL,INFILE from cmdList_test.txt
