@@ -1,5 +1,5 @@
-from ROOT import *
-#sys.exit()
+#from ROOT import *
+from ROOT import TFile, std, TH1F, TTree, TLorentzVector
 from array import array
 
 import glob, sys, time, os, sys
@@ -8,8 +8,8 @@ import nuSolutions as nu
 import types, math, json
 import itertools
 
-with open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customLogfile.txt", "a") as log:
-    log.write('All modules loaded\n')
+#with open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customLogfile.txt", "a") as log:
+#    log.write('All modules loaded\n')
 
 start_time = time.time()
 ############### FOR INTERACTIVE RUN ##############
@@ -90,9 +90,9 @@ if "2018" and not "2017" in fullName: era = 2018
 #else:
     #pref = "file:"
 
-with open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customLogfile.txt", "a") as log:
-    log.write('Attempting to load the file will start\n')
-    log.write(pref+fileName)
+#with open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customLogfile.txt", "a") as log:
+#    log.write('Attempting to load the file will start\n')
+#    log.write(pref+fileName)
 
     
 #iFile = TFile.Open(pref+fileName)
@@ -330,6 +330,7 @@ jet_Phi            = std.vector('double')()
 jet_Mass           = std.vector('double')()
 jet_CvsL           = std.vector('double')()
 jet_CvsB           = std.vector('double')()
+jet_CustomBvsL     = std.vector('double')()  # new
 jet_DeepFlavCvsL   = std.vector('double')()
 jet_DeepFlavCvsB   = std.vector('double')()
 jet_qgl            = std.vector('double')()
@@ -348,6 +349,10 @@ jet_btagCMVA       = std.vector('double')()
 jet_btagCSVV2      = std.vector('double')()
 jet_btagDeepB      = std.vector('double')()
 jet_btagDeepC      = std.vector('double')()
+jet_CustomProb_b   = std.vector('double')()  # new
+jet_CustomProb_bb  = std.vector('double')()  # new
+jet_CustomProb_c   = std.vector('double')()  # new
+jet_CustomProb_l   = std.vector('double')()  # new
 jet_btagDeepFlavB  = std.vector('double')()
 
 jetMu_Pt           = array('d',[0])
@@ -367,6 +372,7 @@ nTightMu           = array('d',[0])
 
 leadCvsL_jetidx      = array('d',[0])
 leadCvsB_jetidx      = array('d',[0])
+leadCustomBvsL_jetidx      = array('d',[0])  # new
 
 semitChi2          = array('d',[0])
 semitWCandMass     = array('d',[0])
@@ -1103,9 +1109,11 @@ for entry in inputTree:
         m_Eta_List.append(entry.Muon_eta[i])  # same in PFNano
         m_Phi_List.append(entry.Muon_phi[i])  # same in PFNano
         m_Charge_List.append(entry.Muon_charge[i])  # same in PFNano
+        print "Muon mass %s" % entry.Muon_mass
+        print "Muon mass [i] %s" % entry.Muon_mass[i]
         m_Mass_List.append(entry.Muon_mass[i])  # same in PFNano
         print "Muon mass list = "
-        print '[%s]' % ', '.join(map(str, m_Mass_list))
+        print '[%s]' % ', '.join(map(str, m_Mass_List))
         #Additions to check quality of hard muon
         M_RelIso.push_back(entry.Muon_pfRelIso04_all[i])  # same in PFNano
         M_dz.push_back(entry.Muon_dz[i])  # same in PFNano

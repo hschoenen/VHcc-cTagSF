@@ -43,7 +43,11 @@
         cd $tmp_dir
         pwd
         ls
-
+        
+        export X509_USER_PROXY=$5
+        voms-proxy-info -all
+        voms-proxy-info -all -file $5
+        
         #xrdcp root://xrootd-cms.infn.it//${INPFILE} ./infile.root
         echo "running python script"
         python ${PYFILE} ${INPFILE}

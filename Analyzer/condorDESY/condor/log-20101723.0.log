@@ -1,0 +1,46 @@
+000 (20101723.000.000) 2021-05-04 15:23:59 Job submitted from host: <131.169.223.42:9618?addrs=131.169.223.42-9618+[2001-638-700-10df--1-2a]-9618&alias=bird-htc-sched14.desy.de&noUDP&sock=schedd_14156_6ac2_3>
+...
+001 (20101723.000.000) 2021-05-04 15:24:24 Job executing on host: <131.169.160.114:40588?addrs=131.169.160.114-40588&alias=batch1075.desy.de>
+...
+006 (20101723.000.000) 2021-05-04 15:24:32 Image size of job updated: 117488
+	63  -  MemoryUsage of job (MB)
+	64172  -  ResidentSetSize of job (KB)
+...
+006 (20101723.000.000) 2021-05-04 15:25:08 Image size of job updated: 309160
+	63  -  MemoryUsage of job (MB)
+	64172  -  ResidentSetSize of job (KB)
+...
+012 (20101723.000.000) 2021-05-04 15:25:08 Job was held.
+	The job attribute OnExitHold expression '(ExitBySignal == true) || (ExitCode != 0)' evaluated to TRUE
+	Code 3 Subcode 0
+...
+013 (20101723.000.000) 2021-05-04 15:36:31 Job was released.
+	via condor_release (by user anstein)
+...
+001 (20101723.000.000) 2021-05-04 15:42:28 Job executing on host: <131.169.77.118:44920?addrs=131.169.77.118-44920&alias=bird055.desy.de>
+...
+006 (20101723.000.000) 2021-05-04 15:42:36 Image size of job updated: 325000
+	143  -  MemoryUsage of job (MB)
+	145980  -  ResidentSetSize of job (KB)
+...
+006 (20101723.000.000) 2021-05-04 15:44:14 Image size of job updated: 325000
+	143  -  MemoryUsage of job (MB)
+	146024  -  ResidentSetSize of job (KB)
+...
+005 (20101723.000.000) 2021-05-04 15:44:14 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 00:01:37, Sys 0 00:00:02  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:01:37, Sys 0 00:00:02  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :     1.00        1         1 
+	   Disk (KB)            :     3      512000    698461 
+	   Memory (MB)          :   143        1536      1536 
+
+	Job terminated of its own accord at 2021-05-04T13:44:14Z.
+...
