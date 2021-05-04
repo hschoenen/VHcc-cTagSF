@@ -1,0 +1,63 @@
+echo PATH:
+/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/bin:/cvmfs/grid.cern.ch/emi3ui-latest/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/bin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/sbin:/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/opt/dell/srvadmin/bin
+arguments:  20110452 0 /store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root
+username and group
+anstein
+af-cms
+creating tempdir and copy
+setting up the environment
+echo PATH:
+/cvmfs/cms.cern.ch/share/overrides/bin:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_10_2_0_pre6/bin/slc6_amd64_gcc630:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_10_2_0_pre6/external/slc6_amd64_gcc630/bin:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/llvm/6.0.0-gnimlf2/bin:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/gcc/6.3.0/bin:/cvmfs/cms.cern.ch/common:/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/bin:/cvmfs/grid.cern.ch/emi3ui-latest/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/bin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/sbin:/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/opt/dell/srvadmin/bin
+changing to tempdir
+/var/lib/condor/execute/dir_8396/tmp.xWbuKBDPwu
+WcSelection_new.py
+nuSolutions.py
+scalefactors
+scalefactors2017
+scalefactors2018
+subject   : /C=DE/O=GermanGrid/OU=RWTH/CN=Annika Stein/CN=proxy
+issuer    : /C=DE/O=GermanGrid/OU=RWTH/CN=Annika Stein
+identity  : /C=DE/O=GermanGrid/OU=RWTH/CN=Annika Stein
+type      : full legacy globus proxy
+strength  : 1024
+path      : /afs/desy.de/user/a/anstein/private/x509up_u38320
+timeleft  : 158:14:21
+key usage : Digital Signature, Key Encipherment, Data Encipherment
+=== VO cms extension information ===
+VO        : cms
+subject   : /C=DE/O=GermanGrid/OU=RWTH/CN=Annika Stein
+issuer    : /DC=ch/DC=cern/OU=computers/CN=voms2.cern.ch
+attribute : /cms/Role=NULL/Capability=NULL
+attribute : /cms/dcms/Role=NULL/Capability=NULL
+timeleft  : 158:14:21
+uri       : voms2.cern.ch:15002
+
+subject   : /C=DE/O=GermanGrid/OU=RWTH/CN=Annika Stein/CN=proxy
+issuer    : /C=DE/O=GermanGrid/OU=RWTH/CN=Annika Stein
+identity  : /C=DE/O=GermanGrid/OU=RWTH/CN=Annika Stein
+type      : full legacy globus proxy
+strength  : 1024
+path      : /afs/desy.de/user/a/anstein/private/x509up_u38320
+timeleft  : 158:14:21
+key usage : Digital Signature, Key Encipherment, Data Encipherment
+=== VO cms extension information ===
+VO        : cms
+subject   : /C=DE/O=GermanGrid/OU=RWTH/CN=Annika Stein
+issuer    : /DC=ch/DC=cern/OU=computers/CN=voms2.cern.ch
+attribute : /cms/Role=NULL/Capability=NULL
+attribute : /cms/dcms/Role=NULL/Capability=NULL
+timeleft  : 158:14:21
+uri       : voms2.cern.ch:15002
+
+WcSelection_new.py
+nuSolutions.py
+scalefactors
+scalefactors2017
+scalefactors2018
+running python script
+##########################################################################################
+start_time :  Tue May  4 20:45:17 2021
+processing on :  /store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root
+Forcing AAA.
+Will open file root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root.
+got exit code from python code:  1

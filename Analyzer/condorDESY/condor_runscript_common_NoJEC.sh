@@ -45,10 +45,19 @@
         ls
         
         export X509_USER_PROXY=$5
+        #export X509_USER_PROXY=${HOME}/x509up_u38320
         voms-proxy-info -all
         voms-proxy-info -all -file $5
-        
+        #pip install --upgrade pip
+        #pip install wheel
+        #pip install xrootd --user
+        #pip install xrootd.whl --user
         #xrdcp root://xrootd-cms.infn.it//${INPFILE} ./infile.root
+        #xrdcp -d 1 -f root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} /dev/null
+        #xrdcp root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} ./infile.root
+        xrdfs grid-cms-xrootd.physik.rwth-aachen.de ls -l -u /store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001
+        xrdcp -d 3 -f root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} /dev/null
+        ls
         echo "running python script"
         python ${PYFILE} ${INPFILE}
         rc=$?

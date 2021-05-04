@@ -93,10 +93,13 @@ if "2018" and not "2017" in fullName: era = 2018
 #with open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customLogfile.txt", "a") as log:
 #    log.write('Attempting to load the file will start\n')
 #    log.write(pref+fileName)
-
-    
+iFile = TFile.Open(str('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root'))
 #iFile = TFile.Open(pref+fileName)
-iFile = TFile.Open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nano_mc2017_1-1156.root")
+#iFile = TFile.Open(str(sys.argv[2])+"/infile.root")
+print "Current working directory: %s" % os.getcwd()
+print "Files in this directory: %s" % os.listdir(os.getcwd())
+#iFile = TFile.Open("infile.root")
+#iFile = TFile.Open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nano_mc2017_1-1156.root")
 inputTree = iFile.Get("Events")
 inputTree.SetBranchStatus("*",1)
 
