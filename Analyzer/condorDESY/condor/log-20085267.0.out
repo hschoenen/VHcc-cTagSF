@@ -1,0 +1,108 @@
+echo PATH:
+/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/bin:/cvmfs/grid.cern.ch/emi3ui-latest/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/bin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/sbin:/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/opt/dell/srvadmin/bin
+arguments:  20085267 0 /store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1156.root
+username and group
+anstein
+af-cms
+creating tempdir and copy
+setting up the environment
+echo PATH:
+/cvmfs/cms.cern.ch/share/overrides/bin:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_10_2_0_pre6/bin/slc6_amd64_gcc630:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_10_2_0_pre6/external/slc6_amd64_gcc630/bin:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/llvm/6.0.0-gnimlf2/bin:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/gcc/6.3.0/bin:/cvmfs/cms.cern.ch/common:/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/bin:/cvmfs/grid.cern.ch/emi3ui-latest/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/bin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/sbin:/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/opt/dell/srvadmin/bin
+changing to tempdir
+/var/lib/condor/execute/dir_19359/tmp.nR2XiXyI4I
+WcSelection_new.py
+nuSolutions.py
+scalefactors
+scalefactors2017
+scalefactors2018
+running python script
+##########################################################################################
+start_time :  Tue May  4 01:29:21 2021
+processing on :  /store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1156.root
+Forcing AAA.
+Will open file root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1156.root.
+Using channel = TTToSemiLeptonic ; isMC: True ; era: 2017
+Using jet pT with JEC correction: nom
+Output file will be numbered v14-v1PFNanoV2_1_1-1156 by condor.
+The event loop will run 11692 times, nEntries which is the number of events, is 11692
+Number of events processed: 0 of 11692
+So far jet loop has been run 0 times , running event loop for the 0. time
+Currently in event loop no. 1 and the length of variable Electron_pt is 2
+Currently in event loop no. 1 and the length of variable Muon_pt is 1
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 1 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 1. time
+Currently in event loop no. 2 and the length of variable Electron_pt is 2
+Currently in event loop no. 2 and the length of variable Muon_pt is 1
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 2 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 2. time
+Currently in event loop no. 3 and the length of variable Electron_pt is 0
+Currently in event loop no. 3 and the length of variable Muon_pt is 0
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 3 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 3. time
+Currently in event loop no. 4 and the length of variable Electron_pt is 2
+Currently in event loop no. 4 and the length of variable Muon_pt is 1
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 4 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 4. time
+Currently in event loop no. 5 and the length of variable Electron_pt is 1
+Currently in event loop no. 5 and the length of variable Muon_pt is 0
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 5 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 5. time
+Currently in event loop no. 6 and the length of variable Electron_pt is 0
+Currently in event loop no. 6 and the length of variable Muon_pt is 0
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 6 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 6. time
+Currently in event loop no. 7 and the length of variable Electron_pt is 2
+Currently in event loop no. 7 and the length of variable Muon_pt is 0
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 7 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 7. time
+Currently in event loop no. 8 and the length of variable Electron_pt is 2
+Currently in event loop no. 8 and the length of variable Muon_pt is 0
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 8 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 8. time
+Currently in event loop no. 9 and the length of variable Electron_pt is 1
+Currently in event loop no. 9 and the length of variable Muon_pt is 1
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 9 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 9. time
+Currently in event loop no. 10 and the length of variable Electron_pt is 1
+Currently in event loop no. 10 and the length of variable Muon_pt is 0
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 10 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 10. time
+Currently in event loop no. 11 and the length of variable Electron_pt is 0
+Currently in event loop no. 11 and the length of variable Muon_pt is 0
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 11 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 11. time
+Currently in event loop no. 12 and the length of variable Electron_pt is 0
+Currently in event loop no. 12 and the length of variable Muon_pt is 0
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 12 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 12. time
+Currently in event loop no. 13 and the length of variable Electron_pt is 1
+Currently in event loop no. 13 and the length of variable Muon_pt is 2
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 13 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 13. time
+Currently in event loop no. 14 and the length of variable Electron_pt is 1
+Currently in event loop no. 14 and the length of variable Muon_pt is 0
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 14 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 14. time
+Currently in event loop no. 15 and the length of variable Electron_pt is 1
+Currently in event loop no. 15 and the length of variable Muon_pt is 1
+Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = 0 + 0 = 0
+Currently in event loop no. 15 : Exactly 1 lepton cut, continue with next entry
+So far jet loop has been run 0 times , running event loop for the 15. time
+Currently in event loop no. 16 and the length of variable Electron_pt is 1
+Currently in event loop no. 16 and the length of variable Muon_pt is 1
+Muon mass list = 
+got exit code from python code:  1
