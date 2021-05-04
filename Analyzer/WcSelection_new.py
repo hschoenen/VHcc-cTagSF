@@ -93,12 +93,12 @@ if "2018" and not "2017" in fullName: era = 2018
 #with open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customLogfile.txt", "a") as log:
 #    log.write('Attempting to load the file will start\n')
 #    log.write(pref+fileName)
-iFile = TFile.Open(str('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root'))
+#iFile = TFile.Open(str('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root'))
 #iFile = TFile.Open(pref+fileName)
 #iFile = TFile.Open(str(sys.argv[2])+"/infile.root")
 print "Current working directory: %s" % os.getcwd()
 print "Files in this directory: %s" % os.listdir(os.getcwd())
-#iFile = TFile.Open("infile.root")
+iFile = TFile.Open("infile.root")
 #iFile = TFile.Open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nano_mc2017_1-1156.root")
 inputTree = iFile.Get("Events")
 inputTree.SetBranchStatus("*",1)
@@ -997,7 +997,7 @@ for entry in inputTree:
     E_dxy.clear()
     E_sip3d.clear()
     E_ip3d.clear()
-    print "So far jet loop has been run %d times , running event loop for the %d. time" % (flatjetcount, count-1)
+    #print "So far jet loop has been run %d times , running event loop for the %d. time" % (flatjetcount, count-1)
     M_Mass.clear()
     M_Pt.clear()
     M_Eta.clear()
@@ -1079,7 +1079,7 @@ for entry in inputTree:
         print "                 muon selection : Muon_tightId > 0"
         print "                 muon selection : Muon_pfRelIso04_all <= 0.15"
     
-    print "Currently in event loop no. %d and the length of variable Electron_pt is %d" % (count, len(entry.Electron_pt))
+    #print "Currently in event loop no. %d and the length of variable Electron_pt is %d" % (count, len(entry.Electron_pt))
     for i in range(0, len(entry.Electron_pt)):  # same in PFNano
         if entry.Electron_pt[i]<elePtCut or abs(entry.Electron_eta[i])>2.5: continue  # same in PFNano
         if abs(entry.Electron_eta[i]) > 1.442 and abs(entry.Electron_eta[i]) < 1.556: continue  # same in PFNano
@@ -1102,7 +1102,7 @@ for entry in inputTree:
         if hardE_jetidx >= 0:
             hardE_Jet_PtRatio[0] = entry.Electron_pt[i]/jetPt[hardE_jetidx]  # same in PFNano
     
-    print "Currently in event loop no. %d and the length of variable Muon_pt is %d" % (count, len(Muon_pt))
+    #print "Currently in event loop no. %d and the length of variable Muon_pt is %d" % (count, len(Muon_pt))
     # if this is not the number of Muons in the event (I guess?) but per jet, then one continues to often
     for i in range(0, len(Muon_pt)):
         if Muon_pt[i]<30 or abs(entry.Muon_eta[i])>2.4: continue  # same in PFNano
@@ -1112,11 +1112,11 @@ for entry in inputTree:
         m_Eta_List.append(entry.Muon_eta[i])  # same in PFNano
         m_Phi_List.append(entry.Muon_phi[i])  # same in PFNano
         m_Charge_List.append(entry.Muon_charge[i])  # same in PFNano
-        print "Muon mass %s" % entry.Muon_mass
-        print "Muon mass [i] %s" % entry.Muon_mass[i]
+        #print "Muon mass %s" % entry.Muon_mass
+        #print "Muon mass [i] %s" % entry.Muon_mass[i]
         m_Mass_List.append(entry.Muon_mass[i])  # same in PFNano
-        print "Muon mass list = "
-        print '[%s]' % ', '.join(map(str, m_Mass_List))
+        #print "Muon mass list = "
+        #print '[%s]' % ', '.join(map(str, m_Mass_List))
         #Additions to check quality of hard muon
         M_RelIso.push_back(entry.Muon_pfRelIso04_all[i])  # same in PFNano
         M_dz.push_back(entry.Muon_dz[i])  # same in PFNano
@@ -1129,9 +1129,9 @@ for entry in inputTree:
     # ==========================================================================
 
     # ======================== Exactly 1 Lepton cut ============================
-    print "Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = %d + %d = %d" % (len(e_Pt_List),len(m_Pt_List),len(e_Pt_List) + len(m_Pt_List))
+    #print "Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = %d + %d = %d" % (len(e_Pt_List),len(m_Pt_List),len(e_Pt_List) + len(m_Pt_List))
     if len(e_Pt_List) + len(m_Pt_List) != 1: 
-        print "Currently in event loop no. %d : Exactly 1 lepton cut, continue with next entry" % count
+        #print "Currently in event loop no. %d : Exactly 1 lepton cut, continue with next entry" % count
         continue
 
     if len(e_Pt_List) == 1:
@@ -1217,7 +1217,7 @@ for entry in inputTree:
     min_dPhi_jet_MET[0] = 1000
     if era == 2016: jetetamax = 2.4
     elif era == 2017 or era == 2018: jetetamax = 2.5
-    print "Currently running the event loop for the %d. time, in this event, there are %d jets for which the loop will now start" % (count, len(jetPt))
+    #print "Currently running the event loop for the %d. time, in this event, there are %d jets for which the loop will now start" % (count, len(jetPt))
     for i in range(0, len(jetPt)):
         flatjetcount += 1 
         # not the best idea, because of problems due to cuts from above --> store the tagger info
@@ -1543,7 +1543,7 @@ for entry in inputTree:
     if isMuon:
         is_M[0] = isMuon
         for i, mPt in enumerate(m_Pt_List):
-            print "Is muon = True, storing muon no. %d (inside event loop no. %d)" % (i+1, count)
+            #print "Is muon = True, storing muon no. %d (inside event loop no. %d)" % (i+1, count)
             M_Mass.push_back(m_Mass_List[i])
             M_Pt.push_back(mPt)
             M_Eta.push_back(m_Eta_List[i])
