@@ -21,11 +21,12 @@ print("Torch version =",torch.__version__)
 minima = np.load('/nfs/dust/cms/user/anstein/additional_files/default_value_studies_minima.npy')
 defaults = minima - 0.001
 
-def cleandataset(f, defaults=defaults):
+def cleandataset(f, defaults=defaults, isMC=True):
     feature_names = [k for k in f['Events'].keys() if  (('Jet_eta' == k) or ('Jet_pt' == k) or ('Jet_DeepCSV' in k))]
     # tagger output to compare with later and variables used to get the truth output
     feature_names.extend(('Jet_btagDeepB_b','Jet_btagDeepB_bb', 'Jet_btagDeepC','Jet_btagDeepL'))
-    feature_names.extend(('Jet_nBHadrons', 'Jet_hadronFlavour'))
+    if isMC:
+        feature_names.extend(('Jet_nBHadrons', 'Jet_hadronFlavour'))
     
     
     # go through a specified number of events, and get the information (awkward-arrays) for the keys specified above
@@ -42,18 +43,18 @@ def cleandataset(f, defaults=defaults):
         
         datacolumns[featureindex] = ak.to_numpy(a)
 
+    if isMC:
+        nbhad = ak.to_numpy(ak.flatten(data['Jet_nBHadrons'], axis=1))
+        hadflav = ak.to_numpy(ak.flatten(data['Jet_hadronFlavour'], axis=1))
 
-    nbhad = ak.to_numpy(ak.flatten(data['Jet_nBHadrons'], axis=1))
-    hadflav = ak.to_numpy(ak.flatten(data['Jet_hadronFlavour'], axis=1))
-
-    target_class = np.full_like(hadflav, 3)                                                      # udsg
-    target_class = np.where(hadflav == 4, 2, target_class)                                       # c
-    target_class = np.where(np.bitwise_and(hadflav == 5, nbhad > 1), 1, target_class)            # bb
-    target_class = np.where(np.bitwise_and(hadflav == 5, nbhad <= 1), 0, target_class)           # b, lepb
+        target_class = np.full_like(hadflav, 3)                                                      # udsg
+        target_class = np.where(hadflav == 4, 2, target_class)                                       # c
+        target_class = np.where(np.bitwise_and(hadflav == 5, nbhad > 1), 1, target_class)            # bb
+        target_class = np.where(np.bitwise_and(hadflav == 5, nbhad <= 1), 0, target_class)           # b, lepb
 
    
 
-    datacolumns[len(feature_names)] = ak.to_numpy(target_class) 
+        datacolumns[len(feature_names)] = ak.to_numpy(target_class) 
 
     datavectors = datacolumns.transpose()
     
@@ -111,22 +112,24 @@ def cleandataset(f, defaults=defaults):
     
     
     datacls = [i for i in range(0,67)]
-    datacls.append(73)
+    if isMC:
+        datacls.append(73)
     dataset = alldata[:, datacls]
     
     #DeepCSV_dataset = alldata[:, 67:71]
     
     return dataset
 
-def preprocess(rootfile):
+def preprocess(rootfile, isMC):
     minima = np.load('/nfs/dust/cms/user/anstein/additional_files/default_value_studies_minima.npy')
     defaults = minima - 0.001
-    dataset_input_target = cleandataset(uproot.open(rootfile), defaults)
+    dataset_input_target = cleandataset(uproot.open(rootfile), defaults, isMC)
     print(len(dataset_input_target))
     #sys.exit()
     inputs = torch.Tensor(dataset_input_target[:,0:67])
+    # targets only make sense for MC, but it does no harm when calling it on Data (the last column is different though)
     targets = torch.Tensor(dataset_input_target[:,-1]).long()
-    
+            
     scalers = []
     
     for i in range(0,67): # do not apply scaling to default values, which were set to -999
@@ -135,7 +138,6 @@ def preprocess(rootfile):
         scalers.append(scaler)
 
     return inputs, targets, scalers
-
 
 def predict(inputs, targets, scalers, method):
     #inputs, targets, scalers = preprocess(rootfile)
@@ -162,15 +164,16 @@ def predict(inputs, targets, scalers, method):
                       nn.Softmax(dim=1))
 
     if method == '_new':
-        allweights = compute_class_weight(
-               'balanced',
-                classes=np.array([0,1,2,3]), 
-                y=targets.numpy().astype(int))
-        class_weights = torch.FloatTensor(allweights).to(device)
-        del allweights
-        gc.collect()
+        #allweights = compute_class_weight(
+        #       'balanced',
+        #        classes=np.array([0,1,2,3]), 
+        #        y=targets.numpy().astype(int))
+        #class_weights = torch.FloatTensor(allweights).to(device)
+        #del allweights
+        #gc.collect()
 
-        criterion = nn.CrossEntropyLoss(weight=class_weights)
+        #criterion = nn.CrossEntropyLoss(weight=class_weights)
+        criterion = nn.CrossEntropyLoss()
         modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_all_TT_350_epochs_v10_GPU_weighted_new_49_datasets_with_default_0.001.pt'
         
     else:
@@ -238,7 +241,7 @@ if __name__ == "__main__":
     print("Will open file %s."%(fullName))
 
     #parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/"]
-    parentDirList = ["/106X_v2_17/"]
+    parentDirList = ["/106X_v2_17/","/106X_v2_17rsb2/"]
     for iParent in parentDirList:
         if iParent in fullName: parentDir = iParent
     if parentDir == "": fullName.split('/')[8]+"/"
@@ -312,7 +315,7 @@ if __name__ == "__main__":
     #        sys.exit(99)
     '''    
     
-    inputs, targets, scalers = preprocess(fullName)
+    inputs, targets, scalers = preprocess(fullName, isMC)
     
     if weightingMethod == "_both":
         methods = ["_as_is","_new"]

@@ -61,7 +61,7 @@ else:
         fileName = "/" + '/'.join(fullName.split('/')[fullName.split('/').index("store"):])
 print "Will open file %s."%(pref+fileName)
 
-parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/","/106X_v2_17/"]
+parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/","/106X_v2_17/","/106X_v2_17rsb2/"]
 for iParent in parentDirList:
     if iParent in fullName: parentDir = iParent
 if parentDir == "": fullName.split('/')[8]+"/"
@@ -141,8 +141,9 @@ if "OUTPUTDIR" in os.environ:
         #print "Output file already exists. Aborting job."
         print "Outfile file: %s"%condoroutfile
         #sys.exit(99)  # for debugging currently deactivated
-customTaggerProbs = np.load("%s/%s/outPreds_%s_new.npy"%(condoroutdir,sampName,outNo))  # just do it with the loss weighted model first here
-customTaggerBvsL  = np.load("%s/%s/outBvsL_%s_new.npy"%(condoroutdir,sampName,outNo))  # if one wants no weighting, replace _new with _as_is
+if isMC:
+    customTaggerProbs = np.load("%s/%s/outPreds_%s_new.npy"%(condoroutdir,sampName,outNo))  # just do it with the loss weighted model first here
+    customTaggerBvsL  = np.load("%s/%s/outBvsL_%s_new.npy"%(condoroutdir,sampName,outNo))  # if one wants no weighting, replace _new with _as_is
 # ==============================================================================
 
 # =============================== SF files =====================================
@@ -1250,7 +1251,8 @@ for entry in inputTree:
         if entry.Jet_jetId[i] < 5: continue  # same in PFNano
         if entry.Jet_puId[i] < 7 and jetPt[i] < 50: continue  # same in PFNano
 #        if jetFilterFlags[i] == False: continue
-        if entry.Jet_DeepCSV_vertexCategory[i] != 0: continue  # because my custom tagger was only trained on vertex category 0
+        if isMC:
+            if entry.Jet_DeepCSV_vertexCategory[i] != 0: continue  # because my custom tagger was only trained on vertex category 0
         Jet_muEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neEmEF[i] + entry.Jet_neHEF[i])  # same in PFNano
         Jet_muplusneEmEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neHEF[i])  # same in PFNano
         # if Jet_muEF > 0.8: continue
@@ -1278,7 +1280,10 @@ for entry in inputTree:
         ###### ToDo: instead, this could be the right place to add the custom BvsL discriminator
         # difficulty: these are "flat" (per jet) and not per event, per jet --> need a counter around the event loop
         # that is increased with every jet from this inner (jet) loop
-        jet_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets+i])
+        if isMC:
+            jet_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets+i])
+        else:
+            jet_CustomBvsL_List.append(entry.Jet_btagDeepB[i])
         # ------------------------------------------------------------------------------------------------------------
         
         
@@ -1298,7 +1303,10 @@ for entry in inputTree:
         j_Mass_List.append(jetMass[i])
         j_CvsL_List.append(entry.Jet_btagDeepCvL[i])  # modified for PFNano
         j_CvsB_List.append(entry.Jet_btagDeepCvB[i])  # modified for PFNano
-        j_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets + i])  # new
+        if isMC:
+            j_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets + i])  # new
+        else:
+            j_CustomBvsL_List.append(entry.Jet_btagDeepB[i])
         j_qgl_List.append(entry.Jet_qgl[i])  # same in PFNano
         j_MuonIdx1_List.append(entry.Jet_muonIdx1[i])  # same in PFNano
         j_MuonIdx2_List.append(entry.Jet_muonIdx2[i])  # same in PFNano
@@ -1327,10 +1335,16 @@ for entry in inputTree:
         jet_btagDeepFlavB.push_back(entry.Jet_btagDeepFlavB[i])  # same in PFNano
         # ============================================================================================================
         ###### ToDo: again, do the custom stuff here
-        jet_CustomProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
-        jet_CustomProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
-        jet_CustomProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
-        jet_CustomProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+        if isMC:
+            jet_CustomProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+            jet_CustomProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+            jet_CustomProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+            jet_CustomProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+        else:
+            jet_CustomProb_b.push_back(entry.Jet_btagDeepB_b[i])  # new
+            jet_CustomProb_bb.push_back(entry.Jet_btagDeepB_bb[i])  # new
+            jet_CustomProb_c.push_back(entry.Jet_btagDeepC[i])  # new
+            jet_CustomProb_l.push_back(entry.Jet_btagDeepL[i])  # new
         # ------------------------------------------------------------------------------------------------------------
         
         if isMC:
@@ -1364,7 +1378,10 @@ for entry in inputTree:
     leadCvsL_jetidx[0] = jet_CvsL_List.index(max(jet_CvsL_List))
     # ============================================================================================================
     ###### ToDo: again, do the custom stuff here
-    leadCustomBvsL_jetidx[0] = jet_CustomBvsL_List.index(max(jet_CustomBvsL_List))  # new
+    if isMC:
+        leadCustomBvsL_jetidx[0] = jet_CustomBvsL_List.index(max(jet_CustomBvsL_List))  # new
+    else:  # maybe something else in the future for data, not sure
+        leadCustomBvsL_jetidx[0] = jet_CustomBvsL_List.index(max(jet_CustomBvsL_List))  # new
     # ------------------------------------------------------------------------------------------------------------
     
     # Save jets according to hadron flavour
