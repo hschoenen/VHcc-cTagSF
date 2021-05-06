@@ -36,7 +36,7 @@
         echo "changing to tempdir (first time)"
         cd $tmp_dir
         
-        which xrdcp
+        #which xrdcp
         
         
         echo "setting up the environment"
@@ -47,15 +47,18 @@
         which xrdcp
         voms-proxy-info -all
         xrdcp root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} $tmp_dir/infile.root
-        export X509_USER_PROXY=$5
-        xrdcp root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} $tmp_dir/infile.root
+        #voms-proxy-info -all -file /afs/desy.de/user/a/anstein/private/x509up_u38320
+        #export X509_USER_PROXY=/afs/desy.de/user/a/anstein/private/x509up_u38320
+        #xrdcp root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} $tmp_dir/infile.root
+        #export X509_USER_PROXY=$5
+        #xrdcp root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} $tmp_dir/infile.root
         #export X509_USER_PROXY=x509up_u38320
         #xrdcp root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} $tmp_dir/infile.root
         #voms-proxy-info -all -file $5
         echo "echo PATH:"
         echo $PATH
         source /cvmfs/grid.cern.ch/etc/profile.d/setup-cvmfs-ui.sh
-        which xrdcp
+        #which xrdcp
         echo "changing to tempdir (second time)"
         cd $tmp_dir
         pwd

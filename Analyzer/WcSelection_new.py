@@ -138,9 +138,11 @@ if "OUTPUTDIR" in os.environ:
     condoroutdir = os.environ["OUTPUTDIR"]
     condoroutfile = "%s/%s/outTree_%s.root"%(condoroutdir,sampName,outNo)
     if os.path.isfile("%s/%s/outTree_%s.root"%(condoroutdir,sampName,outNo)):
-        print "Output file already exists. Aborting job."
+        #print "Output file already exists. Aborting job."
         print "Outfile file: %s"%condoroutfile
-        sys.exit(99)
+        #sys.exit(99)  # for debugging currently deactivated
+customTaggerProbs = np.load("%s/%s/outPreds_%s_new.npy"%(condoroutdir,sampName,outNo))  # just do it with the loss weighted model first here
+customTaggerBvsL  = np.load("%s/%s/outBvsL_%s_new.npy"%(condoroutdir,sampName,outNo))  # if one wants no weighting, replace _new with _as_is
 # ==============================================================================
 
 # =============================== SF files =====================================
@@ -583,6 +585,7 @@ outputTree.Branch('jet_Mass'         ,jet_Mass      )
 outputTree.Branch('jet_nJet'         ,jet_nJet      ,'jet_nJet/D')
 outputTree.Branch('jet_CvsL'         ,jet_CvsL      )
 outputTree.Branch('jet_CvsB'         ,jet_CvsB      )
+outputTree.Branch('jet_CustomBvsL'         ,jet_CustomBvsL      )  # new
 outputTree.Branch('jet_DeepFlavCvsL' ,jet_DeepFlavCvsL      )
 outputTree.Branch('jet_DeepFlavCvsB' ,jet_DeepFlavCvsB      )
 outputTree.Branch('jet_qgl'          ,jet_qgl      )
@@ -601,6 +604,10 @@ outputTree.Branch('jet_lepFiltCustom'   ,jet_lepFiltCustom      )
 outputTree.Branch('jet_btagCMVA'    ,jet_btagCMVA      )
 outputTree.Branch('jet_btagDeepB'   ,jet_btagDeepB      )
 outputTree.Branch('jet_btagDeepC'   ,jet_btagDeepC      )
+outputTree.Branch('jet_CustomProb_b'   ,jet_CustomProb_b      )  # new 
+outputTree.Branch('jet_CustomProb_bb'   ,jet_CustomProb_bb      )  # new
+outputTree.Branch('jet_CustomProb_c'   ,jet_CustomProb_c      )  # new
+outputTree.Branch('jet_CustomProb_l'   ,jet_CustomProb_l      )  # new
 outputTree.Branch('jet_btagDeepFlavB'   ,jet_btagDeepFlavB      )
 outputTree.Branch('jet_btagCSVV2'   ,jet_btagCSVV2     )
 
@@ -621,6 +628,7 @@ outputTree.Branch('nTightMu'         ,nTightMu      ,'nTightMu/D')
 
 outputTree.Branch('leadCvsB_jetidx'        ,leadCvsB_jetidx     ,'leadCvsB_jetidx/D')
 outputTree.Branch('leadCvsL_jetidx'        ,leadCvsL_jetidx     ,'leadCvsL_jetidx/D')
+outputTree.Branch('leadCustomBvsL_jetidx'        ,leadCustomBvsL_jetidx     ,'leadCustomBvsL_jetidx/D')  # new
 
 outputTree.Branch('semitChi2'        ,semitChi2          ,'semitChi2/D')
 outputTree.Branch('semitWCandMass'   ,semitWCandMass     ,'semitWCandMass/D')
@@ -768,6 +776,7 @@ count = 0
 notFound=[]
 # ==============================================================================
 flatjetcount = 0  # this is the counter for each jet that has been processed, to use the correct index for the custom
+prevSeenOrSkippedJets = 0
 # tagger and it's probably a bad idea because there are continue statements due to cuts --> not every jet will be counted,
 # despite of it being there
 lenEventLoop = 0
@@ -776,6 +785,11 @@ for entry in inputTree:
 print "The event loop will run %d times, nEntries which is the number of events, is %d" % (lenEventLoop, nEntries)
 # Begin event loop
 for entry in inputTree:
+    prevSeenOrSkippedJets = flatjetcount
+    for i in range(0, len(entry.Jet_pt)):
+        flatjetcount += 1
+    
+    
     if maxEvents > 0 and count >= maxEvents: break
 
     if count%10000 ==0:
@@ -813,6 +827,7 @@ for entry in inputTree:
     jet_Pt_List         = []
     jet_CvsL_List       = []
     jet_CvsB_List       = []
+    jet_CustomBvsL_List       = []  # new
     jet_CvsB_CvsL_List  = []
     jet_CvsB_CvsL_List2 = []
 
@@ -836,6 +851,7 @@ for entry in inputTree:
     j_Mass_List              = []
     j_CvsL_List              = []
     j_CvsB_List              = []
+    j_CustomBvsL_List              = []  # new
     j_qgl_List               = []
     j_MuonIdx1_List          = []
     j_MuonIdx2_List          = []
@@ -920,6 +936,7 @@ for entry in inputTree:
     jetMuPt_by_jetPt[0]    = -1
     leadCvsB_jetidx[0]        = -1
     leadCvsL_jetidx[0]        = -1
+    leadCustomBvsL_jetidx[0]        = -1  # new
     QCDveto[0]              = -1
 
     semitChi2[0]            = -1
@@ -1015,6 +1032,7 @@ for entry in inputTree:
     jet_Mass.clear()
     jet_CvsL.clear()
     jet_CvsB.clear()
+    jet_CustomBvsL.clear()  # new
     jet_DeepFlavCvsL.clear()
     jet_DeepFlavCvsB.clear()
     jet_qgl.clear()
@@ -1032,6 +1050,10 @@ for entry in inputTree:
     jet_btagCMVA.clear()
     jet_btagDeepB.clear()
     jet_btagDeepC.clear()
+    jet_CustomProb_b.clear()  # new
+    jet_CustomProb_bb.clear()  # new
+    jet_CustomProb_c.clear()  # new
+    jet_CustomProb_l.clear()  # new
     jet_btagCSVV2.clear()
     jet_btagDeepFlavB.clear()
 
@@ -1214,19 +1236,21 @@ for entry in inputTree:
     totalJetEnergy = 0
     totalJetCvsL = 0
     totalJetCvsLpt = 0
+    #totalJetCustomBvsL = 0  # new
+    #totalJetCustomBvsLpt = 0  # new
     min_dPhi_jet_MET[0] = 1000
     if era == 2016: jetetamax = 2.4
     elif era == 2017 or era == 2018: jetetamax = 2.5
     #print "Currently running the event loop for the %d. time, in this event, there are %d jets for which the loop will now start" % (count, len(jetPt))
     for i in range(0, len(jetPt)):
-        flatjetcount += 1 
+        #flatjetcount += 1  # the trick is to count the jets before any cuts
         # not the best idea, because of problems due to cuts from above --> store the tagger info
         # per event instead so that it can be accessed in the event loop
         if jetPt[i]<20 or abs(entry.Jet_eta[i])>jetetamax: continue  # same in PFNano
         if entry.Jet_jetId[i] < 5: continue  # same in PFNano
         if entry.Jet_puId[i] < 7 and jetPt[i] < 50: continue  # same in PFNano
 #        if jetFilterFlags[i] == False: continue
-
+        if entry.Jet_DeepCSV_vertexCategory[i] != 0: continue  # because my custom tagger was only trained on vertex category 0
         Jet_muEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neEmEF[i] + entry.Jet_neHEF[i])  # same in PFNano
         Jet_muplusneEmEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neHEF[i])  # same in PFNano
         # if Jet_muEF > 0.8: continue
@@ -1254,7 +1278,9 @@ for entry in inputTree:
         ###### ToDo: instead, this could be the right place to add the custom BvsL discriminator
         # difficulty: these are "flat" (per jet) and not per event, per jet --> need a counter around the event loop
         # that is increased with every jet from this inner (jet) loop
+        jet_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets+i])
         # ------------------------------------------------------------------------------------------------------------
+        
         
         HT_temp         += jetPt[i]
         totalJetEnergy  += jet.E()
@@ -1262,6 +1288,8 @@ for entry in inputTree:
             totalJetCvsLpt  += entry.Jet_btagDeepCvL[i]*jetPt[i]  # modified for PFNano
         # ============================================================================================================
         ###### ToDo: again, do the custom stuff here
+        #if entry.Jet_CustomBvsL[i]>0:  # modified for PFNano
+        #    totalJetCustomBvsLpt  += entry.Jet_CustomBvsL[prevSeenOrSkippedJets + i]*jetPt[i]
         # ------------------------------------------------------------------------------------------------------------
 
         j_Pt_List.append(jetPt[i])
@@ -1270,6 +1298,7 @@ for entry in inputTree:
         j_Mass_List.append(jetMass[i])
         j_CvsL_List.append(entry.Jet_btagDeepCvL[i])  # modified for PFNano
         j_CvsB_List.append(entry.Jet_btagDeepCvB[i])  # modified for PFNano
+        j_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets + i])  # new
         j_qgl_List.append(entry.Jet_qgl[i])  # same in PFNano
         j_MuonIdx1_List.append(entry.Jet_muonIdx1[i])  # same in PFNano
         j_MuonIdx2_List.append(entry.Jet_muonIdx2[i])  # same in PFNano
@@ -1298,6 +1327,10 @@ for entry in inputTree:
         jet_btagDeepFlavB.push_back(entry.Jet_btagDeepFlavB[i])  # same in PFNano
         # ============================================================================================================
         ###### ToDo: again, do the custom stuff here
+        jet_CustomProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+        jet_CustomProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+        jet_CustomProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+        jet_CustomProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
         # ------------------------------------------------------------------------------------------------------------
         
         if isMC:
@@ -1331,6 +1364,7 @@ for entry in inputTree:
     leadCvsL_jetidx[0] = jet_CvsL_List.index(max(jet_CvsL_List))
     # ============================================================================================================
     ###### ToDo: again, do the custom stuff here
+    leadCustomBvsL_jetidx[0] = jet_CustomBvsL_List.index(max(jet_CustomBvsL_List))  # new
     # ------------------------------------------------------------------------------------------------------------
     
     # Save jets according to hadron flavour
@@ -1564,6 +1598,7 @@ for entry in inputTree:
         jet_Phi.push_back(j_Phi_List[i])
         jet_CvsL.push_back(j_CvsL_List[i])
         jet_CvsB.push_back(j_CvsB_List[i])
+        jet_CustomBvsL.push_back(j_CustomBvsL_List[i])  # new
         jet_qgl.push_back(j_qgl_List[i])
         if isMC:
             jet_hadronFlv.push_back(j_hadronFlv_List[i])

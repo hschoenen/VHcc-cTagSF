@@ -331,6 +331,9 @@ if __name__ == "__main__":
         bvl = calcBvsL(predictions)
         #print(predictions[:100,:])
         #print(bvl[:100])
+        
+        
+        
         np.save(outputPredsdir, predictions)
         np.save(outputBvsLdir, bvl)
         
