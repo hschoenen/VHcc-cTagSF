@@ -1,0 +1,22 @@
+universe = vanilla
+Executable = proxy_tests.sh
+Output = log-minimal-ex.out
+Error  = log-minimal-ex.err
+Log    = log-minimal-ex.log
+#Proxy_path = /afs/desy.de/user/a/anstein/private/x509up_u38320
+#arguments    = $(Proxy_path)
+#x509userproxy = Proxy_path
+#x509userproxy = $ENV(X509_USER_PROXY)
+#use_x509userproxy = True
+#use_x509userproxy = true
+#x509userproxy = /afs/desy.de/user/a/anstein/private/x509up_u38320
+#x509userproxy = /tmp/x509up_u38320
+transfer_input_files = x509up_u38320
+transfer_output_files = ""
+Should_Transfer_Files = YES
+#transfer_input_files  = /tmp/x509up_u38320
+Notification = never
+on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
+
+
+queue
