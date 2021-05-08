@@ -1,3 +1,14 @@
+#!/bin/bash
+    
+    echo $HOSTNAME
+    echo "Who am I?"
+    whoami
+
+    echo "   Current dir:"
+    pwd
+    echo "CONDOR_SCRATCH_DIR = $_CONDOR_SCRATCH_DIR"
+    ls -lh
+
 #	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_$4_minimal/
     export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210506_2017_$4_PFNano/
@@ -23,62 +34,110 @@
         #which xrdcp
         
         export PATH=/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/bin:/cvmfs/grid.cern.ch/emi3ui-latest/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/bin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/sbin:$PATH
-        echo "echo PATH:"
+        echo "    echo PATH:"
         echo $PATH
-        echo "arguments: " $1 $2 $3
-        echo "username and group"
+        echo "    arguments: " $1 $2 $3
+        echo "    username and group"
         id -n -u
         id -n -g
+        echo "    pwd"
+        pwd
+        #echo "creating tempdir and copy"
+        #tmp_dir=$(mktemp -d)
+        #cp -r ../${PYFILE} customTaggerInference.py ../nuSolutions.py ../scalefactors* $tmp_dir
+        echo "copy scripts to scratch"
+        cp -r /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/${PYFILE} /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customTaggerInference.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nuSolutions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/scalefactors* $_CONDOR_SCRATCH_DIR
+        #echo "changing to tempdir (first time)"
+        #cd $tmp_dir
+                
         
-        echo "creating tempdir and copy"
-        tmp_dir=$(mktemp -d)
-        cp -r ../${PYFILE} ../nuSolutions.py ../scalefactors* $tmp_dir
-        echo "changing to tempdir (first time)"
-        cd $tmp_dir
-        
+        #echo "setting up the environment"
+        #cd /cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_10_2_0_pre6/src
+        #source /cvmfs/cms.cern.ch/cmsset_default.sh
         #which xrdcp
+        #eval `scramv1 runtime -sh`
+        
+        echo "setting up the grid commands"
+        source /cvmfs/grid.cern.ch/centos7-umd4-ui-4_200423/etc/profile.d/setup-c7-ui-example.sh
+        #source /cvmfs/cms.cern.ch/common/crab-setup.sh prod
+        #source /cvmfs/cms.cern.ch/cmsset_default.sh
+        #cd /cvmfs/cms.cern.ch/slc7_amd64_gcc900/cms/cmssw/CMSSW_11_3_0_pre3/src
+        #eval "$(scramv1 runtime -sh)"
+        echo "    which xrdcp"
+        which xrdcp
+        
+        #echo "changing to scratch"
+        #cd $_CONDOR_SCRATCH_DIR
+        echo "set up proxy"
+        if [ -f "x509up_u38320" ]; then
+           export X509_USER_PROXY=x509up_u38320
+        fi
+        echo "    voms-proxy-info -all"
+        voms-proxy-info -all
+        #echo "test if copy with proxy works"
+        #xrdcp -d 1 -f root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root /dev/null
+        INPPREFIX="root://grid-cms-xrootd.physik.rwth-aachen.de:1094/"
+        echo "copy actual input file"
+        xrdcp ${INPPREFIX}${INPFILE} ./infile.root
+        
+        echo "    echo PATH:"
+        echo $PATH
+        #source /cvmfs/grid.cern.ch/etc/profile.d/setup-cvmfs-ui.sh
+        #echo "changing to tempdir (second time)"
+        #cd $tmp_dir
+        #pwd
+        echo "    content of pwd"
+        ls -lh
         
         
-        echo "setting up the environment"
+        
+        
+        
+        echo "    which python3"
+        which python3
+        #eval `scram unsetenv -sh`
+        ENVNAME=my-env
+        ENVDIR=$ENVNAME
+
+        export PATH
+        echo "    echo PATH:"
+        echo $PATH
+        mkdir $ENVDIR
+        echo "setup conda"
+        tar -xzf /nfs/dust/cms/user/anstein/${ENVNAME}.tar.gz -C ${ENVDIR}
+        #./${ENVDIR}/bin/activate
+        source my-env/bin/activate
+        echo "    which python3"
+        which python3
+        conda-unpack
+        which python3
+        echo "    echo PATH:"
+        echo $PATH
+        echo "start with custom tagger"
+        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} '_both' ${OUTPUTDIR}
+        
+        
+        
+        
+        
+        echo "setting up the environment (CMSSW)"
         cd /cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_10_2_0_pre6/src
         source /cvmfs/cms.cern.ch/cmsset_default.sh
         which xrdcp
         eval `scramv1 runtime -sh`
-        which xrdcp
-        voms-proxy-info -all
-        xrdcp root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} $tmp_dir/infile.root
-        #voms-proxy-info -all -file /afs/desy.de/user/a/anstein/private/x509up_u38320
-        #export X509_USER_PROXY=/afs/desy.de/user/a/anstein/private/x509up_u38320
-        #xrdcp root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} $tmp_dir/infile.root
-        #export X509_USER_PROXY=$5
-        #xrdcp root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} $tmp_dir/infile.root
-        #export X509_USER_PROXY=x509up_u38320
-        #xrdcp root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} $tmp_dir/infile.root
-        #voms-proxy-info -all -file $5
-        echo "echo PATH:"
+
+        echo "    echo PATH:"
         echo $PATH
         source /cvmfs/grid.cern.ch/etc/profile.d/setup-cvmfs-ui.sh
-        #which xrdcp
-        echo "changing to tempdir (second time)"
-        cd $tmp_dir
+        echo "changing to scratch dir again"
+        cd $_CONDOR_SCRATCH_DIR
+        echo "    pwd and ls"
         pwd
-        ls
+        ls -ls
         
-        #export X509_USER_PROXY=$5
-        #export X509_USER_PROXY=${HOME}/private/x509up_u38320
-        #voms-proxy-info -all
-        #voms-proxy-info -all -file $5
-        #pip install --upgrade pip
-        #pip install wheel
-        #pip install xrootd --user
-        #pip install xrootd.whl --user
-        #xrdcp root://xrootd-cms.infn.it//${INPFILE} ./infile.root
-        #xrdcp -d 1 -f root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} /dev/null
-        #xrdcp root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} ./infile.root
-        #xrdfs grid-cms-xrootd.physik.rwth-aachen.de ls -l -u /store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001
-        #xrdcp -d 3 -f root://grid-cms-xrootd.physik.rwth-aachen.de:1094/${INPFILE} /dev/null
-        #ls
-        echo "running python script"
+        
+        
+        echo "running python script (Analyzer)"
         python ${PYFILE} ${INPFILE}
         rc=$?
         if [[ $rc == 99 ]]               
@@ -94,14 +153,14 @@
         echo "done running, now copying output to DUST"
 
         echo "copying output"
-	SAMPNAME=$(bash dirName.sh)
+        SAMPNAME=$(bash dirName.sh)
         FLNAME=$(bash flName.sh)
         mkdir -p ${OUTPUTDIR}${SAMPNAME}
         until cp -vf ${OUTPUTNAME} ${OUTPUTDIR}${SAMPNAME}"/outTree_"${FLNAME}".root"; do
-		echo "copying output failed. Retrying..."
-		sleep 60
-	done
-	echo "copied output successfully"
+            echo "copying output failed. Retrying..."
+            sleep 60
+        done
+        echo "copied output successfully"
 
 #        python -c "import sys,ROOT; f=ROOT.TFile(''); sys.exit(int(f.IsZombie() and 99))"
 #        rc=$?
@@ -111,8 +170,12 @@
 #            exit $rc
 #        fi
 
-        echo "delete tmp dir"
-        cd $TMP
-        rm -r $tmp_dir
+        #echo "delete tmp dir"
+        #cd $TMP
+        #rm -r $tmp_dir
+        
+        echo "Clean up after yourself"
+        rm *.root *.pem *.pcm *.so *.tar.gz *.py *.cc *.h *.npy
+        rm -r ./aux ./cfg ./plugins ./python ./${ENVDIR} ./scalefactors*
 
         echo "all done!"

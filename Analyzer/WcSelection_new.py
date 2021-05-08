@@ -142,8 +142,10 @@ if "OUTPUTDIR" in os.environ:
         print "Outfile file: %s"%condoroutfile
         #sys.exit(99)  # for debugging currently deactivated
 if isMC:
-    customTaggerProbs = np.load("%s/%s/outPreds_%s_new.npy"%(condoroutdir,sampName,outNo))  # just do it with the loss weighted model first here
-    customTaggerBvsL  = np.load("%s/%s/outBvsL_%s_new.npy"%(condoroutdir,sampName,outNo))  # if one wants no weighting, replace _new with _as_is
+    #customTaggerProbs = np.load("%s/%s/outPreds_%s_new.npy"%(condoroutdir,sampName,outNo))  # just do it with the loss weighted model first here
+    #customTaggerBvsL  = np.load("%s/%s/outBvsL_%s_new.npy"%(condoroutdir,sampName,outNo))  # if one wants no weighting, replace _new with _as_is
+    customTaggerProbs = np.load("outPreds_%s_new.npy"%(outNo))  # just do it with the loss weighted model first here
+    customTaggerBvsL  = np.load("outBvsL_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
 # ==============================================================================
 
 # =============================== SF files =====================================
@@ -234,25 +236,25 @@ if era == 2018:
     hpuweight_down.Divide(hmcPU)
     
 #PU 2017 if PFNano file (missing variables or another name? use 2018 as placeholder for now)
-if era == 2017:
-    PUdatafile = TFile('scalefactors2018/dataPileup2018.root')
-    PUmcfile = TFile('scalefactors2018/mcPileup2018.root')
-    hdataPU = PUdatafile.Get("pileup")
-    hdataPU_up = PUdatafile.Get("pileup_plus")
-    hdataPU_down = PUdatafile.Get("pileup_minus")
-    hmcPU = PUmcfile.Get("pu_mc")
-    hdataPU.Scale(1./hdataPU.Integral())
-    hdataPU_up.Scale(1./hdataPU_up.Integral())
-    hdataPU_down.Scale(1./hdataPU_down.Integral())
-    hmcPU.Scale(1./hmcPU.Integral())
-    maxpu = max(hdataPU.GetBinLowEdge(hdataPU.GetNbinsX()),hdataPU_up.GetBinLowEdge(hdataPU_up.GetNbinsX()),hdataPU_down.GetBinLowEdge(hdataPU_down.GetNbinsX()),hmcPU.GetBinLowEdge(hmcPU.GetNbinsX()))
+#if era == 2017:
+#    PUdatafile = TFile('scalefactors2018/dataPileup2018.root')
+#    PUmcfile = TFile('scalefactors2018/mcPileup2018.root')
+#    hdataPU = PUdatafile.Get("pileup")
+#    hdataPU_up = PUdatafile.Get("pileup_plus")
+#    hdataPU_down = PUdatafile.Get("pileup_minus")
+#    hmcPU = PUmcfile.Get("pu_mc")
+#    hdataPU.Scale(1./hdataPU.Integral())
+#    hdataPU_up.Scale(1./hdataPU_up.Integral())
+#    hdataPU_down.Scale(1./hdataPU_down.Integral())
+#    hmcPU.Scale(1./hmcPU.Integral())
+#    maxpu = max(hdataPU.GetBinLowEdge(hdataPU.GetNbinsX()),hdataPU_up.GetBinLowEdge(hdataPU_up.GetNbinsX()),hdataPU_down.GetBinLowEdge(hdataPU_down.GetNbinsX()),hmcPU.GetBinLowEdge(hmcPU.GetNbinsX()))
     
-    hpuweight = hdataPU.Clone()
-    hpuweight.Divide(hmcPU)
-    hpuweight_up = hdataPU_up.Clone()
-    hpuweight_up.Divide(hmcPU)
-    hpuweight_down = hdataPU_down.Clone()
-    hpuweight_down.Divide(hmcPU)
+#    hpuweight = hdataPU.Clone()
+#    hpuweight.Divide(hmcPU)
+#    hpuweight_up = hdataPU_up.Clone()
+#    hpuweight_up.Divide(hmcPU)
+#    hpuweight_down = hdataPU_down.Clone()
+#    hpuweight_down.Divide(hmcPU)
     
 def getPUweight(ntrueint,variation):
     if ntrueint < 0 or ntrueint > maxpu-1: return 0.
@@ -1251,8 +1253,8 @@ for entry in inputTree:
         if entry.Jet_jetId[i] < 5: continue  # same in PFNano
         if entry.Jet_puId[i] < 7 and jetPt[i] < 50: continue  # same in PFNano
 #        if jetFilterFlags[i] == False: continue
-        if isMC:
-            if entry.Jet_DeepCSV_vertexCategory[i] != 0: continue  # because my custom tagger was only trained on vertex category 0
+        #if isMC:
+        #    if entry.Jet_DeepCSV_vertexCategory[i] != 0: continue  # because my custom tagger was only trained on vertex category 0, the performance for cat. 1 and 2 might be pretty bad - however one does not have to impose the condition, the tagger will "work" regardless of that
         Jet_muEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neEmEF[i] + entry.Jet_neHEF[i])  # same in PFNano
         Jet_muplusneEmEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neHEF[i])  # same in PFNano
         # if Jet_muEF > 0.8: continue
@@ -1340,7 +1342,7 @@ for entry in inputTree:
             jet_CustomProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
             jet_CustomProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
             jet_CustomProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
-        else:
+        else:  # as soon as I have data with Jet_DeepCSV variables, this can be removed and there will be custom tagger outputs
             jet_CustomProb_b.push_back(entry.Jet_btagDeepB_b[i])  # new
             jet_CustomProb_bb.push_back(entry.Jet_btagDeepB_bb[i])  # new
             jet_CustomProb_c.push_back(entry.Jet_btagDeepC[i])  # new
@@ -1714,6 +1716,12 @@ for entry in inputTree:
                 PUWeight_up[0] = entry.puWeightUp/PUWeight[0]  # so far, not found, is it maybe L1PreFiringWeight_Up?
                 PUWeight_down[0] = entry.puWeightDown/PUWeight[0]  # so far, not found, is it maybe L1PreFiringWeight_Dn?
             # --------------------------------------------------------------------------------------------------------------------------
+        elif era == 2017:
+            pass
+            #PUWeight[0] = getPUweight(entry.Pileup_nTrueInt,0)  # same in PFNano
+            #if PUWeight[0]!=0:
+            #    PUWeight_up[0] = getPUweight(entry.Pileup_nTrueInt,1)/PUWeight[0]  # same in PFNano
+            #    PUWeight_down[0] = getPUweight(entry.Pileup_nTrueInt,-1)/PUWeight[0]  # same in PFNano
         else:
             PUWeight[0] = getPUweight(entry.Pileup_nTrueInt,0)  # same in PFNano
             if PUWeight[0]!=0:

@@ -315,7 +315,8 @@ if __name__ == "__main__":
     #        sys.exit(99)
     '''    
     
-    inputs, targets, scalers = preprocess(fullName, isMC)
+    #inputs, targets, scalers = preprocess(fullName, isMC)
+    inputs, targets, scalers = preprocess('infile.root', isMC)
     
     if weightingMethod == "_both":
         methods = ["_as_is","_new"]
@@ -323,10 +324,12 @@ if __name__ == "__main__":
         methods = weightingMethod
     
     for wm in methods:
-        outputPredsdir = "%s/%s/outPreds_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
-        outputBvsLdir = "%s/%s/outBvsL_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
+        #outputPredsdir = "%s/%s/outPreds_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
+        #outputBvsLdir = "%s/%s/outBvsL_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
+        outputPredsdir = "outPreds_%s%s.npy"%(outNo,wm)
+        outputBvsLdir = "outBvsL_%s%s.npy"%(outNo,wm)
 
-        print("Saving into %s/%s"%(condoroutdir,sampName))
+        #print("Saving into %s/%s"%(condoroutdir,sampName))
 
         
 
