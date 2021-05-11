@@ -61,7 +61,7 @@ else:
         fileName = "/" + '/'.join(fullName.split('/')[fullName.split('/').index("store"):])
 print "Will open file %s."%(pref+fileName)
 
-parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/","/106X_v2_17/","/106X_v2_17rsb2/"]
+parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/","/106X_v2_17/","/106X_v2_17rsb2/","/106X_v2_17rsb3/"]
 for iParent in parentDirList:
     if iParent in fullName: parentDir = iParent
 if parentDir == "": fullName.split('/')[8]+"/"
@@ -1740,7 +1740,7 @@ for entry in inputTree:
                 LHEScaleWeight_muF_down[0] = LHEScaleList[3]
                 LHEScaleWeight_muF_up[0] = LHEScaleList[5]
             
-        if "TT" in channel:
+        if "TT" in channel and "Hadronic" not in channel:
             PSWeight = list(entry.PSWeight)  # same in PFNano
             
             PSWeightISR_up[0] = PSWeight[2]

@@ -77,6 +77,7 @@
         #echo "test if copy with proxy works"
         #xrdcp -d 1 -f root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root /dev/null
         INPPREFIX="root://grid-cms-xrootd.physik.rwth-aachen.de:1094/"
+        #INPPREFIX=""
         echo "copy actual input file"
         xrdcp ${INPPREFIX}${INPFILE} ./infile.root
         
@@ -136,9 +137,10 @@
         ls -ls
         
         
-        
+        #path_without_pref=${INPFILE#"$INPPREFIX"}
         echo "running python script (Analyzer)"
         python ${PYFILE} ${INPFILE}
+        
         rc=$?
         if [[ $rc == 99 ]]               
         then  
@@ -175,7 +177,9 @@
         #rm -r $tmp_dir
         
         echo "Clean up after yourself"
-        rm *.root *.pem *.pcm *.so *.tar.gz *.py *.cc *.h *.npy
-        rm -r ./aux ./cfg ./plugins ./python ./${ENVDIR} ./scalefactors*
+        rm x509up_u38320
+        #rm *.root *.pem *.pcm *.so *.tar.gz *.py *.cc *.h *.npy
+        rm *.root *.py *.cc *.npy
+        rm -r ./${ENVDIR} ./scalefactors*
 
         echo "all done!"

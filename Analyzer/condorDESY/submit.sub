@@ -7,8 +7,10 @@ arguments    = $(ClusterId) $(ProcId) $(INFILE) $(SEL)
 transfer_input_files = x509up_u38320
 transfer_output_files = ""
 Should_Transfer_Files = YES
+max_materialize  = 10
+materialize_max_idle = 5
 Notification = never
 on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
 
 
-queue SEL,INFILE from cmdList_new_test.txt
+queue SEL,INFILE from cmdList_Wc_PFNano.txt

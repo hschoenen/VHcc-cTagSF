@@ -21,11 +21,12 @@ print("Torch version =",torch.__version__)
 minima = np.load('/nfs/dust/cms/user/anstein/additional_files/default_value_studies_minima.npy')
 defaults = minima - 0.001
 
-def cleandataset(f, defaults=defaults, isMC=True):
+def cleandataset(f, defaults, isMC):
+    print('Doing cleaning, isMC = ',isMC)
     feature_names = [k for k in f['Events'].keys() if  (('Jet_eta' == k) or ('Jet_pt' == k) or ('Jet_DeepCSV' in k))]
     # tagger output to compare with later and variables used to get the truth output
     feature_names.extend(('Jet_btagDeepB_b','Jet_btagDeepB_bb', 'Jet_btagDeepC','Jet_btagDeepL'))
-    if isMC:
+    if isMC == True:
         feature_names.extend(('Jet_nBHadrons', 'Jet_hadronFlavour'))
     
     
@@ -43,7 +44,7 @@ def cleandataset(f, defaults=defaults, isMC=True):
         
         datacolumns[featureindex] = ak.to_numpy(a)
 
-    if isMC:
+    if isMC == True:
         nbhad = ak.to_numpy(ak.flatten(data['Jet_nBHadrons'], axis=1))
         hadflav = ak.to_numpy(ak.flatten(data['Jet_hadronFlavour'], axis=1))
 
@@ -112,7 +113,7 @@ def cleandataset(f, defaults=defaults, isMC=True):
     
     
     datacls = [i for i in range(0,67)]
-    if isMC:
+    if isMC == True:
         datacls.append(73)
     dataset = alldata[:, datacls]
     
@@ -121,6 +122,7 @@ def cleandataset(f, defaults=defaults, isMC=True):
     return dataset
 
 def preprocess(rootfile, isMC):
+    print('Doing starting clean/prep, isMC: ',isMC)
     minima = np.load('/nfs/dust/cms/user/anstein/additional_files/default_value_studies_minima.npy')
     defaults = minima - 0.001
     dataset_input_target = cleandataset(uproot.open(rootfile), defaults, isMC)
@@ -241,7 +243,7 @@ if __name__ == "__main__":
     print("Will open file %s."%(fullName))
 
     #parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/"]
-    parentDirList = ["/106X_v2_17/","/106X_v2_17rsb2/"]
+    parentDirList = ["/106X_v2_17/","/106X_v2_17rsb2/","/106X_v2_17rsb3/"]
     for iParent in parentDirList:
         if iParent in fullName: parentDir = iParent
     if parentDir == "": fullName.split('/')[8]+"/"
