@@ -11,7 +11,7 @@
 
 #	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_$4_minimal/
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210506_2017_$4_PFNano/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210511_2017_$4_PFNano/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
@@ -21,7 +21,7 @@
         if  [[ $4 == "Wc" ]]; then
              PYFILE="WcSelection_new.py"
         elif  [[ $4 == "DY" ]]; then
-             PYFILE="DYJetSelection.py"
+             PYFILE="DYJetSelection_new.py"
         elif  [[ $4 == "TT" ]]; then
              PYFILE="TTbSelection.py"
 	elif  [[ $4 == "TTNoMu" ]]; then

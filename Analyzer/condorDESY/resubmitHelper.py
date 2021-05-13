@@ -22,10 +22,10 @@ print failednums
 missed = failednums[:]
 #concstr = " ".join(failednums)
 #print concstr   
-os.system("mv cmdList.txt cmdList_old.txt")
+os.system("mv cmdList_Wc_PFNano.txt cmdList_Wc_PFNano_old.txt")
 
-with open("cmdList.txt","w") as fl:
-    f=open('cmdList_old.txt','r')
+with open("cmdList_Wc_PFNano.txt","w") as fl:
+    f=open('cmdList_Wc_PFNano_old.txt','r')
     ln=f.readlines()
     for failed in failednums:
         if not split:

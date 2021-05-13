@@ -2,22 +2,10 @@
 from ROOT import TFile, std, TH1F, TTree, TLorentzVector
 from array import array
 
-import glob, sys, time, os, sys
+import glob, sys, time, os
 import numpy as np
 import nuSolutions as nu
 import types, math, json
-import itertools
-
-#with open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customLogfile.txt", "a") as log:
-#    log.write('All modules loaded\n')
-
-start_time = time.time()
-############### FOR INTERACTIVE RUN ##############
-# fileName = "/store/user/lmastrol/VHcc_2016V4_Aug18/JetsToLNu_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/arizzi-RunIIMoriond17-DeepAndR105/180909_010329/0000/tree_1.root"
-#fileName = "/store/user/lmastrol/VHcc_2016V4_Aug18/SingleElectron/arizzi-NanoDeepAndReg2016Run2094/180817_113615/0000/tree_122.root"
-# channel  = 'JetsToLNu'
-#version = 'v2'
-##################################################
 
 start_time = time.time()
 JECNameList = ["nom","jesTotalUp","jesTotalDown","jerUp","jerDown"]
@@ -69,37 +57,10 @@ if parentDir == "": fullName.split('/')[8]+"/"
 if "2017" in fullName: era = 2017
 if "2018" and not "2017" in fullName: era = 2018
 
-#if "spmondal" in fullName and fullName.startswith('/pnfs/'):
-##    parentDir = 'VHbbPostNano2016_V5_CtagSF/'
-    #parentDir = fullName.split('/')[8]+"/"
-    #if "2017" in fullName: era = 2017
-    #if "/2017/" in fullName: parentDir = "2017/"
-        
-#if "VHcc_2017V5_Dec18" in fullName and fullName.startswith('/pnfs/'):
-    #parentDir = 'VHcc_2017V5_Dec18/'
-    #era = 2017
-#if fullName.startswith('/store/'):
-    #if "lmastrol" in fullName:
-        #pref = "/pnfs/desy.de/cms/tier2"
-    #else:
-        #pref = "root://xrootd-cms.infn.it//"
-        #parentDir="NanoCrabProdXmas/"
-        #isNano = True
-#elif fullName.startswith('root:'):
-    #pref = ""
-#else:
-    #pref = "file:"
-
-#with open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customLogfile.txt", "a") as log:
-#    log.write('Attempting to load the file will start\n')
-#    log.write(pref+fileName)
-#iFile = TFile.Open(str('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root'))
-#iFile = TFile.Open(pref+fileName)
-#iFile = TFile.Open(str(sys.argv[2])+"/infile.root")
 print "Current working directory: %s" % os.getcwd()
 print "Files in this directory: %s" % os.listdir(os.getcwd())
 iFile = TFile.Open("infile.root")
-#iFile = TFile.Open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nano_mc2017_1-1156.root")
+
 inputTree = iFile.Get("Events")
 inputTree.SetBranchStatus("*",1)
 
@@ -140,10 +101,9 @@ if "OUTPUTDIR" in os.environ:
     if os.path.isfile("%s/%s/outTree_%s.root"%(condoroutdir,sampName,outNo)):
         #print "Output file already exists. Aborting job."
         print "Outfile file: %s"%condoroutfile
-        #sys.exit(99)  # for debugging currently deactivated
-#if isMC:
-    #customTaggerProbs = np.load("%s/%s/outPreds_%s_new.npy"%(condoroutdir,sampName,outNo))  # just do it with the loss weighted model first here
-    #customTaggerBvsL  = np.load("%s/%s/outBvsL_%s_new.npy"%(condoroutdir,sampName,outNo))  # if one wants no weighting, replace _new with _as_is
+        #sys.exit(99)
+    else:
+        print "Condor will create output file: %s"%condoroutfile
 customTaggerProbs = np.load("outPreds_%s_new.npy"%(outNo))  # just do it with the loss weighted model first here
 customTaggerBvsL  = np.load("outBvsL_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
 # ==============================================================================
@@ -173,7 +133,7 @@ if era == 2017 or era == 2018:
     etrigf = open("scalefactors2017/VHbb1ElectronTrigger2017.json",'r')
     etrigjson = json.load(etrigf)["singleEleTrigger"]["eta_pt_ratio"]
     etrigf.close()
-
+    
 # Muon
 if era == 2016:
     MuID2016BFFile = TFile('scalefactors/RunBCDEF_SF_ID.root')
@@ -201,19 +161,6 @@ if era == 2018:
     MuIDlowpT2018File = TFile('scalefactors2018/RunABCD_SF_MuID_lowpT.root')
     MuIDlowpT1718histo2d = MuIDlowpT2018File.Get('NUM_TightID_DEN_genTracks_pt_abseta')
 
-def getSF(dict, pT, eta):
-    for etas in dict:
-        rng = etas.split(':')[1].strip('[').strip(']').split(',')
-        if eta >= float(rng[0]) and eta <= float(rng[1]):
-            subdict = dict[etas]
-            for pTs in subdict:
-                rng2 = pTs.split(':')[1].strip('[').strip(']').split(',')
-                if pT >= float(rng2[0]) and pT <= float(rng2[1]):
-                    tuple = subdict[pTs]
-                    return tuple['value'],tuple['error']
-            break
-    return 1.,0.
-
 #PU 2018 only
 if era == 2018:
     PUdatafile = TFile('scalefactors2018/dataPileup2018.root')
@@ -221,7 +168,7 @@ if era == 2018:
     hdataPU = PUdatafile.Get("pileup")
     hdataPU_up = PUdatafile.Get("pileup_plus")
     hdataPU_down = PUdatafile.Get("pileup_minus")
-    hmcPU = PUmcfile.Get("pu_mc")
+    hmcPU = PUmcfile.Get("pu_mc")    
     hdataPU.Scale(1./hdataPU.Integral())
     hdataPU_up.Scale(1./hdataPU_up.Integral())
     hdataPU_down.Scale(1./hdataPU_down.Integral())
@@ -234,27 +181,6 @@ if era == 2018:
     hpuweight_up.Divide(hmcPU)
     hpuweight_down = hdataPU_down.Clone()
     hpuweight_down.Divide(hmcPU)
-    
-#PU 2017 if PFNano file (missing variables or another name? use 2018 as placeholder for now)
-#if era == 2017:
-#    PUdatafile = TFile('scalefactors2018/dataPileup2018.root')
-#    PUmcfile = TFile('scalefactors2018/mcPileup2018.root')
-#    hdataPU = PUdatafile.Get("pileup")
-#    hdataPU_up = PUdatafile.Get("pileup_plus")
-#    hdataPU_down = PUdatafile.Get("pileup_minus")
-#    hmcPU = PUmcfile.Get("pu_mc")
-#    hdataPU.Scale(1./hdataPU.Integral())
-#    hdataPU_up.Scale(1./hdataPU_up.Integral())
-#    hdataPU_down.Scale(1./hdataPU_down.Integral())
-#    hmcPU.Scale(1./hmcPU.Integral())
-#    maxpu = max(hdataPU.GetBinLowEdge(hdataPU.GetNbinsX()),hdataPU_up.GetBinLowEdge(hdataPU_up.GetNbinsX()),hdataPU_down.GetBinLowEdge(hdataPU_down.GetNbinsX()),hmcPU.GetBinLowEdge(hmcPU.GetNbinsX()))
-    
-#    hpuweight = hdataPU.Clone()
-#    hpuweight.Divide(hmcPU)
-#    hpuweight_up = hdataPU_up.Clone()
-#    hpuweight_up.Divide(hmcPU)
-#    hpuweight_down = hdataPU_down.Clone()
-#    hpuweight_down.Divide(hmcPU)
     
 def getPUweight(ntrueint,variation):
     if ntrueint < 0 or ntrueint > maxpu-1: return 0.
@@ -279,7 +205,6 @@ lumiBlock        = array('d',[0])
 event            = array('d',[0])
 LHE_HT           = array('d',[0])
 LHE_Njets        = array('d',[0])
-LHE_Vpt          = array('d',[0])
 
 eventWeight      = array('d',[0])
 signWeight       = array('d',[0])
@@ -287,6 +212,7 @@ genWeight        = array('d',[0])
 PUWeight         = array('d',[0])
 EleIDSF          = array('d',[0])
 MuIDSF           = array('d',[0])
+# MuIsoSF          = array('d',[0])
 eventWeightnoPU  = array('d',[0])
 eventWeightUnsigned  = array('d',[0])
 
@@ -296,14 +222,12 @@ EleIDSF_up          = array('d',[0])
 EleIDSF_down        = array('d',[0])
 MuIDSF_up           = array('d',[0])
 MuIDSF_down         = array('d',[0])
+# MuIsoSF_up          = array('d',[0])
+# MuIsoSF_down        = array('d',[0])
 LHEScaleWeight_muR_up    = array('d',[0])
 LHEScaleWeight_muR_down  = array('d',[0])
 LHEScaleWeight_muF_up  = array('d',[0])
 LHEScaleWeight_muF_down  = array('d',[0])
-PSWeightISR_up    = array('d',[0])
-PSWeightISR_down  = array('d',[0])
-PSWeightFSR_up    = array('d',[0])
-PSWeightFSR_down  = array('d',[0])
 
 muTrig           = array('d',[0])
 eleTrig          = array('d',[0])
@@ -344,12 +268,10 @@ jet_DeepFlavCvsB   = std.vector('double')()
 jet_qgl            = std.vector('double')()
 
 jet_chEmEF         = std.vector('double')()
-jet_neEmEF         = std.vector('double')()
-jet_muplusneEmEF   = std.vector('double')()
 jet_jetId          = std.vector('double')()
-jet_puId           = std.vector('double')()
 jet_muonIdx1       = std.vector('double')()
 jet_muEF           = std.vector('double')()
+jet_muPtRatio      = std.vector('double')()
 jet_nMuons         = std.vector('double')()
 jet_lepFiltCustom  = std.vector('double')()
 
@@ -370,25 +292,17 @@ jetMu_dxy          = array('d',[0])
 jetMu_sip3d        = array('d',[0])
 muJet_idx          = array('d',[0])
 dR_jet_jetMu       = array('d',[0])
-dR_lep_jet         = array('d',[0])
+dR_Z_jet           = array('d',[0])
+dR_lep_jet_min      = array('d',[0])
 nMuJet             = array('d',[0])
 dPhi_muJet_MET     = array('d',[0])
 min_dPhi_jet_MET   = array('d',[0])
 jetMuPt_by_jetPt   = array('d',[0])
 jetMu_PtRel        = array('d',[0])
-nTightMu           = array('d',[0])
 
 leadCvsL_jetidx      = array('d',[0])
 leadCvsB_jetidx      = array('d',[0])
 leadCustomBvsL_jetidx      = array('d',[0])  # new
-
-semitChi2          = array('d',[0])
-semitWCandMass     = array('d',[0])
-semitWCandpT       = array('d',[0])
-semittCandMass     = array('d',[0])
-semittCandpT       = array('d',[0])
-semitc1idx         = array('d',[0])
-semitc2idx         = array('d',[0])
 
 QCDveto             = array('d',[0])
 
@@ -405,7 +319,6 @@ met_Pt             = array('d',[0])
 met_signif         = array('d',[0])
 is_E               = array('d',[0])
 is_M               = array('d',[0])
-diLepVeto          = array('d',[0])
 # is_H_mass_CR       = array('d',[0])
 # is_W_mass_CR       = array('d',[0])
 
@@ -415,11 +328,7 @@ Z_Eta            = array('d',[0])
 Z_Phi            = array('d',[0])
 
 Z_Mass_best      = array('d',[0])
-Z_Pt_best      = array('d',[0])
 dR_mu_mu_best    = array('d',[0])
-Z_Mass_max       = array('d',[0])
-Z_Mass_min       = array('d',[0])
-Z_Mass_withJet   = array('d',[0])
 
 W_Mass           = array('d',[0])
 W_Pt             = array('d',[0])
@@ -524,7 +433,6 @@ outputTree.Branch('lumiBlock'        ,lumiBlock     ,'lumiBlock/D'  )
 outputTree.Branch('event'            ,event         ,'event/D'      )
 outputTree.Branch('LHE_HT'           ,LHE_HT        ,'LHE_HT/D'     )
 outputTree.Branch('LHE_Njets'        ,LHE_Njets     ,'LHE_Njets/D'     )
-outputTree.Branch('LHE_Vpt'          ,LHE_Vpt       ,'LHE_Vpt/D'     )
 
 outputTree.Branch('eventWeight'      ,eventWeight   ,'eventWeight/D'     )
 outputTree.Branch('signWeight'       ,signWeight    ,'signWeight/D'     )
@@ -532,6 +440,7 @@ outputTree.Branch('genWeight'        ,genWeight     ,'genWeight/D'     )
 outputTree.Branch('PUWeight'         ,PUWeight      ,'PUWeight/D'     )
 outputTree.Branch('EleIDSF'          ,EleIDSF       ,'EleIDSF/D'     )
 outputTree.Branch('MuIDSF'           ,MuIDSF        ,'MuIDSF/D'     )
+# outputTree.Branch('MuIsoSF'           ,MuIsoSF        ,'MuIsoSF/D'     )
 outputTree.Branch('eventWeightnoPU'  ,eventWeightnoPU   ,'eventWeightnoPU/D'     )
 outputTree.Branch('eventWeightUnsigned'      ,eventWeightUnsigned   ,'eventWeightUnsigned/D'     )
 
@@ -541,17 +450,14 @@ outputTree.Branch('EleIDSF_up'          ,EleIDSF_up       ,'EleIDSF_up/D'     )
 outputTree.Branch('EleIDSF_down'          ,EleIDSF_down       ,'EleIDSF_down/D'     )
 outputTree.Branch('MuIDSF_up'           ,MuIDSF_up        ,'MuIDSF_up/D'     )
 outputTree.Branch('MuIDSF_down'           ,MuIDSF_down        ,'MuIDSF_down/D'     )
+# outputTree.Branch('MuIsoSF_up'           ,MuIsoSF_up        ,'MuIsoSF_up/D'     )
+# outputTree.Branch('MuIsoSF_down'           ,MuIsoSF_down        ,'MuIsoSF_down/D'     )
 LHEScaleWeight_muF_up  = array('d',[0])
 outputTree.Branch('LHEScaleWeight_muR_up'           ,LHEScaleWeight_muR_up        ,'LHEScaleWeight_muR_up/D'     )
 outputTree.Branch('LHEScaleWeight_muR_down'         ,LHEScaleWeight_muR_down      ,'LHEScaleWeight_muR_down/D'     )
 # outputTree.Branch('LHEScaleWeight_muF_up'           ,LHEScaleWeight_muF_up        ,'LHEScaleWeight_muF_up/D'     )
 outputTree.Branch('LHEScaleWeight_muF_down'         ,LHEScaleWeight_muF_down      ,'LHEScaleWeight_muF_down/D'     )
 outputTree.Branch('LHEScaleWeight_muF_up'         ,LHEScaleWeight_muF_up      ,'LHEScaleWeight_muF_up/D'     )
-
-outputTree.Branch('PSWeightISR_up'           ,PSWeightISR_up        ,'PSWeightISR_up/D'     )
-outputTree.Branch('PSWeightISR_down'         ,PSWeightISR_down      ,'PSWeightISR_down/D'     )
-outputTree.Branch('PSWeightFSR_down'         ,PSWeightFSR_down      ,'PSWeightFSR_down/D'     )
-outputTree.Branch('PSWeightFSR_up'           ,PSWeightFSR_up        ,'PSWeightFSR_up/D'     )
 
 outputTree.Branch('muTrig'           ,muTrig        ,'muTrig/D'          )
 outputTree.Branch('eleTrig'          ,eleTrig       ,'eleTrig/D'         )
@@ -594,13 +500,10 @@ outputTree.Branch('jet_DeepFlavCvsB' ,jet_DeepFlavCvsB      )
 outputTree.Branch('jet_qgl'          ,jet_qgl      )
 
 outputTree.Branch('jet_chEmEF'          ,jet_chEmEF      )
-outputTree.Branch('jet_neEmEF'          ,jet_neEmEF      )
-outputTree.Branch('jet_muplusneEmEF'    ,jet_muplusneEmEF)
-
 outputTree.Branch('jet_jetId'           ,jet_jetId      )
-outputTree.Branch('jet_puId'            ,jet_puId      )
 outputTree.Branch('jet_muonIdx1'        ,jet_muonIdx1      )
 outputTree.Branch('jet_muEF'            ,jet_muEF      )
+outputTree.Branch('jet_muPtRatio'            ,jet_muPtRatio      )
 outputTree.Branch('jet_nMuons'          ,jet_nMuons      )
 outputTree.Branch('jet_lepFiltCustom'   ,jet_lepFiltCustom      )
 
@@ -623,23 +526,15 @@ outputTree.Branch('jetMu_sip3d'      ,jetMu_sip3d   ,'jetMu_sip3d/D')
 outputTree.Branch('muJet_idx'        ,muJet_idx     ,'muJet_idx/D')
 outputTree.Branch('nMuJet'           ,nMuJet        ,'nMuJet/D')
 outputTree.Branch('dR_jet_jetMu'     ,dR_jet_jetMu  ,'dR_jet_jetMu/D')
-outputTree.Branch('dR_lep_jet'       ,dR_lep_jet    ,'dR_lep_jet/D')
+outputTree.Branch('dR_Z_jet'       ,dR_Z_jet    ,'dR_Z_jet/D')
+outputTree.Branch('dR_lep_jet_min'       ,dR_lep_jet_min    ,'dR_lep_jet_min/D')
 outputTree.Branch('dPhi_muJet_MET'   ,dPhi_muJet_MET,'dPhi_muJet_MET/D')
 outputTree.Branch('min_dPhi_jet_MET' ,min_dPhi_jet_MET,'min_dPhi_jet_MET/D')
 outputTree.Branch('jetMuPt_by_jetPt' ,jetMuPt_by_jetPt,'jetMuPt_by_jetPt/D')
-outputTree.Branch('nTightMu'         ,nTightMu      ,'nTightMu/D')
 
 outputTree.Branch('leadCvsB_jetidx'        ,leadCvsB_jetidx     ,'leadCvsB_jetidx/D')
 outputTree.Branch('leadCvsL_jetidx'        ,leadCvsL_jetidx     ,'leadCvsL_jetidx/D')
 outputTree.Branch('leadCustomBvsL_jetidx'        ,leadCustomBvsL_jetidx     ,'leadCustomBvsL_jetidx/D')  # new
-
-outputTree.Branch('semitChi2'        ,semitChi2          ,'semitChi2/D')
-outputTree.Branch('semitWCandMass'   ,semitWCandMass     ,'semitWCandMass/D')
-outputTree.Branch('semitWCandpT'     ,semitWCandpT       ,'semitWCandpT/D')
-outputTree.Branch('semittCandMass'   ,semittCandMass     ,'semittCandMass/D')
-outputTree.Branch('semittCandpT'     ,semittCandpT       ,'semittCandpT/D')
-outputTree.Branch('semitc1idx'       ,semitc1idx         ,'semitc1idx/D')
-outputTree.Branch('semitc2idx'       ,semitc2idx         ,'semitc2idx/D')
 
 outputTree.Branch('QCDveto'        ,QCDveto     ,'QCDveto/D')
 
@@ -650,7 +545,6 @@ outputTree.Branch('nSV'     ,nSV        ,'nSV/D')
 if isMC:
     outputTree.Branch('jet_hadronFlv'    ,jet_hadronFlv )
     outputTree.Branch('jet_isHardLep'    ,jet_isHardLep )
-    
 outputTree.Branch('met_Pt'           ,met_Pt          ,'met_Pt/D'     )
 outputTree.Branch('met_Phi'          ,met_Phi         ,'met_Phi/D')
 outputTree.Branch('met_signif'       ,met_signif      ,'met_signif/D')
@@ -661,11 +555,7 @@ outputTree.Branch('Z_Eta'            ,Z_Eta           ,'Z_Eta/D'     )
 outputTree.Branch('Z_Phi'            ,Z_Phi           ,'Z_Phi/D'     )
 
 outputTree.Branch('Z_Mass_best'      ,Z_Mass_best     ,'Z_Mass_best/D'     )
-outputTree.Branch('Z_Pt_best'        ,Z_Pt_best       ,'Z_Pt_best/D'     )
 outputTree.Branch('dR_mu_mu_best'    ,dR_mu_mu_best   ,'dR_mu_mu_best/D'     )
-outputTree.Branch('Z_Mass_max'       ,Z_Mass_max      ,'Z_Mass_max/D'     )
-outputTree.Branch('Z_Mass_min'       ,Z_Mass_min      ,'Z_Mass_min/D'     )
-outputTree.Branch('Z_Mass_withJet'   ,Z_Mass_withJet  ,'Z_Mass_withJet/D'     )
 
 
 outputTree.Branch('W_Mass'           ,W_Mass          ,'W_Mass/D'     )
@@ -680,7 +570,6 @@ outputTree.Branch('W_Phi_nuSol'      ,W_Phi_nuSol     ,'W_Phi_nuSol/D'     )
 
 outputTree.Branch('is_E'     ,is_E    ,'is_E/D'     )
 outputTree.Branch('is_M'     ,is_M    ,'is_M/D'     )
-outputTree.Branch('diLepVeto'     ,diLepVeto    ,'diLepVeto/D'     )
 
 # outputTree.Branch('is_H_mass_CR'     ,is_H_mass_CR    ,'is_H_mass_CR/D'     )
 # outputTree.Branch('is_W_mass_CR'     ,is_W_mass_CR    ,'is_W_mass_CR/D'     )
@@ -778,21 +667,14 @@ nEntries = inputTree.GetEntries()
 count = 0
 notFound=[]
 # ==============================================================================
-flatjetcount = 0  # this is the counter for each jet that has been processed, to use the correct index for the custom
+flatjetcount = 0
 prevSeenOrSkippedJets = 0
-# tagger and it's probably a bad idea because there are continue statements due to cuts --> not every jet will be counted,
-# despite of it being there
-lenEventLoop = 0
-for entry in inputTree:
-    lenEventLoop += 1
-print "The event loop will run %d times, nEntries which is the number of events, is %d" % (lenEventLoop, nEntries)
 # Begin event loop
 for entry in inputTree:
     prevSeenOrSkippedJets = flatjetcount
     for i in range(0, len(entry.Jet_pt)):
         flatjetcount += 1
-    
-    
+        
     if maxEvents > 0 and count >= maxEvents: break
 
     if count%10000 ==0:
@@ -847,6 +729,10 @@ for entry in inputTree:
     m_Charge_List            = []
     m_Mass_List              = []
     hardMu_Jet_PtRatio[0]    = -1000
+    
+    lep_List                   = []
+    lep_plus_List              = []
+    lep_minus_List             = []
 
     j_Pt_List                = []
     j_Eta_List               = []
@@ -856,9 +742,6 @@ for entry in inputTree:
     j_CvsB_List              = []
     j_CustomBvsL_List              = []  # new
     j_qgl_List               = []
-    j_MuonIdx1_List          = []
-    j_MuonIdx2_List          = []
-
     if isMC:
         j_hadronFlv_List         = []
         is_ZtoCCorBB[0]     = -100
@@ -869,14 +752,12 @@ for entry in inputTree:
 
     is_E[0]             = False
     is_M[0]             = False
-    diLepVeto[0]        = False
 
     run[0]              = -1000
     lumiBlock[0]        = -1000
     event[0]            = -1000
     LHE_HT[0]           = -1000
     LHE_Njets[0]        = -1000
-    LHE_Vpt[0]          = -1000
 
     muTrig[0]           = -1
     eleTrig[0]          = -1
@@ -889,11 +770,7 @@ for entry in inputTree:
     Z_Phi[0]            = -1000
 
     Z_Mass_best[0]      = -1000
-    Z_Pt_best[0]      = -1000
     dR_mu_mu_best[0]    = -1000
-    Z_Mass_max[0]       = -1000
-    Z_Mass_min[0]       = 1000
-    Z_Mass_withJet[0]   = -1000
 
     W_Mass[0]           = -1000
     W_Pt[0]             = -1000
@@ -928,11 +805,10 @@ for entry in inputTree:
     jetMu_dz[0]            = -1000.
     jetMu_dxy[0]           = -1000.
     jetMu_sip3d[0]         = -1000.
-    
-    nTightMu[0]            = -1.
     muJet_idx[0]           = -1.
     nMuJet[0]              = -1.
-    dR_lep_jet[0]          = -1000
+    dR_Z_jet[0]            = -1000
+    dR_lep_jet_min[0]       = -1000
     dR_jet_jetMu[0]        = -1000
     dPhi_muJet_MET[0]      = -1
     min_dPhi_jet_MET[0]    = -1
@@ -941,14 +817,6 @@ for entry in inputTree:
     leadCvsL_jetidx[0]        = -1
     leadCustomBvsL_jetidx[0]        = -1  # new
     QCDveto[0]              = -1
-
-    semitChi2[0]            = -1
-    semitWCandMass[0]       = -1
-    semitWCandpT[0]         = -1
-    semittCandMass[0]       = -1
-    semittCandpT[0]         = -1
-    semitc1idx[0]           = -1
-    semitc2idx[0]           = -1
 
     nPV[0]                 = -1
     nPVGood[0]             = -1
@@ -1017,7 +885,7 @@ for entry in inputTree:
     E_dxy.clear()
     E_sip3d.clear()
     E_ip3d.clear()
-    #print "So far jet loop has been run %d times , running event loop for the %d. time" % (flatjetcount, count-1)
+
     M_Mass.clear()
     M_Pt.clear()
     M_Eta.clear()
@@ -1041,12 +909,10 @@ for entry in inputTree:
     jet_qgl.clear()
 
     jet_chEmEF.clear()
-    jet_neEmEF.clear()
-    jet_muplusneEmEF.clear()
     jet_jetId.clear()
-    jet_puId.clear()
     jet_muonIdx1.clear()
     jet_muEF.clear()
+    jet_muPtRatio.clear()
     jet_nMuons.clear()
     jet_lepFiltCustom.clear()
 
@@ -1068,128 +934,123 @@ for entry in inputTree:
     met_Phi[0]            = -1000
     met_signif[0]         = -1000
     # ==========================================================================
-    # print list(entry.Jet_Pt),list(entry.Jet_pt_jesTotalUp), list(entry.Jet_pt_jesTotalDown), list(entry.Jet_pt_jerUp), list(entry.Jet_pt_jerDown)
-    if JECName=="nom":
-        jetPt = entry.Jet_pt  # modified for PFNano
-        jetMass = entry.Jet_mass  # same in PFNano
-        metPt = entry.MET_pt  # modified for PFNano
-        metPhi = entry.MET_phi  # modified for PFNano
-    else:
-        exec("jetPt = entry.Jet_pt_"+JECName)  # probably not available in PFNano
-        exec("jetMass = entry.Jet_mass_"+JECName)  # probably not available in PFNano
-        exec("metPt = entry.MET_T1Smear_pt_"+JECName)  # probably not available in PFNano
-        exec("metPhi = entry.MET_T1Smear_phi_"+JECName)  # probably not available in PFNano
 
+    if JECName=="nom":
+        jetPt = entry.Jet_pt
+        jetMass = entry.Jet_mass
+        metPt = entry.MET_pt
+        metPhi = entry.MET_phi
+    else:
+        exec("jetPt = entry.Jet_pt_"+JECName)
+        exec("jetMass = entry.Jet_mass_"+JECName)
+        exec("metPt = entry.MET_T1Smear_pt_"+JECName)
+        exec("metPhi = entry.MET_T1Smear_phi_"+JECName)
     # =========================== Select Leptons ===============================
-    if era == 2016:
-        ElectronID = entry.Electron_mvaSpring16GP_WP80  # don't know if available in PFNano
-        elePtCut = 30
+    if era == 2016: ElectronID = entry.Electron_mvaSpring16GP_WP80
     elif era == 2017 or era == 2018:
         if "Electron_mvaFall17V2Iso_WP80" in validBranches:
-            ElectronID = entry.Electron_mvaFall17V2Iso_WP80  # same in PFNano
+            ElectronID = entry.Electron_mvaFall17V2Iso_WP80
         else:
-            ElectronID = entry.Electron_mvaFall17Iso_WP80  # same in PFNano
-        elePtCut = 34
+            ElectronID = entry.Electron_mvaFall17Iso_WP80
     
-    if "Muon_pt_corrected" in validBranches: Muon_pt = entry.Muon_pt_corrected  # don't know if available in PFNano
-    elif "Muon_corrected_pt" in validBranches: Muon_pt = entry.Muon_corrected_pt  # don't know if available in PFNano
-    else: Muon_pt = entry.Muon_pt  # same in PFNano
-
+    if "Muon_pt_corrected" in validBranches: Muon_pt = entry.Muon_pt_corrected
+    elif "Muon_corrected_pt" in validBranches: Muon_pt = entry.Muon_corrected_pt
+    else: Muon_pt = entry.Muon_pt
+    
     if debug == True:
         print "Preselection 1 : Single Lepton"
-        print "                 electron selection : pt > 30 and eta<2.5"
+        print "                 electron selection : pt > 20 and eta<2.5"
         print "                 electron selection : Electron_mvaSpring16GP_WP80 > 0 "                # cutBased >= 3 (Medium)"
         # print "                 electron selection : Electron_pfRelIso03_all <= 0.15"
-        print "                 muon selection : pt > 30 and eta<2.4"
+        print "                 muon selection : pt > 12 and eta<2.4"
         print "                 muon selection : Muon_tightId > 0"
         print "                 muon selection : Muon_pfRelIso04_all <= 0.15"
-    
-    #print "Currently in event loop no. %d and the length of variable Electron_pt is %d" % (count, len(entry.Electron_pt))
-    for i in range(0, len(entry.Electron_pt)):  # same in PFNano
-        if entry.Electron_pt[i]<elePtCut or abs(entry.Electron_eta[i])>2.5: continue  # same in PFNano
-        if abs(entry.Electron_eta[i]) > 1.442 and abs(entry.Electron_eta[i]) < 1.556: continue  # same in PFNano
+
+    for i in range(0, len(entry.Electron_pt)):
+        if entry.Electron_pt[i]<15 or abs(entry.Electron_eta[i])>2.5: continue
+        if abs(entry.Electron_eta[i]) > 1.442 and abs(entry.Electron_eta[i]) < 1.556: continue
         if ElectronID[i]<=0: continue
         # if entry.Electron_cutBased[i]<3: continue
         # if entry.Electron_pfRelIso03_all[i]>0.15: continue
-        e_Pt_List.append(entry.Electron_pt[i])  # same in PFNano
-        e_Eta_List.append(entry.Electron_eta[i])  # same in PFNano
-        e_Phi_List.append(entry.Electron_phi[i])  # same in PFNano
-        e_Charge_List.append(entry.Electron_charge[i])  # same in PFNano
-        e_Mass_List.append(entry.Electron_mass[i])  # same in PFNano
+        e_Pt_List.append(entry.Electron_pt[i])
+        e_Eta_List.append(entry.Electron_eta[i])
+        e_Phi_List.append(entry.Electron_phi[i])
+        e_Charge_List.append(entry.Electron_charge[i])
+        e_Mass_List.append(entry.Electron_mass[i])
 
         #Additions to check quality of hard ele
-        E_RelIso.push_back(entry.Electron_pfRelIso03_all[i])  # same in PFNano
-        E_dz.push_back(entry.Electron_dz[i])  # same in PFNano
-        E_dxy.push_back(entry.Electron_dxy[i])  # same in PFNano
-        E_sip3d.push_back(entry.Electron_sip3d[i])  # same in PFNano
-        E_ip3d.push_back(entry.Electron_ip3d[i])  # same in PFNano
-        hardE_jetidx = entry.Electron_jetIdx[i]  # same in PFNano
+        E_RelIso.push_back(entry.Electron_pfRelIso03_all[i])
+        E_dz.push_back(entry.Electron_dz[i])
+        E_dxy.push_back(entry.Electron_dxy[i])
+        E_sip3d.push_back(entry.Electron_sip3d[i])
+        E_ip3d.push_back(entry.Electron_ip3d[i])
+        hardE_jetidx = entry.Electron_jetIdx[i]
         if hardE_jetidx >= 0:
-            hardE_Jet_PtRatio[0] = entry.Electron_pt[i]/jetPt[hardE_jetidx]  # same in PFNano
-    
-    #print "Currently in event loop no. %d and the length of variable Muon_pt is %d" % (count, len(Muon_pt))
-    # if this is not the number of Muons in the event (I guess?) but per jet, then one continues to often
+            hardE_Jet_PtRatio[0] = entry.Electron_pt[i]/jetPt[hardE_jetidx]
+
     for i in range(0, len(Muon_pt)):
-        if Muon_pt[i]<30 or abs(entry.Muon_eta[i])>2.4: continue  # same in PFNano
-        if entry.Muon_tightId[i]<=0: continue  # same in PFNano
-        if entry.Muon_pfRelIso04_all[i]>0.15: continue  # same in PFNano
+        if Muon_pt[i]<12 or abs(entry.Muon_eta[i])>2.4: continue
+        if entry.Muon_tightId[i]<=0: continue
+        if entry.Muon_pfRelIso04_all[i]>0.15: continue
         m_Pt_List.append(Muon_pt[i])
-        m_Eta_List.append(entry.Muon_eta[i])  # same in PFNano
-        m_Phi_List.append(entry.Muon_phi[i])  # same in PFNano
-        m_Charge_List.append(entry.Muon_charge[i])  # same in PFNano
-        #print "Muon mass %s" % entry.Muon_mass
-        #print "Muon mass [i] %s" % entry.Muon_mass[i]
-        m_Mass_List.append(entry.Muon_mass[i])  # same in PFNano
-        #print "Muon mass list = "
-        #print '[%s]' % ', '.join(map(str, m_Mass_List))
+        m_Eta_List.append(entry.Muon_eta[i])
+        m_Phi_List.append(entry.Muon_phi[i])
+        m_Charge_List.append(entry.Muon_charge[i])
+        m_Mass_List.append(entry.Muon_mass[i])
+
         #Additions to check quality of hard muon
-        M_RelIso.push_back(entry.Muon_pfRelIso04_all[i])  # same in PFNano
-        M_dz.push_back(entry.Muon_dz[i])  # same in PFNano
-        M_dxy.push_back(entry.Muon_dxy[i])  # same in PFNano
-        M_sip3d.push_back(entry.Muon_sip3d[i])  # same in PFNano
-        M_ip3d.push_back(entry.Muon_ip3d[i])  # same in PFNano
-        hardMu_jetidx = entry.Muon_jetIdx[i]  # same in PFNano
+        M_RelIso.push_back(entry.Muon_pfRelIso04_all[i])
+        M_dz.push_back(entry.Muon_dz[i])
+        M_dxy.push_back(entry.Muon_dxy[i])
+        M_sip3d.push_back(entry.Muon_sip3d[i])
+        M_ip3d.push_back(entry.Muon_ip3d[i])
+        hardMu_jetidx = entry.Muon_jetIdx[i]
         if hardMu_jetidx >= 0:
             hardMu_Jet_PtRatio[0] = Muon_pt[i]/jetPt[hardMu_jetidx]
     # ==========================================================================
 
-    # ======================== Exactly 1 Lepton cut ============================
-    #print "Exactly 1 lepton cut is based on len(e_Pt_List) + len(m_Pt_List) = %d + %d = %d" % (len(e_Pt_List),len(m_Pt_List),len(e_Pt_List) + len(m_Pt_List))
-    if len(e_Pt_List) + len(m_Pt_List) != 1: 
-        #print "Currently in event loop no. %d : Exactly 1 lepton cut, continue with next entry" % count
-        continue
-
-    if len(e_Pt_List) == 1:
-        isMuon = False
-        el_List = sorted(zip(e_Pt_List,e_Charge_List), key = lambda pair : pair[0], reverse=True)[0:2]
-        hardlep = TLorentzVector()
-        hardlep.SetPtEtaPhiM(e_Pt_List[0], e_Eta_List[0], e_Phi_List[0], e_Mass_List[0])
-
-    if len(m_Pt_List) == 1:
+    # ======================= At least 2 u+u- cut ===========================
+    if len(m_Pt_List) >= 2 and len(e_Pt_List) < 2:
         isElec = False
-        mu_List = sorted(zip(m_Pt_List,m_Charge_List), key = lambda pair : pair[0], reverse=True)[0:2]
-        hardlep = TLorentzVector()
-        hardlep.SetPtEtaPhiM(m_Pt_List[0], m_Eta_List[0], m_Phi_List[0], m_Mass_List[0])
+        for i, chrg in enumerate(m_Charge_List):
+            mu = TLorentzVector()
+            mu.SetPtEtaPhiM(m_Pt_List[i],m_Eta_List[i],m_Phi_List[i],m_Mass_List[i])
+            lep_List.append(mu)
+            if chrg > 0:
+                lep_plus_List.append(mu)
+            else:
+                lep_minus_List.append(mu)        
+    
+    elif len(e_Pt_List) >= 2 and len(m_Pt_List) < 2:
+        isMuon = False
+        for i, chrg in enumerate(e_Charge_List):
+            el = TLorentzVector()
+            el.SetPtEtaPhiM(e_Pt_List[i],e_Eta_List[i],e_Phi_List[i],e_Mass_List[i])
+            lep_List.append(el)
+            if chrg > 0:
+                lep_plus_List.append(el)
+            else:
+                lep_minus_List.append(el)
+                
+    if len(lep_plus_List) < 1 or len(lep_minus_List) < 1: continue
+
     # ==========================================================================
 
-    # ================ Second lepton matching ttbar dileptonic =================
-    nEleDilep = 0
-    nMuDilep = 0
+    # ============================= Construct Z ================================
+    foundZ = False
+    for lep_plus in lep_plus_List:
+        if foundZ: break
+        for lep_minus in lep_minus_List:
+            Z_cand = lep_plus + lep_minus
+            if abs(Z_cand.M() - 91.) < 10.:
+                foundZ = True
+                break
 
-    for i in range(0, len(entry.Electron_pt)):  # same in PFNano
-        if entry.Electron_pt[i]<15 or abs(entry.Electron_eta[i])>2.5: continue  # same in PFNano
-        if abs(entry.Electron_eta[i]) > 1.442 and abs(entry.Electron_eta[i]) < 1.556: continue  # same in PFNano
-        if ElectronID[i]<=0: continue
-        nEleDilep += 1
-
-    for i in range(0, len(Muon_pt)):
-        if Muon_pt[i]<12 or abs(entry.Muon_eta[i])>2.4: continue  # same in PFNano
-        if entry.Muon_tightId[i]<=0: continue  # same in PFNano
-        if entry.Muon_pfRelIso04_all[i]>0.15: continue  # same in PFNano
-        nMuDilep += 1
-
-    if (nEleDilep == 2 and nMuDilep == 0) or (nEleDilep == 0 and nMuDilep == 2) or (nEleDilep == 1 and nMuDilep == 1):
-        diLepVeto[0] = 1
+    if not foundZ: continue
+    Z_Mass[0] = Z_cand.M()
+    Z_Eta[0] = Z_cand.Eta()
+    Z_Phi[0] = Z_cand.Phi()
+    Z_Pt[0] = Z_cand.Pt()
     # ==========================================================================
 
     # ============================== Get MET ===================================
@@ -1206,10 +1067,10 @@ for entry in inputTree:
 
     # ============================ Jet selection ===============================
     if debug == True:
-        print "                 Jet selection : jet_pt > 20 and jet_eta < 2.4/2.5"
+        print "                 Jet selection : jet_pt > 20 and jet_eta < 2.4"
         print "                 Jet selection : Jet_jetId >= 3"                 # Tight in 2016
         print "                 Jet selection : Jet_lepFilter = True"           # or Jet Mu EF < 0.8
-        print "                 Jet selection : Jet_puId >= 7"
+        print "                 Jet selection : Jet_puId >= 0"
 
     # # ------------------------ Custom Jet_lepFilter ----------------------------
     # # (different from that in the VHcc postprocessor)
@@ -1233,137 +1094,104 @@ for entry in inputTree:
     #     jetInd = entry.Muon_jetIdx[i]
     #     if jetInd >= 0:
     #         jetFilterFlags[jetInd] = False
-    # # --------------------------------------------------------------------------
-    
+    # --------------------------------------------------------------------------
+
     HT_temp = 0
     totalJetEnergy = 0
     totalJetCvsL = 0
     totalJetCvsLpt = 0
-    #totalJetCustomBvsL = 0  # new
-    #totalJetCustomBvsLpt = 0  # new
     min_dPhi_jet_MET[0] = 1000
     if era == 2016: jetetamax = 2.4
     elif era == 2017 or era == 2018: jetetamax = 2.5
-    #print "Currently running the event loop for the %d. time, in this event, there are %d jets for which the loop will now start" % (count, len(jetPt))
     for i in range(0, len(jetPt)):
-        #flatjetcount += 1  # the trick is to count the jets before any cuts
-        # not the best idea, because of problems due to cuts from above --> store the tagger info
-        # per event instead so that it can be accessed in the event loop
-        if jetPt[i]<20 or abs(entry.Jet_eta[i])>jetetamax: continue  # same in PFNano
-        if entry.Jet_jetId[i] < 5: continue  # same in PFNano
-        if entry.Jet_puId[i] < 7 and jetPt[i] < 50: continue  # same in PFNano
+        if jetPt[i]<20 or abs(entry.Jet_eta[i])>jetetamax: continue
+        if entry.Jet_jetId[i] < 5: continue
+        if entry.Jet_puId[i] < 7 and jetPt[i] < 50: continue
 #        if jetFilterFlags[i] == False: continue
-        #if isMC:
-        #    if entry.Jet_DeepCSV_vertexCategory[i] != 0: continue  # because my custom tagger was only trained on vertex category 0, the performance for cat. 1 and 2 might be pretty bad - however one does not have to impose the condition, the tagger will "work" regardless of that
-        Jet_muEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neEmEF[i] + entry.Jet_neHEF[i])  # same in PFNano
-        Jet_muplusneEmEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neHEF[i])  # same in PFNano
+
+        Jet_muEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neEmEF[i] + entry.Jet_neHEF[i])
         # if Jet_muEF > 0.8: continue
+        if entry.Jet_muonIdx1[i] >= 0:
+            muPtRatio = Muon_pt[entry.Jet_muonIdx1[i]]/jetPt[i]
+        else:
+            muPtRatio = -1.
 
         jet =  TLorentzVector()
-        jet.SetPtEtaPhiM(jetPt[i],entry.Jet_eta[i],entry.Jet_phi[i],jetMass[i])  # same in PFNano
-        
-        if jet.DeltaR(hardlep) < 0.4: continue
+        jet.SetPtEtaPhiM(jetPt[i],entry.Jet_eta[i],entry.Jet_phi[i],jetMass[i])
+
+#        if jet.DeltaR(Z_cand) < 0.5: continue
+        lep_jet_dR = min(jet.DeltaR(lep_plus),jet.DeltaR(lep_minus))
+        if lep_jet_dR < 0.4: continue
         
         jetList.append(jet)
+        if len(jetList) == 1:
+            dR_Z_jet[0] = jet.DeltaR(Z_cand)
+            dR_lep_jet_min[0] = lep_jet_dR
 
-        MET = TLorentzVector()
-        MET.SetPtEtaPhiM(metPt, 0., metPhi, 0.)
         dPhi_jet_MET = jet.DeltaPhi(MET)
         if dPhi_jet_MET < min_dPhi_jet_MET[0]: min_dPhi_jet_MET[0] = dPhi_jet_MET
 
         if isMC:
-            jet_FL_List.append(entry.Jet_hadronFlavour[i])  # same in PFNano
+            jet_FL_List.append(entry.Jet_hadronFlavour[i])
         jet_Pt_List.append(jetPt[i])
-        jet_CvsL_List.append(entry.Jet_btagDeepCvL[i])  # modified for PFNano
-        jet_CvsB_List.append(entry.Jet_btagDeepCvB[i])  # modified for PFNano
-        jet_CvsB_CvsL_List.append((entry.Jet_btagDeepCvB[i])+(entry.Jet_btagDeepCvL[i]))  # modified for PFNano
-        jet_CvsB_CvsL_List2.append((entry.Jet_btagDeepCvB[i])**2+(entry.Jet_btagDeepCvL[i])**2)  # modified for PFNano
-        # ============================================================================================================
-        ###### ToDo: instead, this could be the right place to add the custom BvsL discriminator
-        # difficulty: these are "flat" (per jet) and not per event, per jet --> need a counter around the event loop
-        # that is increased with every jet from this inner (jet) loop
-        #if isMC:
+        jet_CvsL_List.append(entry.Jet_btagDeepCvL[i])
+        jet_CvsB_List.append(entry.Jet_btagDeepCvB[i])
+        jet_CvsB_CvsL_List.append((entry.Jet_btagDeepCvB[i])+(entry.Jet_btagDeepCvL[i]))
+        jet_CvsB_CvsL_List2.append((entry.Jet_btagDeepCvB[i])**2+(entry.Jet_btagDeepCvL[i])**2)
         jet_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets+i])
-        #else:
-        #    jet_CustomBvsL_List.append(entry.Jet_btagDeepB[i])
-        # ------------------------------------------------------------------------------------------------------------
-        
         
         HT_temp         += jetPt[i]
         totalJetEnergy  += jet.E()
-        if entry.Jet_btagDeepCvL[i]>0:  # modified for PFNano
-            totalJetCvsLpt  += entry.Jet_btagDeepCvL[i]*jetPt[i]  # modified for PFNano
-        # ============================================================================================================
-        ###### ToDo: again, do the custom stuff here
-        #if entry.Jet_CustomBvsL[i]>0:  # modified for PFNano
-        #    totalJetCustomBvsLpt  += entry.Jet_CustomBvsL[prevSeenOrSkippedJets + i]*jetPt[i]
-        # ------------------------------------------------------------------------------------------------------------
+        if entry.Jet_btagDeepCvL[i]>0:
+            totalJetCvsLpt  += entry.Jet_btagDeepCvL[i]*jetPt[i]
 
         j_Pt_List.append(jetPt[i])
-        j_Eta_List.append(entry.Jet_eta[i])  # same in PFNano
-        j_Phi_List.append(entry.Jet_phi[i])  # same in PFNano
+        j_Eta_List.append(entry.Jet_eta[i])
+        j_Phi_List.append(entry.Jet_phi[i])
         j_Mass_List.append(jetMass[i])
-        j_CvsL_List.append(entry.Jet_btagDeepCvL[i])  # modified for PFNano
-        j_CvsB_List.append(entry.Jet_btagDeepCvB[i])  # modified for PFNano
-        #if isMC:
+        j_CvsL_List.append(entry.Jet_btagDeepCvL[i])
+        j_CvsB_List.append(entry.Jet_btagDeepCvB[i])
         j_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets + i])  # new
-        #else:
-        #    j_CustomBvsL_List.append(entry.Jet_btagDeepB[i])
-        j_qgl_List.append(entry.Jet_qgl[i])  # same in PFNano
-        j_MuonIdx1_List.append(entry.Jet_muonIdx1[i])  # same in PFNano
-        j_MuonIdx2_List.append(entry.Jet_muonIdx2[i])  # same in PFNano
+        j_qgl_List.append(entry.Jet_qgl[i])
         
         if "Jet_btagDeepFlavCvL" in validBranches:
-            jet_DeepFlavCvsL.push_back(entry.Jet_btagDeepFlavCvL[i])  # modified for PFNano
-            jet_DeepFlavCvsB.push_back(entry.Jet_btagDeepFlavCvB[i])  # modified for PFNano
-        # ============================================================================================================
-        ###### ToDo: again, do the custom stuff here
-        # ------------------------------------------------------------------------------------------------------------
-        
-        jet_chEmEF.push_back(entry.Jet_chEmEF[i])  # same in PFNano
-        jet_neEmEF.push_back(entry.Jet_neEmEF[i])  # same in PFNano
-        jet_muplusneEmEF.push_back(Jet_muplusneEmEF)
-        jet_jetId.push_back(entry.Jet_jetId[i])  # same in PFNano
-        jet_puId.push_back(entry.Jet_puId[i])  # same in PFNano
-        jet_muonIdx1.push_back(entry.Jet_muonIdx1[i])  # same in PFNano
+            jet_DeepFlavCvsL.push_back(entry.Jet_btagDeepFlavCvL[i])
+            jet_DeepFlavCvsB.push_back(entry.Jet_btagDeepFlavCvB[i])
+
+        jet_chEmEF.push_back(entry.Jet_chEmEF[i])
+        jet_jetId.push_back(entry.Jet_jetId[i])
+        jet_muonIdx1.push_back(entry.Jet_muonIdx1[i])
         jet_muEF.push_back(Jet_muEF)
-        jet_nMuons.push_back(entry.Jet_nMuons[i])  # same in PFNano
+        jet_muPtRatio.push_back(muPtRatio)
+        jet_nMuons.push_back(entry.Jet_nMuons[i])
         # jet_lepFiltCustom.push_back(jetFilterFlags[i])
 
-        jet_btagCMVA.push_back(entry.Jet_btagCMVA[i])  # same in PFNano
-        jet_btagDeepB.push_back(entry.Jet_btagDeepB[i])  # same in PFNano
-        jet_btagDeepC.push_back(entry.Jet_btagDeepC[i])  # same in PFNano
-        jet_btagCSVV2.push_back(entry.Jet_btagCSVV2[i])  # same in PFNano
-        jet_btagDeepFlavB.push_back(entry.Jet_btagDeepFlavB[i])  # same in PFNano
-        # ============================================================================================================
-        ###### ToDo: again, do the custom stuff here
-        #if isMC:
+        jet_btagCMVA.push_back(entry.Jet_btagCMVA[i])
+        jet_btagDeepB.push_back(entry.Jet_btagDeepB[i])
+        jet_btagDeepC.push_back(entry.Jet_btagDeepC[i])
+        jet_btagCSVV2.push_back(entry.Jet_btagCSVV2[i])
+        jet_btagDeepFlavB.push_back(entry.Jet_btagDeepFlavB[i])
+        
         jet_CustomProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
         jet_CustomProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
         jet_CustomProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
         jet_CustomProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
-        #else:  # as soon as I have data with Jet_DeepCSV variables, this can be removed and there will be custom tagger outputs
-            #jet_CustomProb_b.push_back(entry.Jet_btagDeepB_b[i])  # new
-            #jet_CustomProb_bb.push_back(entry.Jet_btagDeepB_bb[i])  # new
-            #jet_CustomProb_c.push_back(entry.Jet_btagDeepC[i])  # new
-            #jet_CustomProb_l.push_back(entry.Jet_btagDeepL[i])  # new
-        # ------------------------------------------------------------------------------------------------------------
         
         if isMC:
-            j_hadronFlv_List.append(entry.Jet_hadronFlavour[i])  # same in PFNano
+            j_hadronFlv_List.append(entry.Jet_hadronFlavour[i])
             
             foundLep = False
-            for iGen in range(entry.nGenPart):  # same in PFNano
-                if entry.GenPart_status[iGen] != 1: continue  # same in PFNano
+            for iGen in range(entry.nGenPart):
+                if entry.GenPart_status[iGen] != 1: continue
                 genPart =  TLorentzVector()
-                genPart.SetPtEtaPhiM(entry.GenPart_pt[iGen],entry.GenPart_eta[iGen],entry.GenPart_phi[iGen],entry.GenPart_mass[iGen])  # same in PFNano                
+                genPart.SetPtEtaPhiM(entry.GenPart_pt[iGen],entry.GenPart_eta[iGen],entry.GenPart_phi[iGen],entry.GenPart_mass[iGen])                
                 if jet.DeltaR(genPart) > 0.4: continue
-                if abs(entry.GenPart_pdgId[iGen]) not in [11,13,15]: continue  # same in PFNano
-                if int(str(bin(entry.GenPart_statusFlags[iGen]))[-1]) == 1:  # same in PFNano
+                if abs(entry.GenPart_pdgId[iGen]) not in [11,13,15]: continue
+                if int(str(bin(entry.GenPart_statusFlags[iGen]))[-1]) == 1:
                     foundLep = True
                     break                   
             jet_isHardLep.push_back(foundLep)
-                
+            
     HT[0]                  = HT_temp
 
     if totalJetEnergy!=0:
@@ -1378,13 +1206,7 @@ for entry in inputTree:
 
     leadCvsB_jetidx[0] = jet_CvsB_List.index(max(jet_CvsB_List))
     leadCvsL_jetidx[0] = jet_CvsL_List.index(max(jet_CvsL_List))
-    # ============================================================================================================
-    ###### ToDo: again, do the custom stuff here
-    #if isMC:
     leadCustomBvsL_jetidx[0] = jet_CustomBvsL_List.index(max(jet_CustomBvsL_List))  # new
-    #else:  # maybe something else in the future for data, not sure
-    #    leadCustomBvsL_jetidx[0] = jet_CustomBvsL_List.index(max(jet_CustomBvsL_List))  # new
-    # ------------------------------------------------------------------------------------------------------------
     
     # Save jets according to hadron flavour
     if isMC:
@@ -1404,163 +1226,129 @@ for entry in inputTree:
     # ==========================================================================
 
     # ========================== Construct W boson =============================
-    VBoson = 0
-
-    # Electron channel
-    if not isElec and len(m_Pt_List)==1:
-        for i in range(0, len(m_Pt_List)):
-            mu =  TLorentzVector()
-            mu.SetPtEtaPhiM(m_Pt_List[i],m_Eta_List[i],m_Phi_List[i],m_Mass_List[i])
-            muon.append(mu)
-        MET = TLorentzVector()
-        MET.SetPtEtaPhiM(metPt, 0., metPhi, 0.)
-        VBoson      = (muon[0]+MET)
-        DPhi_METlep[0] = (muon[0]).DeltaPhi(MET)
-        W_Mass[0]   = (muon[0]+MET).M()
-        W_Tmass[0]  = (muon[0]+MET).Mt()
-        W_Pt[0]     = (muon[0]+MET).Pt()
-        W_Eta[0]    = (muon[0]+MET).Eta()
-        W_Phi[0]    = (muon[0]+MET).Phi()
-
-    # Muon channel
-    if not isMuon and len(e_Pt_List)==1:
-        for i in range(0, len(e_Pt_List)):
-            el =  TLorentzVector()
-            el.SetPtEtaPhiM(e_Pt_List[i],e_Eta_List[i],e_Phi_List[i],e_Mass_List[i])
-            elec.append(el)
-        VBoson      = (elec[0]+MET)
-        DPhi_METlep[0] = (elec[0]).DeltaPhi(MET)
-        W_Mass[0]   = (elec[0]+MET).M()
-        W_Tmass[0]  = (elec[0]+MET).Mt()
-        W_Pt[0]     = (elec[0]+MET).Pt()
-        W_Eta[0]    = (elec[0]+MET).Eta()
-        W_Phi[0]    = (elec[0]+MET).Phi()
-
-    if debug == True:
-        print "Preselection 3 : W_pt > 50"
-    # if W_Pt[0]<50: continue
-    if W_Mass[0] < 55: continue
+    # VBoson = 0
+    #
+    # # Electron channel
+    # if not isElec and len(m_Pt_List)==1:
+    #     for i in range(0, len(m_Pt_List)):
+    #         mu =  TLorentzVector()
+    #         mu.SetPtEtaPhiM(m_Pt_List[i],m_Eta_List[i],m_Phi_List[i],m_Mass_List[i])
+    #         muon.append(mu)
+    #     VBoson      = (muon[0]+MET)
+    #     DPhi_METlep[0] = (muon[0]).DeltaPhi(MET)
+    #     W_Mass[0]   = (muon[0]+MET).M()
+    #     W_Tmass[0]  = (muon[0]+MET).Mt()
+    #     W_Pt[0]     = (muon[0]+MET).Pt()
+    #     W_Eta[0]    = (muon[0]+MET).Eta()
+    #     W_Phi[0]    = (muon[0]+MET).Phi()
+    #
+    # # Muon channel
+    # if not isMuon and len(e_Pt_List)==1:
+    #     for i in range(0, len(e_Pt_List)):
+    #         el =  TLorentzVector()
+    #         el.SetPtEtaPhiM(e_Pt_List[i],e_Eta_List[i],e_Phi_List[i],e_Mass_List[i])
+    #         elec.append(el)
+    #     VBoson      = (elec[0]+MET)
+    #     DPhi_METlep[0] = (elec[0]).DeltaPhi(MET)
+    #     W_Mass[0]   = (elec[0]+MET).M()
+    #     W_Tmass[0]  = (elec[0]+MET).Mt()
+    #     W_Pt[0]     = (elec[0]+MET).Pt()
+    #     W_Eta[0]    = (elec[0]+MET).Eta()
+    #     W_Phi[0]    = (elec[0]+MET).Phi()
+    #
+    # if debug == True:
+    #     print "Preselection 3 : W_pt > 50"
+    # # if W_Pt[0]<50: continue
+    # if W_Mass[0] < 55: continue
     # ==========================================================================
 
     # ========================= Trigger selection ==============================
     if debug == True:
         print "Preselection 4 : TRIGGERS"
-        print "HLT_IsoMu24"
-        print "HLT_IsoTkMu24"
-        print "HLT_Ele27_WPTight_Gsf"
-    if era == 2016:
-        if ( entry.HLT_IsoMu24 == 0 ) and ( entry.HLT_IsoTkMu24 == 0 ) and (entry.HLT_Ele27_WPTight_Gsf == 0 )  : continue  # not able to check varnames from 2016
-    elif era == 2017:
-        # if "HLT_Ele32_WPTight_Gsf" in validBranches:
-        #     eleTrig2017 = (bool(entry.HLT_Ele32_WPTight_Gsf_L1DoubleEG) and bool(entry.HLT_Ele35_WPTight_Gsf_L1EGMT)) or bool(entry.HLT_Ele32_WPTight_Gsf)
-        # else:
-        #     eleTrig2017 = (bool(entry.HLT_Ele32_WPTight_Gsf_L1DoubleEG) and bool(entry.HLT_Ele35_WPTight_Gsf_L1EGMT))
-        eleTrig2017 = entry.HLT_Ele32_WPTight_Gsf_L1DoubleEG  # same in PFNano
-        if ( entry.HLT_IsoMu27 == 0 ) and ( eleTrig2017 == 0 )  : continue  # same in PFNano
-    elif era == 2018:
-        if ( entry.HLT_IsoMu24 == 0 ) and ( entry.HLT_Ele32_WPTight_Gsf == 0 ): continue  # same in PFNano
         
+    if isMuon:
+        if "DoubleEG" in channel or "EGamma" in channel: continue
+        if era == 2016:
+            if ( entry.HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL == 0 ) and ( entry.HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ == 0 ) \
+                and ( entry.HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL == 0 )  and ( entry.HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ == 0 ) : continue
+        elif era == 2017:
+            # DiMu3p8 = 0
+            # if "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8" in validBranches: DiMu3p8 = entry.HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8
+            if ( entry.HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8 == 0 ) : continue
+        elif era == 2018:
+            if ( entry.HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8 == 0 ): continue
+    elif isElec:
+        if "DoubleMuon" in channel: continue
+        if era == 2016:
+            if ( entry.HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL == 0 ) and ( entry.HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == 0 ): continue
+        elif era == 2017 or era == 2018:
+            if ( entry.HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL == 0 ): continue
+    else:
+        continue
+            
+         # and ( entry.HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == 0 ): continue
     TriggerPass = True
 
-    if era == 2016: #Not used, hence not done for 2017
-        if ( entry.HLT_IsoMu24 == 1 ) or ( entry.HLT_IsoTkMu24 == 1 ):
-            muTrig[0] = 1
-        else:
-            muTrig[0] = 0
-        if (entry.HLT_Ele27_WPTight_Gsf == 1 ):
-            eleTrig[0] = 1
-        else:
-            eleTrig[0] = 0
+    #muTrig[0] = 1
+
+    # if (entry.HLT_Ele27_WPTight_Gsf == 1 ):
+    #     eleTrig[0] = 1
+    # else:
+    #     eleTrig[0] = 0
     # ==========================================================================
 
     # ========================= Soft Muon inside jets ==========================
-#    minDR = 7
-    jetMu_Charge = -1000
-    nMuJet[0] = 0
-
-    foundMuJet = False
-    for ij in range(len(j_Pt_List)):
-        if foundMuJet: break
-        if isMuon:
-            dRjl = jetList[ij].DeltaR(muon[0])
-        elif isElec:
-            dRjl = jetList[ij].DeltaR(elec[0])
-        if dRjl < 0.5: continue
-
-        for i in [j_MuonIdx1_List[ij],j_MuonIdx2_List[ij]]:
-            if i < 0: continue
-            if Muon_pt[i]>25 or abs(entry.Muon_eta[i])>2.4: continue  # same in PFNano
-            if entry.Muon_tightId[i]<=0: continue  # same in PFNano
-            if entry.Muon_pfRelIso04_all[i]<0.2: continue  # same in PFNano
-
-            jetMu = TLorentzVector()
-            jetMu.SetPtEtaPhiM(Muon_pt[i],entry.Muon_eta[i],entry.Muon_phi[i],entry.Muon_mass[i])  # same in PFNano
-
-            dRmj = jetMu.DeltaR(jetList[ij])
-            if dRmj > 0.4: continue
-
-            foundMuJet = True
-            jetMu_Pt[0] = Muon_pt[i]
-            jetMu_Eta = entry.Muon_eta[i]  # same in PFNano
-            jetMu_iso[0] = entry.Muon_pfRelIso04_all[i]  # same in PFNano
-            jetMu_dz[0] = entry.Muon_dz[i]  # same in PFNano
-            jetMu_dxy[0] = entry.Muon_dxy[i]  # same in PFNano
-            jetMu_sip3d[0] = entry.Muon_sip3d[i]  # same in PFNano
-            jetMu_Charge = entry.Muon_charge[i]  # same in PFNano
-            muJet_idx[0] = ij
-            dR_jet_jetMu[0] = dRmj
-            dR_lep_jet[0] = dRjl
-            MET = TLorentzVector()
-            MET.SetPtEtaPhiM(metPt, 0., metPhi, 0.)
-            dPhi_muJet_MET[0] = jetList[ij].DeltaPhi(MET)
-            jetMuPt_by_jetPt[0] =  Muon_pt[i]/j_Pt_List[ij]
-            jetMu_PtRel[0] = Muon_pt[i]*math.sin(jetMu.Angle(jetList[ij].Vect()))     #p_{T,rel} = |M|sin(theta): M = Muon pT, theta = angle between jet and muon
-
-            # Construct Z
-            if isMuon and jetMu_Charge*m_Charge_List[0] < 0:
-                Z_Mass[0]   = (muon[0]+jetMu).M()
-                Z_Pt[0]     = (muon[0]+jetMu).Pt()
-                Z_Eta[0]    = (muon[0]+jetMu).Eta()
-                Z_Phi[0]    = (muon[0]+jetMu).Phi()
-                Z_Mass_withJet[0] = (muon[0]+jetList[ij]).M()
-
-#                Z_Mass_best[0] = Z_Mass[0]
-                dR_mu_mu_best[0] = jetMu.DeltaR(muon[0])    
-
-    if jetMu_Pt[0] < 0: continue
+    # minDR = 7
+    # jetMu_Charge = -1000
+    # nMuJet[0] = 0
+    # for i in range(0, len(Muon_pt)):
+    #     if Muon_pt[i]>25 or abs(entry.Muon_eta[i])>2.4: continue
+    #     if entry.Muon_tightId[i]<=0: continue
+    #     if entry.Muon_pfRelIso04_all[i]<0.2: continue
+    #
+    #     jetMu = TLorentzVector()
+    #     jetMu.SetPtEtaPhiM(Muon_pt[i],entry.Muon_eta[i],entry.Muon_phi[i],entry.Muon_mass[i])
+    #
+    #     for ij in range(len(j_Pt_List)):
+    #         dRmj = jetMu.DeltaR(jetList[ij])
+    #         if dRmj > 0.4: continue
+    #
+    #         if isMuon:
+    #             dRjl = jetList[ij].DeltaR(muon[0])
+    #         elif isElec:
+    #             dRjl = jetList[ij].DeltaR(elec[0])
+    #         if dRjl < 0.5: continue
+    #         nMuJet[0] += 1
+    #
+    #         if dRmj > minDR: continue
+    #
+    #         minDR = dRmj
+    #         jetMu_Pt[0] = Muon_pt[i]
+    #         jetMu_iso[0] = entry.Muon_pfRelIso04_all[i]
+    #         jetMu_dz[0] = entry.Muon_dz[i]
+    #         jetMu_dxy[0] = entry.Muon_dxy[i]
+    #         jetMu_sip3d[0] = entry.Muon_sip3d[i]
+    #         jetMu_Charge = entry.Muon_charge[i]
+    #         muJet_idx[0] = ij
+    #         dR_jet_jetMu[0] = dRmj
+    #         dR_Z_jet[0] = dRjl
+    #         dPhi_muJet_MET[0] = jetList[ij].DeltaPhi(MET)
+    #         jetMuPt_by_jetPt[0] =  Muon_pt[i]/j_Pt_List[ij]
+    #         jetMu_PtRel[0] = Muon_pt[i]*math.sin(jetMu.Angle(jetList[ij].Vect()))     #p_{T,rel} = |M|sin(theta): M = Muon pT, theta = angle between jet and muon
+    #
+    #         # Construct Z
+    #         if isMuon and jetMu_Charge*m_Charge_List[0] < 0:
+    #             Z_Mass[0]   = (muon[0]+jetMu).M()
+    #             Z_Pt[0]     = (muon[0]+jetMu).Pt()
+    #             Z_Eta[0]    = (muon[0]+jetMu).Eta()
+    #             Z_Phi[0]    = (muon[0]+jetMu).Phi()
+    #
+    #             Z_Mass_best[0] = Z_Mass[0]
+    #             dR_mu_mu_best[0] = jetMu.DeltaR(muon[0])
+    #
+    # if jetMu_Pt[0] < 0: continue
     # ==========================================================================
-    
-    # ================== Find all possible combos for Z mass ===================
-    
-    mupluslist = []
-    muminuslist = []
-    
-    nMu = 0
-    for i in range(0, len(Muon_pt)):
-        if entry.Muon_tightId[i]<=0: continue  # same in PFNano
-        nMu += 1
-        thisMu = TLorentzVector()
-        thisMu.SetPtEtaPhiM(Muon_pt[i],entry.Muon_eta[i],entry.Muon_phi[i],entry.Muon_mass[i])  # same in PFNano
-        if entry.Muon_charge[i] > 0:  # same in PFNano
-            mupluslist.append(thisMu)
-        else:
-            muminuslist.append(thisMu)
-    
-    nTightMu[0] = nMu
-    minDiff = 1000
-    
-    for muplus in mupluslist:
-        for muminus in muminuslist:
-            combmass = (muplus+muminus).M()
-            if combmass > Z_Mass_max[0]: Z_Mass_max[0] = combmass
-            if combmass < Z_Mass_min[0]: Z_Mass_min[0] = combmass
-            if abs(combmass - 91.) < minDiff:
-                minDiff = abs(combmass - 91.)
-                Z_Mass_best[0] = combmass
-                Z_Pt_best[0] = (muplus+muminus).Pt()
-            
-    # ==========================================================================
-            
+
     # ========================= Find best Z mass ===============================
     # Find mu+mu- pair with inv mass closest to Z mass
     # NOT USED
@@ -1584,24 +1372,23 @@ for entry in inputTree:
 
 
     # ============================= Store leptons ==============================
-    if isElec:
-        is_E[0] = isElec
-        for i, ePt in enumerate(e_Pt_List):
-            E_Mass.push_back(e_Mass_List[i])
-            E_Pt.push_back(ePt)
-            E_Eta.push_back(e_Eta_List[i])
-            E_Phi.push_back(e_Phi_List[i])
-            E_Charge.push_back(e_Charge_List[i])
+    # if isElec:
+    is_E[0] = isElec
+    for i, ePt in enumerate(e_Pt_List):
+        E_Mass.push_back(e_Mass_List[i])
+        E_Pt.push_back(ePt)
+        E_Eta.push_back(e_Eta_List[i])
+        E_Phi.push_back(e_Phi_List[i])
+        E_Charge.push_back(e_Charge_List[i])
 
-    if isMuon:
-        is_M[0] = isMuon
-        for i, mPt in enumerate(m_Pt_List):
-            #print "Is muon = True, storing muon no. %d (inside event loop no. %d)" % (i+1, count)
-            M_Mass.push_back(m_Mass_List[i])
-            M_Pt.push_back(mPt)
-            M_Eta.push_back(m_Eta_List[i])
-            M_Phi.push_back(m_Phi_List[i])
-            M_Charge.push_back(m_Charge_List[i])
+    # if isMuon:
+    is_M[0] = isMuon
+    for i, mPt in enumerate(m_Pt_List):
+        M_Mass.push_back(m_Mass_List[i])
+        M_Pt.push_back(mPt)
+        M_Eta.push_back(m_Eta_List[i])
+        M_Phi.push_back(m_Phi_List[i])
+        M_Charge.push_back(m_Charge_List[i])
 
     # ==========================================================================
 
@@ -1630,51 +1417,15 @@ for entry in inputTree:
     jet_nJet[0]            = len(j_Pt_List)
     # ==========================================================================
 
-    # ==================== Semileptonic tt c jet enrichment ====================
-    if jet_nJet[0] >= 4:
-        permutejets = range(int(jet_nJet[0]))
-        permutejets.remove(int(muJet_idx[0]))
-        
-        if signWeight[0] > 0:               #OS    
-            btagvals = [jet_btagDeepB[i] for i in permutejets]
-            largestbtagidx = btagvals.index(max(btagvals))
-            del permutejets[largestbtagidx]
-            hadbcand = jetList[largestbtagidx]    
-        else:                               #SS
-            hadbcand = jetList[int(muJet_idx[0])]
-        allperms = list(itertools.permutations(permutejets,2))
-            
-        minChi2 = 1e10
-        for thisperm in allperms:
-            ccand = jetList[thisperm[0]]
-            scand = jetList[thisperm[1]]
-            # if signWeight[0] > 0:  hadbcand = jetList[thisperm[2]]
-
-            Wcand = ccand + scand
-            tcand = Wcand + hadbcand
-            thisChi2 = (Wcand.M() - 80.3)**2 + (tcand.M() - 172.5)**2
-            if thisChi2 < minChi2:
-                semitChi2[0]            = thisChi2
-                semitWCandMass[0]       = Wcand.M()
-                semitWCandpT[0]         = Wcand.Pt()
-                semittCandMass[0]       = tcand.M()
-                semittCandpT[0]         = tcand.Pt()
-                semitc1idx[0]           = thisperm[0]
-                semitc2idx[0]           = thisperm[1]
-                minChi2 = thisChi2
-
-        # if semitChi2[0] < 1000: print semitWCandMass[0],semittCandMass[0],semitChi2[0],jet_hadronFlv[int(semitc1idx[0])],jet_hadronFlv[int(semitc2idx[0])],jet_hadronFlv[int(muJet_idx[0])],jet_hadronFlv[largestbtagidx]
-
-    # ==========================================================================
 
     # ============================ Calculate weights ===========================
     # Sign Weights
-    if isElec:
-        signWeight[0] = e_Charge_List[0]*jetMu_Charge*(-1.)
-    elif isMuon:
-        signWeight[0] = m_Charge_List[0]*jetMu_Charge*(-1.)
-    else:
-        continue
+    # if isElec:
+    #     signWeight[0] = e_Charge_List[0]*jetMu_Charge*(-1.)
+    # elif isMuon:
+    #     signWeight[0] = m_Charge_List[0]*jetMu_Charge*(-1.)
+    # else:
+    #     continue
 
     genWeight[0] = 1.
     PUWeight[0]  = 1.
@@ -1683,13 +1434,12 @@ for entry in inputTree:
     EleIDSF[0] = 1.
     EleIDSF_up[0] = 1.
     EleIDSF_down[0] = 1.
-    EleRecoSF = 1.
-    EleRecoErr = 0.
-    EleTrigSF = 1.
-    EleTrigErr = 0.
     MuIDSF[0] = 1.
     MuIDSF_up[0] = 1.
     MuIDSF_down[0] = 1.
+    MuIsoSF = 1.
+    MuIsoSF_up = 1.
+    MuIsoSF_down = 1.
     eventWeightUnsigned[0] = 1.
     eventWeight[0] = 1.
     eventWeightnoPU[0] = 1.
@@ -1698,39 +1448,28 @@ for entry in inputTree:
     # LHEScaleWeight_muF_up[0] = 1.
     LHEScaleWeight_muF_down[0] = 1.
     LHEScaleWeight_muF_up[0] = 1.
-    PSWeightISR_up[0] = 1.
-    PSWeightISR_down[0] = 1.
-    PSWeightFSR_down[0] = 1.
-    PSWeightFSR_up[0] = 1.
 
     if isMC:
         # MC Gen Weight
-        genWeight[0] = entry.genWeight  # same in PFNano
+        genWeight[0] = entry.genWeight
 
         # PU Weights
         if era != 2018 and era != 2017:
-            # ==========================================================================================================================
-            ####### ToDo: check this variable (do I need it? is it there, maybe under another name? if not, and needed, how to get it?)
-            PUWeight[0] = entry.puWeight  # so far, not found for 2017 PFNano, therefore the condition above has been modified to exclude 2017 as well
+            PUWeight[0] = entry.puWeight
             if PUWeight[0]!=0:
-                PUWeight_up[0] = entry.puWeightUp/PUWeight[0]  # so far, not found, is it maybe L1PreFiringWeight_Up?
-                PUWeight_down[0] = entry.puWeightDown/PUWeight[0]  # so far, not found, is it maybe L1PreFiringWeight_Dn?
-            # --------------------------------------------------------------------------------------------------------------------------
+                PUWeight_up[0] = entry.puWeightUp/PUWeight[0]
+                PUWeight_down[0] = entry.puWeightDown/PUWeight[0]
         elif era == 2017:
             pass
-            #PUWeight[0] = getPUweight(entry.Pileup_nTrueInt,0)  # same in PFNano
-            #if PUWeight[0]!=0:
-            #    PUWeight_up[0] = getPUweight(entry.Pileup_nTrueInt,1)/PUWeight[0]  # same in PFNano
-            #    PUWeight_down[0] = getPUweight(entry.Pileup_nTrueInt,-1)/PUWeight[0]  # same in PFNano
         else:
-            PUWeight[0] = getPUweight(entry.Pileup_nTrueInt,0)  # same in PFNano
+            PUWeight[0] = getPUweight(entry.Pileup_nTrueInt,0)
             if PUWeight[0]!=0:
-                PUWeight_up[0] = getPUweight(entry.Pileup_nTrueInt,1)/PUWeight[0]  # same in PFNano
-                PUWeight_down[0] = getPUweight(entry.Pileup_nTrueInt,-1)/PUWeight[0]  # same in PFNano
+                PUWeight_up[0] = getPUweight(entry.Pileup_nTrueInt,1)/PUWeight[0]
+                PUWeight_down[0] = getPUweight(entry.Pileup_nTrueInt,-1)/PUWeight[0]
 
         # LHE Scale
         if "LHEScaleWeight" in validBranches:
-            LHEScaleList = list(entry.LHEScaleWeight)  # same in PFNano
+            LHEScaleList = list(entry.LHEScaleWeight)
 
             if len(LHEScaleList) > 7:
                 LHEScaleWeight_muR_up[0] = LHEScaleList[7]
@@ -1739,145 +1478,117 @@ for entry in inputTree:
             # LHEScaleWeight_muF_up[0] = LHEScaleList[5]
                 LHEScaleWeight_muF_down[0] = LHEScaleList[3]
                 LHEScaleWeight_muF_up[0] = LHEScaleList[5]
-            
-        if "TT" in channel and "Hadronic" not in channel:
-            PSWeight = list(entry.PSWeight)  # same in PFNano
-            
-            PSWeightISR_up[0] = PSWeight[2]
-            PSWeightISR_down[0] = PSWeight[0]
-            PSWeightFSR_up[0] = PSWeight[3]
-            PSWeightFSR_down[0] = PSWeight[1]
 
         # Electron ID
-        if isElec:
-            xbin = EGammaHisto2d.GetXaxis().FindBin(e_Eta_List[0])
-            ybin = min(EGammaHisto2d.GetYaxis().FindBin(e_Pt_List[0]),EGammaHisto2d.GetNbinsY())
-            EleIDonly = EGammaHisto2d.GetBinContent(xbin,ybin)
+        # if isElec and e_Pt_List[0] < 500:
+        #     xbin = EGamma2016histo2d.GetXaxis().FindBin(e_Eta_List[0])
+        #     ybin = EGamma2016histo2d.GetYaxis().FindBin(e_Pt_List[0])
+        #     EleIDSF[0] = EGamma2016histo2d.GetBinContent(xbin,ybin)
+        #     EleIDErr = EGamma2016histo2d.GetBinError(xbin,ybin)
+        #     if EleIDSF[0]!=0:
+        #         EleIDSF_up[0] = (EleIDSF[0]+EleIDErr)/EleIDSF[0]
+        #         EleIDSF_down[0] = (EleIDSF[0]-EleIDErr)/EleIDSF[0]
+        
+        for i in range(len(e_Pt_List)):
+            xbin = EGammaHisto2d.GetXaxis().FindBin(e_Eta_List[i])
+            ybin = max(1,min(EGammaHisto2d.GetYaxis().FindBin(e_Pt_List[i]),EGammaHisto2d.GetNbinsY()))
+            EleID = EGammaHisto2d.GetBinContent(xbin,ybin)
             EleIDErr = EGammaHisto2d.GetBinError(xbin,ybin)
 
+            EleRecoSF = 1.
+            EleRecoErr = 0.
             if era == 2017 or era == 2018:
-                xbin = ERecoHisto2d.GetXaxis().FindBin(e_Eta_List[0])
-                ybin = min(ERecoHisto2d.GetYaxis().FindBin(e_Pt_List[0]),ERecoHisto2d.GetNbinsY())
+                xbin = ERecoHisto2d.GetXaxis().FindBin(e_Eta_List[i])
+                ybin = max(1,min(ERecoHisto2d.GetYaxis().FindBin(e_Pt_List[i]),ERecoHisto2d.GetNbinsY()))
                 EleRecoSF = ERecoHisto2d.GetBinContent(xbin,ybin)
                 EleRecoErr = ERecoHisto2d.GetBinError(xbin,ybin)
 
-                # xbin = ETrigHisto.GetXaxis().FindBin(e_Pt_List[0])
-                # EleTrigSF = ETrigHisto.GetBinContent(xbin)
-                # EleTrigErr = ETrigHisto.GetBinError(xbin)
-                # print e_Pt_List[0],EleTrigSF,EleTrigErr
+            EleIDSF[0] *= EleID * EleRecoSF
+            EleIDSF_up[0] *= (EleID+EleIDErr)*(EleRecoSF+EleRecoErr)
+            EleIDSF_down[0] *= (EleID-EleIDErr)*(EleRecoSF-EleRecoErr)
 
-                EleTrigTuple = getSF(etrigjson,e_Pt_List[0],e_Eta_List[0])
-                EleTrigSF = EleTrigTuple[0]
-                EleTrigErr = EleTrigTuple[1]
-
-            EleIDSF[0] = EleIDonly*EleRecoSF*EleTrigSF
-            # print e_Pt_List[0],EleTrigSF,EleTrigErr
-
-            if EleIDSF[0]!=0:
-                EleIDSF_up[0] = ((EleIDonly+EleIDErr)*(EleRecoSF+EleRecoErr)*(EleTrigSF+EleTrigErr))/EleIDSF[0]
-                EleIDSF_down[0] = ((EleIDonly-EleIDErr)*(EleRecoSF-EleRecoErr)*(EleTrigSF-EleTrigErr))/EleIDSF[0]
-
-            if era == 2017 or era == 2018:
-                ybin = MuIDlowpT1718histo2d.GetYaxis().FindBin(abs(jetMu_Eta))
-                xbin = MuIDlowpT1718histo2d.GetXaxis().FindBin(jetMu_Pt[0])
-                MuIDlowpTBF = MuIDlowpT1718histo2d.GetBinContent(xbin,ybin)
-                MuIDlowpTBF_err = MuIDlowpT1718histo2d.GetBinError(xbin,ybin)
-
-                MuIDSF[0] = MuIDlowpTBF
-                if MuIDSF[0]!=0:
-                    MuIDSF_up[0] = (MuIDlowpTBF+MuIDlowpTBF_err) / MuIDSF[0]
-                    MuIDSF_down[0] = (MuIDlowpTBF-MuIDlowpTBF_err) / MuIDSF[0]
-
-        # Muon ID
-        if isMuon:
+        if EleIDSF[0]!=0:
+            EleIDSF_up[0] /= EleIDSF[0]
+            EleIDSF_down[0] /= EleIDSF[0]
+        
+        # Muon ID/Iso
+        for i in range(len(m_Pt_List)):
             if era == 2016:
-                xbin = MuID2016BFhisto2d.GetXaxis().FindBin(m_Eta_List[0])
-                ybin = MuID2016BFhisto2d.GetYaxis().FindBin(m_Pt_List[0])
-                MuIDBF = MuID2016BFhisto2d.GetBinContent(xbin,min(6,ybin))
-                MuIDBF_err = MuID2016BFhisto2d.GetBinError(xbin,min(6,ybin))
+                xbin = MuID2016BFhisto2d.GetXaxis().FindBin(m_Eta_List[i])
+                ybin = MuID2016BFhisto2d.GetYaxis().FindBin(m_Pt_List[i])
+                MuIDBF = MuID2016BFhisto2d.GetBinContent(xbin,max(1,min(6,ybin)))
+                MuIDBF_err = MuID2016BFhisto2d.GetBinError(xbin,max(1,min(6,ybin)))
 
-                xbin = MuID2016GHhisto2d.GetXaxis().FindBin(m_Eta_List[0])
-                ybin = MuID2016GHhisto2d.GetYaxis().FindBin(m_Pt_List[0])
-                MuIDGH = MuID2016GHhisto2d.GetBinContent(xbin,min(6,ybin))
-                MuIDGH_err = MuID2016GHhisto2d.GetBinError(xbin,min(6,ybin))
+                xbin = MuID2016GHhisto2d.GetXaxis().FindBin(m_Eta_List[i])
+                ybin = MuID2016GHhisto2d.GetYaxis().FindBin(m_Pt_List[i])
+                MuIDGH = MuID2016GHhisto2d.GetBinContent(xbin,max(1,min(6,ybin)))
+                MuIDGH_err = MuID2016GHhisto2d.GetBinError(xbin,max(1,min(6,ybin)))
 
-                MuIDSF[0] = 0.55*MuIDBF + 0.45*MuIDGH
-                if MuIDSF[0]!=0:
-                    MuIDSF_up[0] = (0.55*(MuIDBF+MuIDBF_err) + 0.45*(MuIDGH+MuIDGH_err))/MuIDSF[0]
-                    MuIDSF_down[0] = (0.55*(MuIDBF-MuIDBF_err) + 0.45*(MuIDGH-MuIDGH_err))/MuIDSF[0]
+                MuIDSF[0] *= 0.55*MuIDBF + 0.45*MuIDGH
+
+                MuIDSF_up[0] *= (0.55*(MuIDBF+MuIDBF_err) + 0.45*(MuIDGH+MuIDGH_err))
+                MuIDSF_down[0] *= (0.55*(MuIDBF-MuIDBF_err) + 0.45*(MuIDGH-MuIDGH_err))
 
             elif era == 2017 or era == 2018:
                 nbins = MuID1718histo2d.GetNbinsX()
-                ybin = MuID1718histo2d.GetYaxis().FindBin(abs(m_Eta_List[0]))
-                xbin = MuID1718histo2d.GetXaxis().FindBin(m_Pt_List[0])
+                ybin = MuID1718histo2d.GetYaxis().FindBin(abs(m_Eta_List[i]))
+                xbin = MuID1718histo2d.GetXaxis().FindBin(m_Pt_List[i])
                 MuIDBF = MuID1718histo2d.GetBinContent(max(1,min(nbins,xbin)),ybin)
                 MuIDBF_err = MuID1718histo2d.GetBinError(max(1,min(nbins,xbin)),ybin)
 
+                MuIDSF[0] *= MuIDBF
+                MuIDSF_up[0] *= (MuIDBF+MuIDBF_err)
+                MuIDSF_down[0] *= (MuIDBF-MuIDBF_err)
+
                 nbins = MuIso1718histo2d.GetNbinsX()
-                ybin = MuIso1718histo2d.GetYaxis().FindBin(abs(m_Eta_List[0]))
-                xbin = MuIso1718histo2d.GetXaxis().FindBin(m_Pt_List[0])
+                ybin = MuIso1718histo2d.GetYaxis().FindBin(abs(m_Eta_List[i]))
+                xbin = MuIso1718histo2d.GetXaxis().FindBin(m_Pt_List[i])
                 MuIsoBF = MuIso1718histo2d.GetBinContent(max(1,min(nbins,xbin)),ybin)
                 MuIsoBF_err = MuIso1718histo2d.GetBinError(max(1,min(nbins,xbin)),ybin)
 
-                ybin = MuTrig1718histo2d.GetYaxis().FindBin(abs(m_Eta_List[0]))
-                xbin = MuTrig1718histo2d.GetXaxis().FindBin(m_Pt_List[0])
-                MuTrigBF = MuTrig1718histo2d.GetBinContent(xbin,ybin)
-                MuTrigBF_err = MuTrig1718histo2d.GetBinError(xbin,ybin)
+                MuIsoSF *= MuIsoBF
+                MuIsoSF_up *= (MuIsoBF+MuIsoBF_err)
+                MuIsoSF_down *= (MuIsoBF-MuIsoBF_err)
 
-                ybin = MuIDlowpT1718histo2d.GetYaxis().FindBin(abs(jetMu_Eta))
-                xbin = MuIDlowpT1718histo2d.GetXaxis().FindBin(jetMu_Pt[0])
-                MuIDlowpTBF = MuIDlowpT1718histo2d.GetBinContent(xbin,ybin)
-                MuIDlowpTBF_err = MuIDlowpT1718histo2d.GetBinError(xbin,ybin)
+        MuIDSF[0] *= MuIsoSF
+        MuIDSF_up[0] *= MuIsoSF_up
+        MuIDSF_down[0] *= MuIsoSF_down
+        if MuIDSF[0]!=0:
+            MuIDSF_up[0] /= MuIDSF[0]
+            MuIDSF_down[0] /= MuIDSF[0]
+    
+    eventWeight[0] = genWeight[0] * PUWeight[0] * MuIDSF[0] * EleIDSF[0]
+    eventWeightnoPU[0] = genWeight[0] * EleIDSF[0] * MuIDSF[0]
+    # print eventWeight[0], PUWeight_up[0],PUWeight_down[0],MuIDSF_up[0],MuIDSF_down[0]
 
-                MuIDSF[0] = MuIDBF * MuIsoBF * MuTrigBF * MuIDlowpTBF
-                if MuIDSF[0]!=0:
-                    MuIDSF_up[0] = ((MuIDBF+MuIDBF_err) * (MuIsoBF+MuIsoBF_err) * (MuTrigBF+MuTrigBF_err) * (MuIDlowpTBF+MuIDlowpTBF_err)) / MuIDSF[0]
-                    MuIDSF_down[0] = ((MuIDBF-MuIDBF_err) * (MuIsoBF-MuIsoBF_err) * (MuTrigBF-MuTrigBF_err) * (MuIDlowpTBF-MuIDlowpTBF_err)) / MuIDSF[0]
-
-    eventWeight[0] = signWeight[0] * genWeight[0] * PUWeight[0] * EleIDSF[0] * MuIDSF[0]
-    #print PUWeight_up[0],PUWeight_down[0],EleIDSF_up[0],EleIDSF_down[0],MuIDSF_up[0],MuIDSF_down[0]
-
-    eventWeightUnsigned[0] = eventWeight[0]/signWeight[0]
-    eventWeightnoPU[0] = signWeight[0] * genWeight[0] * EleIDSF[0] * MuIDSF[0]
     # ==========================================================================
 
     # ============================ Fill output tree ============================
-    if (isMuon or isElec) and len(j_Pt_List) >= 1 and W_Mass[0]>=55 and TriggerPass and jetMu_Pt[0] > 0.:
-        run[0]              = entry.run  # same in PFNano
-        lumiBlock[0]        = entry.luminosityBlock  # same in PFNano
-        event[0]            = entry.event  # same in PFNano
-        if "LHE_HT" in validBranches:  # same in PFNano
-            LHE_HT[0]           = entry.LHE_HT  # same in PFNano
-        if "LHE_Njets" in validBranches:  # same in PFNano
-            if type(entry.LHE_Njets) is str:  # same in PFNano
-                LHE_Njets[0]        = ord(entry.LHE_Njets)  # same in PFNano
+    if len(j_Pt_List) >= 1 and TriggerPass:
+        run[0]              = entry.run
+        lumiBlock[0]        = entry.luminosityBlock
+        event[0]            = entry.event
+        if "LHE_HT" in validBranches:
+            LHE_HT[0]           = entry.LHE_HT
+        if "LHE_Njets" in validBranches:
+            if type(entry.LHE_Njets) is str:
+                LHE_Njets[0]        = ord(entry.LHE_Njets)
             else:
-                LHE_Njets[0]        = entry.LHE_Njets  # same in PFNano
-        if "LHE_Vpt" in validBranches:  # same in PFNano
-            LHE_Vpt[0]        = entry.LHE_Vpt  # same in PFNano
+                LHE_Njets[0]        = entry.LHE_Njets
 
-        nPV[0] = entry.PV_npvs  # same in PFNano
-        nPVGood[0] = entry.PV_npvsGood  # same in PFNano
-        nSV[0] = entry.nSV  # same in PFNano
+        nPV[0] = entry.PV_npvs
+        nPVGood[0] = entry.PV_npvsGood
+        nSV[0] = entry.nSV
 
-        if isMuon:
-            QCDveto[0] = int( M_RelIso[0] < 0.05 and (hardMu_Jet_PtRatio[0] < 0 or hardMu_Jet_PtRatio[0] > 0.75) and abs(M_dz[0]) < .01 and abs(M_dxy[0]) < .002 and M_sip3d[0] < 0.2 )
-        elif isElec:
-            QCDveto[0] = int( E_RelIso[0] < 0.05 and (hardE_Jet_PtRatio[0] < 0 or hardE_Jet_PtRatio[0] > 0.75) and abs(E_dz[0]) < .02 and abs(E_dxy[0]) < .01 and E_sip3d[0] < 0.25 )
+        # if isMuon:
+        #     QCDveto[0] = int( M_RelIso[0] < 0.05 and (hardMu_Jet_PtRatio < 0 or hardMu_Jet_PtRatio > 0.75) and abs(M_dz[0]) < .01 and abs(M_dxy[0]) < .002 and M_sip3d[0] < 0.2 )
+        # elif isElec:
+        #     QCDveto[0] = int( E_RelIso[0] < 0.05 and (hardE_Jet_PtRatio < 0 or hardE_Jet_PtRatio > 0.75) and abs(E_dz[0]) < .02 and abs(E_dxy[0]) < .01 and E_sip3d[0] < 0.25 )
 
-        SoftActivityJetHT[0]       = entry.SoftActivityJetHT  # same in PFNano
-        SoftActivityJetNjets2[0]   = entry.SoftActivityJetNjets2  # same in PFNano
-        SoftActivityJetNjets5[0]   = entry.SoftActivityJetNjets5  # same in PFNano
-        SoftActivityJetNjets10[0]  = entry.SoftActivityJetNjets10  # same in PFNano
-        
-        #if is_M[0] and (Z_Mass[0] < 85 or Z_Mass[0] > 95) and jetMuPt_by_jetPt[0] < 0.4:
-            #M_JetPhoMu = -1.
-            #for ipho in range(entry.nPhoton):
-                #if entry.Photon_mvaID_WP90[ipho] == 0: continue
-                #Pho = TLorentzVector()
-                #Pho.SetPtEtaPhiM(entry.Photon_pt[ipho],entry.Photon_eta[ipho],entry.Photon_phi[ipho],entry.Photon_mass[ipho])
-                #if Pho.DeltaR(muon[0]) < 0.4: M_JetPhoMu = (jetList[int(muJet_idx[0])]+muon[0]+Pho).M()
-            #print "jet+Mu inv mass:",(jetList[int(muJet_idx[0])]+muon[0]).M(), "nPhoton:", entry.nPhoton, "M_JetPhoMu:", M_JetPhoMu
+        # SoftActivityJetHT[0]       = entry.SoftActivityJetHT
+        # SoftActivityJetNjets2[0]   = entry.SoftActivityJetNjets2
+        # SoftActivityJetNjets5[0]   = entry.SoftActivityJetNjets5
+        # SoftActivityJetNjets10[0]  = entry.SoftActivityJetNjets10
 
         outputTree.Fill()
     else:
@@ -1893,8 +1604,8 @@ nEventCount = 0
 nEventWeight = 0
 if isMC:
     for entry2 in nEventTree:
-        nEventCount += entry2.genEventCount  # same in PFNano
-        nEventWeight += entry2.genEventSumw  # same in PFNano
+        nEventCount += entry2.genEventCount
+        nEventWeight += entry2.genEventSumw
     print "Total event processed by Nano AOD post processor : ", nEventCount
     h_total.SetBinContent(2,nEventWeight)
     h_nEvent.SetBinContent(2,nEventCount)

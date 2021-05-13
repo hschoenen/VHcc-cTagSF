@@ -7,5 +7,5 @@ Wc /store/user/anovak/PFNano/106X_v2_17/ST_t-channel_antitop_4f_inclusiveDecays_
 Wc /store/user/anovak/PFNano/106X_v2_17rsb3/SingleMuon/Run2017C-31Mar2018-v1_PFNanov2/210509_154629/0000/nano_data2017_15.root
 Wc /store/user/anovak/PFNano/106X_v2_17/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2PFNanoV2/210101_174238/0000/nano_mc2017_126.root
 Wc /store/user/anovak/PFNano/106X_v2_17/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174413/0000/nano_mc2017_1-15.root
-Wc /store/user/anovak/PFNano/106X_v2_17rsb3/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17PFNanov2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v4/210509_154103/0000/nano_mc2017_494.root
+Wc /store/user/anovak/PFNano/106X_v2_17rsb3/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17PFNanov2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/210509_154437/0000/nano_mc2017_18.root
 Wc /store/user/anovak/PFNano/106X_v2_17/ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2PFNanoV2/210101_174731/0000/nano_mc2017_101.root

@@ -10,8 +10,8 @@ Should_Transfer_Files = YES
 max_materialize  = 1500
 materialize_max_idle = 1000
 Notification = never
-Request_Memory = 10GB
+#Request_Memory = 10GB
 on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
 
 
-queue SEL,INFILE from cmdList_Wc_PFNano.txt
+queue SEL,INFILE from cmdList_DY_PFNano.txt
