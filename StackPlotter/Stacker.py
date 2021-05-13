@@ -6,14 +6,14 @@
 #   https://cern.ch/spmondal
 ####################################################
 
-from ROOT import *
+#from ROOT import *
 import ROOT
 import os, sys, json
 #from VHcc_Weights import eff_xsec
 from array import array
-gROOT.SetBatch(True)
-gStyle.SetOptStat(0)
-gStyle.SetLegendBorderSize(0)
+ROOT.gROOT.SetBatch(True)
+ROOT.gStyle.SetOptStat(0)
+ROOT.gStyle.SetLegendBorderSize(0)
 from samplesDict import *
 
 TH1DModel = ROOT.RDF.TH1DModel
@@ -78,11 +78,11 @@ def makeHisto(dir,treeName,brName,brLabel,nbins,start,end,weightName="",selectio
     for iDir in dirList:
         rootFiles += [os.path.join(iDir,i) for i in os.listdir(iDir) if i.endswith(".root")]
 
-    myChain = TChain(treeName)
+    myChain = ROOT.TChain(treeName)
     nTotalEvents = 0
     for fl in rootFiles:
 #        if "Run2018A" in fl or "Run2018B" in fl or "Run2018C" in fl: continue
-        iF = TFile.Open(fl)
+        iF = ROOT.TFile.Open(fl)
         if bool(iF) == False or iF.IsZombie():
             print "Error in file %s, skipping."%fl
             continue
@@ -143,6 +143,8 @@ def makeHisto(dir,treeName,brName,brLabel,nbins,start,end,weightName="",selectio
             eventWeight = weightName.split('*')[0]
         else:
             eventWeight = weightName
+    print "weightName: %s" % weightName
+    print "eventWeight: %s" % eventWeight
     DF = DF.Define("newWeight",eventWeight)
     
     sampSels = ""
@@ -236,7 +238,7 @@ def makeHisto(dir,treeName,brName,brLabel,nbins,start,end,weightName="",selectio
             if getSFUnc:
                 flName = dir.split('/')[-1]
                 thisflavDF.Snapshot("Events","StackerTemp.root")
-                tempf = TFile("StackerTemp.root","READ")
+                tempf = ROOT.TFile("StackerTemp.root","READ")
                 temptree = tempf.Get("Events")
                 if "muJet_idx==0?1:0" in jetind:
                     txtind = '1 if int(ev.muJet_idx) == 0 else 0'
@@ -437,7 +439,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
         gInpCmd = gInpCmd.replace("PREF",taggerPref).replace("ADAP",adapDir).replace("HISTSUFF",SFhistSuff)
         print "\nLoading SF histograms:"
         print gInpCmd  
-        gInterpreter.ProcessLine(gInpCmd)
+        ROOT.gInterpreter.ProcessLine(gInpCmd)
         
         outDir.rstrip('/')
         outDir += "_" + '_'.join(SFfile.rstrip('.root').split('_')[3:])
@@ -445,12 +447,12 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
 
         if getSFUnc:
             global SFUnc, SFBinCounts
-            SFUnc = TH1F(getbrText(brName)+"_Unc",brLabel,nbins,start,end)
+            SFUnc = ROOT.TH1F(getbrText(brName)+"_Unc",brLabel,nbins,start,end)
             SFBinCounts = {}
             for ib in range(nbins+2):
                 SFBinCounts[ib] = {}
-            # gInterpreter.ProcessLine("TH1F *SFUnc = new TH1F(\"%s\",\"%s\",%d,%f,%f);"%(getbrText(brName)+"Unc",brLabel,nbins,start,end))
-            # gInterpreter.ProcessLine("vector<vector<string>> SFBinNames; vector<vector<int>> SFBinCounts;")
+            # ROOT.gInterpreter.ProcessLine("TH1F *SFUnc = new TH1F(\"%s\",\"%s\",%d,%f,%f);"%(getbrText(brName)+"Unc",brLabel,nbins,start,end))
+            # ROOT.gInterpreter.ProcessLine("vector<vector<string>> SFBinNames; vector<vector<int>> SFBinCounts;")
             # for ib in range(nbins+2):
             #     gInpNew = '''
             #                 vector<string> SFBinNames_%d;
@@ -458,7 +460,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
             #                 SFBinNames.push_back(SFBinNames_%d);
             #                 SFBinCounts.push_back(SFBinCounts_%d);
             #     '''%(ib,ib,ib,ib)
-                # gInterpreter.ProcessLine(gInpNew)
+                # ROOT.gInterpreter.ProcessLine(gInpNew)
             # print "Declared quantities to calculate SF uncertainty propagation."
     else:
         reWeight = False
@@ -520,7 +522,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
         print "Will split DYJets samples by HT bins."
 
     colours=[]
-    colourNames = [kCyan,kYellow,kMagenta,kBlue,kGreen,kRed,kGray]
+    colourNames = [ROOT.kCyan,ROOT.kYellow,ROOT.kMagenta,ROOT.kBlue,ROOT.kGreen,ROOT.kRed,ROOT.kGray]
     samplesToProc = ["WJets","DYJets","ttbar","ST","VV"]
     if "QCD" in samplesDict:
         if samplesDict["QCD"][0][0].rstrip('/') in samplesInDir:
@@ -587,7 +589,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
         else:
             raise ValueError
 
-    c = TCanvas("main",brLabel,1200,1200)
+    c = ROOT.TCanvas("main",brLabel,1200,1200)
     c.SetCanvasSize(1200,1200)
 #    c.SetWindowSize(1200,1200)
 
@@ -656,7 +658,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
             print "Done."
             if makeBinWtTxt: binWtTxtFileDict[flName] = binWtDict
         
-        # gInterpreter.ProcessLine("TFile *nf = new TFile(\"text.root\",\"RECREATE\"); nf->cd(); SFUnc->Write(); nf->Close()")
+        # ROOT.gInterpreter.ProcessLine("TFile *nf = new TFile(\"text.root\",\"RECREATE\"); nf->cd(); SFUnc->Write(); nf->Close()")
         # ----------------------------------------------------------------
 
         # ================= Evaluate normalization factors ===================
@@ -732,7 +734,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
 
     # Colour and legend
     legTopMargin = 0.90 - int(dataset=="" or noRatio)*0.04
-    legend = TLegend(0.15, 0.7, 0.89, legTopMargin,"") #,"brNDC"
+    legend = ROOT.TLegend(0.15, 0.7, 0.89, legTopMargin,"") #,"brNDC"
     legend.SetFillStyle(0)
 
     legend.SetTextSize(0.02)
@@ -744,7 +746,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
         print iName,":", finalHists[iName].Integral()
 
     # ================= Make stack histogram ===================
-    myStack = THStack("myStack","")
+    myStack = ROOT.THStack("myStack","")
 
     sampleNamesSet.reverse()
     for iName in sampleNamesSet:
@@ -794,7 +796,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
                         else:
                             raise ValueError
 
-        histoD.SetMarkerColor(kBlack)
+        histoD.SetMarkerColor(ROOT.kBlack)
         histoD.SetMarkerStyle(20)
         histoD.SetMarkerSize(1.8)
         histoD.SetLineColor(1)
@@ -806,21 +808,21 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
             for iHistList in range(1,len(histoDList)):
                 histoD.Add(histoDList[iHistList])
 
-            histoD.SetMarkerColor(kBlack)
+            histoD.SetMarkerColor(ROOT.kBlack)
             histoD.SetMarkerStyle(20)
             histoD.SetMarkerSize(1.8)
             histoD.SetLineColor(1)
 
     # ======================== Draw ============================
     if not dataset=="" and not noRatio:
-        upperCanvas = TPad("up","up",0,0.20,1,1)
+        upperCanvas = ROOT.TPad("up","up",0,0.20,1,1)
         upperCanvas.SetBottomMargin(0.03)
         upperCanvas.SetTopMargin(0.06)
         upperCanvas.SetLogy(isLog)
         upperCanvas.Draw()
         upperCanvas.cd()
 
-    TGaxis.SetMaxDigits(4)
+    ROOT.TGaxis.SetMaxDigits(4)
     if brName2D=="":
         myStack.Draw()
     else:
@@ -837,8 +839,8 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
 
     if brName2D=="": histoErr.Draw("e2 same")
     # histoErr.Sumw2()
-    histoErr.SetFillColor(kGray+3)
-    histoErr.SetLineColor(kGray+3)
+    histoErr.SetFillColor(ROOT.kGray+3)
+    histoErr.SetLineColor(ROOT.kGray+3)
     histoErr.SetMarkerSize(0)
     histoErr.SetFillStyle(3013)
 
@@ -863,7 +865,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
 
         if not noRatio:
             c.cd()
-            lowerCanvas = TPad("down","down",0,0,1,0.22)
+            lowerCanvas = ROOT.TPad("down","down",0,0,1,0.22)
             lowerCanvas.Draw()
             lowerCanvas.cd()
             lowerCanvas.SetTicky(1)
@@ -899,8 +901,8 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
             histoRatio.SetMaximum(1.49)
             histoRatio.SetMinimum(0.51)
 
-            hLine = TLine(start,1,end,1)
-            hLine.SetLineColor(kRed)
+            hLine = ROOT.TLine(start,1,end,1)
+            hLine.SetLineColor(ROOT.kRed)
             hLine.Draw()
 
             if drawDataMCRatioLine:
@@ -908,17 +910,17 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
                 if MCCount > 0.:
                     DataCount = histoD.Integral()
                     MCNormFactor = DataCount/MCCount
-                    hLine2 = TLine(start,MCNormFactor,end,MCNormFactor)
-                    hLine2.SetLineColor(kBlue)
+                    hLine2 = ROOT.TLine(start,MCNormFactor,end,MCNormFactor)
+                    hLine2.SetLineColor(ROOT.kBlue)
                     hLine2.Draw()
 
     # ----------------------------------------------------------
 
     # ======================== LaTeX ==========================
-    texTL = TLatex()
+    texTL = ROOT.TLatex()
     texTL.SetTextSize(0.036)
 
-    texTR = TLatex()
+    texTR = ROOT.TLatex()
     texTR.SetTextSize(0.032)
     texTR.SetTextAlign(31)
 
@@ -935,7 +937,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
 
     if makeROOT:
         rootName = outDir+saveName+".root"
-        outROOT = TFile.Open(rootName,'RECREATE')
+        outROOT = ROOT.TFile.Open(rootName,'RECREATE')
         cHist = ""
         bHist = ""
         lHist = ""
