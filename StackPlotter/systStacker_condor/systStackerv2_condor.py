@@ -6,11 +6,11 @@ outDir = "output_2017_PFNano" #"190928_2017"
 # WcPath = "/nfs/dust/cms/user/spmondal/ctag_condor/200109_all_2018_Wc/"
 
 # 2017
-DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/210511_2017_DY_PFNano/"
+DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/210517_2017_DY_PFNano/"
 #TTPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190924_final_2017_TT/"
 #WcPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190924_final_2017_Wc/"
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_Wc_minimal/"
-WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/210511_2017_Wc_PFNano/"
+WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/210517_2017_Wc_PFNano/"
 
 # 2016
 #DYPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190621_2016_DY/"
@@ -144,7 +144,7 @@ arguments = '''
             "jet_CvsL[muJet_idx]","CvsL",6,-0.1,1,TTSEMISELM,dataset="smu",brName2D=["jet_CvsB[muJet_idx]"],brLabel2="CvsB",nbins2=6,CVXBINNING,drawStyle="",makeROOT=True,TTSEMIWEIGHT
           #  "jet_CvsL[muJet_idx]","CvsL",6,-0.1,1,TTSEMISELE,dataset="sele",brName2D=["jet_CvsB[muJet_idx]"],brLabel2="CvsB",nbins2=6,CVXBINNING,drawStyle="",makeROOT=True,TTSEMIWEIGHT
            
-            "jet_CvsL[muJet_idx]","CvsL",6,-0.1,1,TTSELMM,dataset="dmu",brName2D=["jet_CvsB[muJet_idx]"],brLabel2="CvsB",nbins2=6,CVXBINNING,drawStyle="",makeROOT=True,TTWEIGHT
+          #  "jet_CvsL[muJet_idx]","CvsL",6,-0.1,1,TTSELMM,dataset="dmu",brName2D=["jet_CvsB[muJet_idx]"],brLabel2="CvsB",nbins2=6,CVXBINNING,drawStyle="",makeROOT=True,TTWEIGHT
           #  "jet_CvsL[muJet_idx]","CvsL",6,-0.1,1,TTSELEE,dataset="deg",brName2D=["jet_CvsB[muJet_idx]"],brLabel2="CvsB",nbins2=6,CVXBINNING,drawStyle="",makeROOT=True,TTWEIGHT
           #  "jet_CvsL[muJet_idx]","CvsL",6,-0.1,1,TTSELME,dataset="mue",brName2D=["jet_CvsB[muJet_idx]"],brLabel2="CvsB",nbins2=6,CVXBINNING,drawStyle="",makeROOT=True,TTWEIGHT
            
@@ -165,10 +165,10 @@ plot1D = '''
 
         #    "W_Mass",r"m_{T}^{W} (mu)", 30,50,200,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
             
-             "jet_CvsL[muJet_idx]",r"Jet DeepCSV CvsL (#mu #mu)",NBINDISC,-0.2,1,TTSELMM,dataset="dmu",makeROOT=True,TTWEIGHT
+        #     "jet_CvsL[muJet_idx]",r"Jet DeepCSV CvsL (#mu #mu)",NBINDISC,-0.2,1,TTSELMM,dataset="dmu",makeROOT=True,TTWEIGHT
         #     "jet_CvsL[muJet_idx]",r"Jet DeepCSV CvsL (e e)",NBINDISC,-0.2,1,TTSELEE,dataset="deg",makeROOT=True,TTWEIGHT
         #     "jet_CvsL[muJet_idx]",r"Jet DeepCSV CvsL (#mu e)",NBINDISC,-0.2,1,TTSELME,dataset="mue",makeROOT=True,TTWEIGHT
-             "jet_CvsB[muJet_idx]",r"Jet DeepCSV CvsB (#mu #mu)",NBINDISC,-0.2,1,TTSELMM,dataset="dmu",makeROOT=True,TTWEIGHT
+        #     "jet_CvsB[muJet_idx]",r"Jet DeepCSV CvsB (#mu #mu)",NBINDISC,-0.2,1,TTSELMM,dataset="dmu",makeROOT=True,TTWEIGHT
         #     "jet_CvsB[muJet_idx]",r"Jet DeepCSV CvsB (e e)",NBINDISC,-0.2,1,TTSELEE,dataset="deg",makeROOT=True,TTWEIGHT
         #     "jet_CvsB[muJet_idx]",r"Jet DeepCSV CvsB (#mu e)",NBINDISC,-0.2,1,TTSELME,dataset="mue",makeROOT=True,TTWEIGHT
            
@@ -177,9 +177,17 @@ plot1D = '''
         #     "jet_CvsL[0]",r"Jet DeepCSV CvsL (e)",NBINDISC,-0.2,1,DYSELE,dataset="deg",makeROOT=True,DYWEIGHT
         #     "jet_CvsB[0]",r"Jet DeepCSV CvsB (e)",NBINDISC,-0.2,1,DYSELE,dataset="deg",makeROOT=True,DYWEIGHT
 
-             "jet_btagDeepB[muJet_idx]",r"Jet DeepCSV P(b) (#mu)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+        #     "jet_btagDeepB[muJet_idx]",r"Jet DeepCSV P(b) (#mu)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
         #    "jet_btagDeepB[muJet_idx]",r"Jet DeepCSV P(b) (#mu e)",NBINDISC,-0.2,1,TTSELME,dataset="mue",makeROOT=True,TTWEIGHT
-             "jet_btagDeepB[0]",r"Jet DeepCSV P(b) (#mu)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+        #     "jet_btagDeepB[0]",r"Jet DeepCSV P(b) (#mu)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+        
+        #    "jet_CustomCvsL[muJet_idx]",r"Jet Custom CvsL (#mu)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+        #    "jet_CustomCvsB[muJet_idx]",r"Jet Custom CvsB (#mu)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+        #    "jet_CustomCvsL[muJet_idx]",r"Jet Custom CvsL (#mu)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+        #    "jet_CustomCvsB[muJet_idx]",r"Jet Custom CvsB (#mu)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+        #    "jet_CustomCvsL[0]",r"Jet Custom CvsL (#mu)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+        #    "jet_CustomCvsB[0]",r"Jet Custom CvsB (#mu)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+        
             
             # For soft mu bias studies
         #     "jet_CvsL[JETIDX]",r"Probe Jet DeepCSV CvsL (#mu)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
@@ -362,6 +370,7 @@ for systname in systs:
             for iline, line in enumerate(args):
                 deepsuff = ""
                 if line.strip().startswith('"jet_DeepFlav'): deepsuff="DeepFlav"
+                if line.strip().startswith('"jet_Custom'): deepsuff="Custom"
                 if line.strip().startswith('"jet_%sCvsL'%deepsuff): continue
                 
                 for sel in ["ESEL","MSEL","TTSELEE","TTSELMM","TTSELME","TTSEMISELE","TTSEMISELM"]:
@@ -376,6 +385,7 @@ for systname in systs:
             for iline, line in enumerate(args):
                 deepsuff = ""
                 if line.strip().startswith('"jet_DeepFlav'): deepsuff="DeepFlav"
+                if line.strip().startswith('"jet_Custom'): deepsuff="Custom"
                 if line.strip().startswith('"jet_%sCvsB'%deepsuff): continue
                 
                 for sel in ["ESEL","MSEL","TTSELEE","TTSELMM","TTSELME","TTSEMISELE","TTSEMISELM"]:

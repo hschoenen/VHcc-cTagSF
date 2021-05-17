@@ -106,6 +106,8 @@ if "OUTPUTDIR" in os.environ:
         print "Condor will create output file: %s"%condoroutfile
 customTaggerProbs = np.load("outPreds_%s_new.npy"%(outNo))  # just do it with the loss weighted model first here
 customTaggerBvsL  = np.load("outBvsL_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
+customTaggerCvsB  = np.load("outCvsB_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
+customTaggerCvsL  = np.load("outCvsL_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
 # ==============================================================================
 
 # =============================== SF files =====================================
@@ -263,6 +265,8 @@ jet_Mass           = std.vector('double')()
 jet_CvsL           = std.vector('double')()
 jet_CvsB           = std.vector('double')()
 jet_CustomBvsL     = std.vector('double')()  # new
+jet_CustomCvsL           = std.vector('double')()
+jet_CustomCvsB           = std.vector('double')()
 jet_DeepFlavCvsL   = std.vector('double')()
 jet_DeepFlavCvsB   = std.vector('double')()
 jet_qgl            = std.vector('double')()
@@ -303,6 +307,8 @@ jetMu_PtRel        = array('d',[0])
 leadCvsL_jetidx      = array('d',[0])
 leadCvsB_jetidx      = array('d',[0])
 leadCustomBvsL_jetidx      = array('d',[0])  # new
+leadCustomCvsL_jetidx      = array('d',[0])
+leadCustomCvsB_jetidx      = array('d',[0])
 
 QCDveto             = array('d',[0])
 
@@ -495,6 +501,8 @@ outputTree.Branch('jet_nJet'         ,jet_nJet      ,'jet_nJet/D')
 outputTree.Branch('jet_CvsL'         ,jet_CvsL      )
 outputTree.Branch('jet_CvsB'         ,jet_CvsB      )
 outputTree.Branch('jet_CustomBvsL'         ,jet_CustomBvsL      )  # new
+outputTree.Branch('jet_CustomCvsL'         ,jet_CustomCvsL      )
+outputTree.Branch('jet_CustomCvsB'         ,jet_CustomCvsB      )
 outputTree.Branch('jet_DeepFlavCvsL' ,jet_DeepFlavCvsL      )
 outputTree.Branch('jet_DeepFlavCvsB' ,jet_DeepFlavCvsB      )
 outputTree.Branch('jet_qgl'          ,jet_qgl      )
@@ -535,6 +543,8 @@ outputTree.Branch('jetMuPt_by_jetPt' ,jetMuPt_by_jetPt,'jetMuPt_by_jetPt/D')
 outputTree.Branch('leadCvsB_jetidx'        ,leadCvsB_jetidx     ,'leadCvsB_jetidx/D')
 outputTree.Branch('leadCvsL_jetidx'        ,leadCvsL_jetidx     ,'leadCvsL_jetidx/D')
 outputTree.Branch('leadCustomBvsL_jetidx'        ,leadCustomBvsL_jetidx     ,'leadCustomBvsL_jetidx/D')  # new
+outputTree.Branch('leadCustomCvsB_jetidx'        ,leadCustomCvsB_jetidx     ,'leadCustomCvsB_jetidx/D')
+outputTree.Branch('leadCustomCvsL_jetidx'        ,leadCustomCvsL_jetidx     ,'leadCustomCvsL_jetidx/D')
 
 outputTree.Branch('QCDveto'        ,QCDveto     ,'QCDveto/D')
 
@@ -713,6 +723,8 @@ for entry in inputTree:
     jet_CvsL_List       = []
     jet_CvsB_List       = []
     jet_CustomBvsL_List       = []  # new
+    jet_CustomCvsL_List       = []
+    jet_CustomCvsB_List       = []
     jet_CvsB_CvsL_List  = []
     jet_CvsB_CvsL_List2 = []
 
@@ -741,6 +753,8 @@ for entry in inputTree:
     j_CvsL_List              = []
     j_CvsB_List              = []
     j_CustomBvsL_List              = []  # new
+    j_CustomCvsL_List              = []
+    j_CustomCvsB_List              = []
     j_qgl_List               = []
     if isMC:
         j_hadronFlv_List         = []
@@ -904,6 +918,8 @@ for entry in inputTree:
     jet_CvsL.clear()
     jet_CvsB.clear()
     jet_CustomBvsL.clear()  # new
+    jet_CustomCvsL.clear()
+    jet_CustomCvsB.clear()
     jet_DeepFlavCvsL.clear()
     jet_DeepFlavCvsB.clear()
     jet_qgl.clear()
@@ -1139,6 +1155,8 @@ for entry in inputTree:
         jet_CvsB_CvsL_List.append((entry.Jet_btagDeepCvB[i])+(entry.Jet_btagDeepCvL[i]))
         jet_CvsB_CvsL_List2.append((entry.Jet_btagDeepCvB[i])**2+(entry.Jet_btagDeepCvL[i])**2)
         jet_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets+i])
+        jet_CustomCvsB_List.append(customTaggerCvsB[prevSeenOrSkippedJets+i])
+        jet_CustomCvsL_List.append(customTaggerCvsL[prevSeenOrSkippedJets+i])
         
         HT_temp         += jetPt[i]
         totalJetEnergy  += jet.E()
@@ -1152,6 +1170,8 @@ for entry in inputTree:
         j_CvsL_List.append(entry.Jet_btagDeepCvL[i])
         j_CvsB_List.append(entry.Jet_btagDeepCvB[i])
         j_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets + i])  # new
+        j_CustomCvsB_List.append(customTaggerCvsB[prevSeenOrSkippedJets + i])  # new
+        j_CustomCvsL_List.append(customTaggerCvsL[prevSeenOrSkippedJets + i])  # new
         j_qgl_List.append(entry.Jet_qgl[i])
         
         if "Jet_btagDeepFlavCvL" in validBranches:
@@ -1207,6 +1227,8 @@ for entry in inputTree:
     leadCvsB_jetidx[0] = jet_CvsB_List.index(max(jet_CvsB_List))
     leadCvsL_jetidx[0] = jet_CvsL_List.index(max(jet_CvsL_List))
     leadCustomBvsL_jetidx[0] = jet_CustomBvsL_List.index(max(jet_CustomBvsL_List))  # new
+    leadCustomCvsB_jetidx[0] = jet_CustomCvsB_List.index(max(jet_CustomCvsB_List))  # new
+    leadCustomCvsL_jetidx[0] = jet_CustomCvsL_List.index(max(jet_CustomCvsL_List))  # new
     
     # Save jets according to hadron flavour
     if isMC:
@@ -1405,6 +1427,8 @@ for entry in inputTree:
         jet_CvsL.push_back(j_CvsL_List[i])
         jet_CvsB.push_back(j_CvsB_List[i])
         jet_CustomBvsL.push_back(j_CustomBvsL_List[i])  # new
+        jet_CustomCvsB.push_back(j_CustomCvsB_List[i])  # new
+        jet_CustomCvsL.push_back(j_CustomCvsL_List[i])  # new
         jet_qgl.push_back(j_qgl_List[i])
         if isMC:
             jet_hadronFlv.push_back(j_hadronFlv_List[i])

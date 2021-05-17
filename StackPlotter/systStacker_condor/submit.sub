@@ -1,8 +1,8 @@
 universe = vanilla
 Executable = condor_runscript.sh
-Output = condor_2/log-$(ClusterId).$(ProcId).out
-Error  = condor_2/log-$(ClusterId).$(ProcId).err
-Log    = condor_2/log-$(ClusterId).$(ProcId).log
+Output = condor_3/log-$(ClusterId).$(ProcId).out
+Error  = condor_3/log-$(ClusterId).$(ProcId).err
+Log    = condor_3/log-$(ClusterId).$(ProcId).log
 
 arguments    = $(ClusterId) $(ProcId)
 

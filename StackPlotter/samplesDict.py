@@ -59,16 +59,20 @@ samplesDict2017 = {
                 ["DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/",                              18610,      0       ]
               ],
     "ttbar" : [
-                ["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/",                                   88.29,      4.82   ],
-                ["TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8/",                                377.96,      20.647   ],
+                #["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/",                                   88.29,      4.82   ],
+                #["TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8/",                                377.96,      20.647   ],
+                ["TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/",                                             88.29,      4.82   ],
+                ["TTToHadronic_TuneCP5_13TeV-powheg-pythia8/",                                          377.96,      20.647   ],
                 ["TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/",                                      365.34,      19.95   ]
               ],
     "ST" :    [
-                ["ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8",               3.74,       0.003591],
+                #["ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8",               3.74,       0.003591],
+                ["ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8",                         3.74,       0.003591],
                 ["ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8",      67.91,      0.3487  ],
                 ["ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8",          113.3,      0.6404  ],
                 ["ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8",                       34.97,      0.02827 ],
-                ["ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8",                 34.91,      0.02817 ]
+                #["ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8",                 34.91,      0.02817 ],
+                ["ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8",                           34.91,      0.02817 ]
               ],
     "VV" :    [
                 ["WW_TuneCP5_13TeV-pythia8",                                                            75.8,       0.1123	],

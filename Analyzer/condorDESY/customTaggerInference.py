@@ -329,7 +329,7 @@ if __name__ == "__main__":
     if weightingMethod == "_both":
         methods = ["_as_is","_new"]
     else:
-        methods = weightingMethod
+        methods = [weightingMethod]
     
     for wm in methods:
         #outputPredsdir = "%s/%s/outPreds_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
@@ -350,17 +350,23 @@ if __name__ == "__main__":
         #print(bvl[:100])
         np.save(outputBvsLdir, bvl)
         del bvl
-        gc.colect()
+        gc.collect()
         cvb = calcCvsB(predictions)
+        # handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
+        cvb[(predictions[:,0]+predictions[:,1]+predictions[:,2]) == 0] = -1
+        cvb[(predictions[:,3]+predictions[:,2]) == 0] = -1
         #print(bvl[:100])
         np.save(outputCvsBdir, cvb)
         del cvb
-        gc.colect()
+        gc.collect()
         cvl = calcCvsL(predictions)
+        cvl[(predictions[:,0]+predictions[:,1]+predictions[:,2]) == 0] = -1
+        cvl[(predictions[:,3]+predictions[:,2]) == 0] = -1
         #print(bvl[:100])
         np.save(outputCvsLdir, cvl)
         del cvl
-        gc.colect()
+        del predictions
+        gc.collect()
         
         
         
