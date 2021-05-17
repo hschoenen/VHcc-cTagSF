@@ -115,7 +115,7 @@
         echo "    echo PATH:"
         echo $PATH
         echo "start with custom tagger"
-        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} '_both' ${OUTPUTDIR}
+        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} '_new' ${OUTPUTDIR}
         
         
         

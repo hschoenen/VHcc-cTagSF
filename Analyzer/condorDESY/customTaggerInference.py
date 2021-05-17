@@ -192,8 +192,14 @@ def predict(inputs, targets, scalers, method):
     return model(inputs).detach().numpy()
 
     
-def calcBvsL(predictions):    
+def calcBvsL(predictions):  # P(b)+P(bb)
     return predictions[:,0]+predictions[:,1]
+    
+def calcCvsB(predictions):  # P(c)/(P(b)+P(bb)+P(c))
+    return (predictions[:,2])/(predictions[:,0]+predictions[:,1]+predictions[:,2])
+    
+def calcCvsL(predictions):  # P(c)/(P(udsg)+P(c))
+    return (predictions[:,2])/(predictions[:,3]+predictions[:,2])
 
 
 
@@ -330,18 +336,31 @@ if __name__ == "__main__":
         #outputBvsLdir = "%s/%s/outBvsL_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
         outputPredsdir = "outPreds_%s%s.npy"%(outNo,wm)
         outputBvsLdir = "outBvsL_%s%s.npy"%(outNo,wm)
+        outputCvsBdir = "outCvsB_%s%s.npy"%(outNo,wm)
+        outputCvsLdir = "outCvsL_%s%s.npy"%(outNo,wm)
 
         #print("Saving into %s/%s"%(condoroutdir,sampName))
 
         
 
         predictions = predict(inputs, targets, scalers, wm)
-        bvl = calcBvsL(predictions)
         #print(predictions[:100,:])
-        #print(bvl[:100])
-        
-        
-        
         np.save(outputPredsdir, predictions)
+        bvl = calcBvsL(predictions)
+        #print(bvl[:100])
         np.save(outputBvsLdir, bvl)
+        del bvl
+        gc.colect()
+        cvb = calcCvsB(predictions)
+        #print(bvl[:100])
+        np.save(outputCvsBdir, cvb)
+        del cvb
+        gc.colect()
+        cvl = calcCvsL(predictions)
+        #print(bvl[:100])
+        np.save(outputCvsLdir, cvl)
+        del cvl
+        gc.colect()
+        
+        
         
