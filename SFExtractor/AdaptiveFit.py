@@ -44,6 +44,7 @@ parser.add_argument('-min','--minbinstocombine',type=int,default=1)
 parser.add_argument('-err','--maxrelerr',type=float,default=0.02)
 parser.add_argument('-r','--range',type=str,default="")
 parser.add_argument('--doDeepJet', action="store_true", default=False)
+parser.add_argument('--doCustom', action="store_true", default=False)
 parser.add_argument('--indepbinning', action="store_true", default=False)
 parser.add_argument('--pseudo', action="store_true", default=False)
 parser.add_argument('--doTempRemodel', action="store_true", default=False)
@@ -57,6 +58,7 @@ maxbinstocombine = args.maxbinstocombine
 minbinstocombine = args.minbinstocombine
 maxrelerr = args.maxrelerr
 doDeepJet = args.doDeepJet
+doCustom = args.doCustom
 pseudo = args.pseudo
 inputrange = args.range
 indepbin = args.indepbinning
@@ -69,6 +71,9 @@ if not isSyst: indepbin = True
 deepSuff = ""
 if doDeepJet:
     deepSuff = "DeepFlav"
+    #doMinus1 = False
+if doCustom:
+    deepSuff = "Custom"
     #doMinus1 = False
 
 if inputrange!="" and inputrange!="m1": doMinus1 = False
@@ -103,9 +108,9 @@ os.system("mkdir -p %s/%s"%(indir,resultsname))
             #and not (i.startswith("jet_CvsB") and "+jet_CvsB" in i)     
             #and not "_-0.2" in i        ]
 
-if not doDeepJet:
+if not doDeepJet and not doCustom:
     rootlist = [i for i in os.listdir(indir) if i.endswith('.root')         \
-                and "%sCvsL"%deepSuff in i and "%sCvsB_0."%deepSuff in i and "DeepFlav" not in i]
+                and "%sCvsL"%deepSuff in i and "%sCvsB_0."%deepSuff in i and "DeepFlav" not in i and "Custom" not in i]
 else:
     rootlist = [i for i in os.listdir(indir) if i.endswith('.root')         \
                 and "%sCvsL"%deepSuff in i and "%sCvsB_0."%deepSuff in i]
