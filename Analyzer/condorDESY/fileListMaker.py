@@ -10,7 +10,7 @@ print "Using input directory: "+inpDir
 dirlist=sorted([i for i in os.listdir(inpDir) if os.path.isdir(os.path.join(inpDir,i))])
 #print dirlist
 
-os.system("mkdir -p filelists")
+os.system("mkdir -p filelists2017NEW")
 
 def getFilenamesRec(dirpath):
     #print dirpath
@@ -31,7 +31,7 @@ def manipulatePath(path):
     return path  # + " " + channel
     
 for dr in dirlist:
-    outlist=open(os.path.join("filelists",dr+".txt"),'w')
+    outlist=open(os.path.join("filelists2017NEW",dr+".txt"),'w')
     for fl in getFilenamesRec(os.path.join(inpDir,dr)):
      #    print fl
           outlist.write(manipulatePath(fl)+'\n')

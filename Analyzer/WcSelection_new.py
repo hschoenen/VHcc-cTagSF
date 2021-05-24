@@ -148,6 +148,14 @@ customTaggerProbs = np.load("outPreds_%s_new.npy"%(outNo))  # just do it with th
 customTaggerBvsL  = np.load("outBvsL_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
 customTaggerCvsB  = np.load("outCvsB_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
 customTaggerCvsL  = np.load("outCvsL_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
+customTaggerNoiseProbs = np.load("noise_outPreds_%s_new.npy"%(outNo))  # just do it with the loss weighted model first here
+customTaggerNoiseBvsL  = np.load("noise_outBvsL_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
+customTaggerNoiseCvsB  = np.load("noise_outCvsB_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
+customTaggerNoiseCvsL  = np.load("noise_outCvsL_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
+customTaggerFGSMProbs = np.load("fgsm_outPreds_%s_new.npy"%(outNo))  # just do it with the loss weighted model first here
+customTaggerFGSMBvsL  = np.load("fgsm_outBvsL_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
+customTaggerFGSMCvsB  = np.load("fgsm_outCvsB_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
+customTaggerFGSMCvsL  = np.load("fgsm_outCvsL_%s_new.npy"%(outNo))  # if one wants no weighting, replace _new with _as_is
 # ==============================================================================
 
 # =============================== SF files =====================================
@@ -343,6 +351,12 @@ jet_CvsB           = std.vector('double')()
 jet_CustomBvsL     = std.vector('double')()  # new
 jet_CustomCvsB     = std.vector('double')()  # new
 jet_CustomCvsL     = std.vector('double')()  # new
+jet_CustomNoiseBvsL     = std.vector('double')()  # new
+jet_CustomNoiseCvsB     = std.vector('double')()  # new
+jet_CustomNoiseCvsL     = std.vector('double')()  # new
+jet_CustomFGSMBvsL     = std.vector('double')()  # new
+jet_CustomFGSMCvsB     = std.vector('double')()  # new
+jet_CustomFGSMCvsL     = std.vector('double')()  # new
 jet_DeepFlavCvsL   = std.vector('double')()
 jet_DeepFlavCvsB   = std.vector('double')()
 jet_qgl            = std.vector('double')()
@@ -365,6 +379,14 @@ jet_CustomProb_b   = std.vector('double')()  # new
 jet_CustomProb_bb  = std.vector('double')()  # new
 jet_CustomProb_c   = std.vector('double')()  # new
 jet_CustomProb_l   = std.vector('double')()  # new
+jet_CustomNoiseProb_b   = std.vector('double')()  # new
+jet_CustomNoiseProb_bb  = std.vector('double')()  # new
+jet_CustomNoiseProb_c   = std.vector('double')()  # new
+jet_CustomNoiseProb_l   = std.vector('double')()  # new
+jet_CustomFGSMProb_b   = std.vector('double')()  # new
+jet_CustomFGSMProb_bb  = std.vector('double')()  # new
+jet_CustomFGSMProb_c   = std.vector('double')()  # new
+jet_CustomFGSMProb_l   = std.vector('double')()  # new
 jet_btagDeepFlavB  = std.vector('double')()
 
 jetMu_Pt           = array('d',[0])
@@ -387,6 +409,12 @@ leadCvsB_jetidx      = array('d',[0])
 leadCustomBvsL_jetidx      = array('d',[0])  # new
 leadCustomCvsL_jetidx      = array('d',[0])  # new
 leadCustomCvsB_jetidx      = array('d',[0])  # new
+leadCustomNoiseBvsL_jetidx      = array('d',[0])  # new
+leadCustomNoiseCvsL_jetidx      = array('d',[0])  # new
+leadCustomNoiseCvsB_jetidx      = array('d',[0])  # new
+leadCustomFGSMBvsL_jetidx      = array('d',[0])  # new
+leadCustomFGSMCvsL_jetidx      = array('d',[0])  # new
+leadCustomFGSMCvsB_jetidx      = array('d',[0])  # new
 
 semitChi2          = array('d',[0])
 semitWCandMass     = array('d',[0])
@@ -597,6 +625,12 @@ outputTree.Branch('jet_CvsB'         ,jet_CvsB      )
 outputTree.Branch('jet_CustomBvsL'         ,jet_CustomBvsL      )  # new
 outputTree.Branch('jet_CustomCvsL'         ,jet_CustomCvsL      )  # new
 outputTree.Branch('jet_CustomCvsB'         ,jet_CustomCvsB      )  # new
+outputTree.Branch('jet_CustomNoiseBvsL'         ,jet_CustomNoiseBvsL      )  # new
+outputTree.Branch('jet_CustomNoiseCvsL'         ,jet_CustomNoiseCvsL      )  # new
+outputTree.Branch('jet_CustomNoiseCvsB'         ,jet_CustomNoiseCvsB      )  # new
+outputTree.Branch('jet_CustomFGSMBvsL'         ,jet_CustomFGSMBvsL      )  # new
+outputTree.Branch('jet_CustomFGSMCvsL'         ,jet_CustomFGSMCvsL      )  # new
+outputTree.Branch('jet_CustomFGSMCvsB'         ,jet_CustomFGSMCvsB      )  # new
 outputTree.Branch('jet_DeepFlavCvsL' ,jet_DeepFlavCvsL      )
 outputTree.Branch('jet_DeepFlavCvsB' ,jet_DeepFlavCvsB      )
 outputTree.Branch('jet_qgl'          ,jet_qgl      )
@@ -619,6 +653,14 @@ outputTree.Branch('jet_CustomProb_b'   ,jet_CustomProb_b      )  # new
 outputTree.Branch('jet_CustomProb_bb'   ,jet_CustomProb_bb      )  # new
 outputTree.Branch('jet_CustomProb_c'   ,jet_CustomProb_c      )  # new
 outputTree.Branch('jet_CustomProb_l'   ,jet_CustomProb_l      )  # new
+outputTree.Branch('jet_CustomNoiseProb_b'   ,jet_CustomNoiseProb_b      )  # new 
+outputTree.Branch('jet_CustomNoiseProb_bb'   ,jet_CustomNoiseProb_bb      )  # new
+outputTree.Branch('jet_CustomNoiseProb_c'   ,jet_CustomNoiseProb_c      )  # new
+outputTree.Branch('jet_CustomNoiseProb_l'   ,jet_CustomNoiseProb_l      )  # new
+outputTree.Branch('jet_CustomFGSMProb_b'   ,jet_CustomFGSMProb_b      )  # new 
+outputTree.Branch('jet_CustomFGSMProb_bb'   ,jet_CustomFGSMProb_bb      )  # new
+outputTree.Branch('jet_CustomFGSMProb_c'   ,jet_CustomFGSMProb_c      )  # new
+outputTree.Branch('jet_CustomFGSMProb_l'   ,jet_CustomFGSMProb_l      )  # new
 outputTree.Branch('jet_btagDeepFlavB'   ,jet_btagDeepFlavB      )
 outputTree.Branch('jet_btagCSVV2'   ,jet_btagCSVV2     )
 
@@ -642,6 +684,12 @@ outputTree.Branch('leadCvsL_jetidx'        ,leadCvsL_jetidx     ,'leadCvsL_jetid
 outputTree.Branch('leadCustomBvsL_jetidx'        ,leadCustomBvsL_jetidx     ,'leadCustomBvsL_jetidx/D')  # new
 outputTree.Branch('leadCustomCvsB_jetidx'        ,leadCustomCvsB_jetidx     ,'leadCustomCvsB_jetidx/D')  # new
 outputTree.Branch('leadCustomCvsL_jetidx'        ,leadCustomCvsL_jetidx     ,'leadCustomCvsL_jetidx/D')  # new
+outputTree.Branch('leadCustomNoiseBvsL_jetidx'        ,leadCustomNoiseBvsL_jetidx     ,'leadCustomNoiseBvsL_jetidx/D')  # new
+outputTree.Branch('leadCustomNoiseCvsB_jetidx'        ,leadCustomNoiseCvsB_jetidx     ,'leadCustomNoiseCvsB_jetidx/D')  # new
+outputTree.Branch('leadCustomNoiseCvsL_jetidx'        ,leadCustomNoiseCvsL_jetidx     ,'leadCustomNoiseCvsL_jetidx/D')  # new
+outputTree.Branch('leadCustomFGSMBvsL_jetidx'        ,leadCustomFGSMBvsL_jetidx     ,'leadCustomFGSMBvsL_jetidx/D')  # new
+outputTree.Branch('leadCustomFGSMCvsB_jetidx'        ,leadCustomFGSMCvsB_jetidx     ,'leadCustomFGSMCvsB_jetidx/D')  # new
+outputTree.Branch('leadCustomFGSMCvsL_jetidx'        ,leadCustomFGSMCvsL_jetidx     ,'leadCustomFGSMCvsL_jetidx/D')  # new
 
 outputTree.Branch('semitChi2'        ,semitChi2          ,'semitChi2/D')
 outputTree.Branch('semitWCandMass'   ,semitWCandMass     ,'semitWCandMass/D')
@@ -796,12 +844,21 @@ lenEventLoop = 0
 for entry in inputTree:
     lenEventLoop += 1
 print "The event loop will run %d times, nEntries which is the number of events, is %d" % (lenEventLoop, nEntries)
+
+# for debugging of variables names etc.
+
+lepsel_debug_print = False
+jetsel_debug_print = False
+triggersel_debug_print = False
+passedtrig_debug_print = False
+puweights_debug_print = False
+
 # Begin event loop
 for entry in inputTree:
     prevSeenOrSkippedJets = flatjetcount
-    for i in range(0, len(entry.Jet_pt)):
-        flatjetcount += 1
-    
+    #for i in range(0, len(entry.Jet_pt)):
+    #    flatjetcount += 1
+    flatjetcount += len(entry.Jet_pt)
     
     if maxEvents > 0 and count >= maxEvents: break
 
@@ -843,6 +900,12 @@ for entry in inputTree:
     jet_CustomBvsL_List       = []  # new
     jet_CustomCvsL_List       = []  # new
     jet_CustomCvsB_List       = []  # new
+    jet_CustomNoiseBvsL_List       = []  # new
+    jet_CustomNoiseCvsL_List       = []  # new
+    jet_CustomNoiseCvsB_List       = []  # new
+    jet_CustomFGSMBvsL_List       = []  # new
+    jet_CustomFGSMCvsL_List       = []  # new
+    jet_CustomFGSMCvsB_List       = []  # new
     jet_CvsB_CvsL_List  = []
     jet_CvsB_CvsL_List2 = []
 
@@ -869,6 +932,12 @@ for entry in inputTree:
     j_CustomBvsL_List              = []  # new
     j_CustomCvsL_List              = []  # nre
     j_CustomCvsB_List              = []  # new
+    j_CustomNoiseBvsL_List              = []  # new
+    j_CustomNoiseCvsL_List              = []  # nre
+    j_CustomNoiseCvsB_List              = []  # new
+    j_CustomFGSMBvsL_List              = []  # new
+    j_CustomFGSMCvsL_List              = []  # nre
+    j_CustomFGSMCvsB_List              = []  # new
     j_qgl_List               = []
     j_MuonIdx1_List          = []
     j_MuonIdx2_List          = []
@@ -956,6 +1025,12 @@ for entry in inputTree:
     leadCustomBvsL_jetidx[0]        = -1  # new
     leadCustomCvsB_jetidx[0]        = -1  # new
     leadCustomCvsL_jetidx[0]        = -1  # new
+    leadCustomNoiseBvsL_jetidx[0]        = -1  # new
+    leadCustomNoiseCvsB_jetidx[0]        = -1  # new
+    leadCustomNoiseCvsL_jetidx[0]        = -1  # new
+    leadCustomFGSMBvsL_jetidx[0]        = -1  # new
+    leadCustomFGSMCvsB_jetidx[0]        = -1  # new
+    leadCustomFGSMCvsL_jetidx[0]        = -1  # new
     QCDveto[0]              = -1
 
     semitChi2[0]            = -1
@@ -1054,6 +1129,12 @@ for entry in inputTree:
     jet_CustomBvsL.clear()  # new
     jet_CustomCvsL.clear()  # new
     jet_CustomCvsB.clear()  # new
+    jet_CustomNoiseBvsL.clear()  # new
+    jet_CustomNoiseCvsL.clear()  # new
+    jet_CustomNoiseCvsB.clear()  # new
+    jet_CustomFGSMBvsL.clear()  # new
+    jet_CustomFGSMCvsL.clear()  # new
+    jet_CustomFGSMCvsB.clear()  # new
     jet_DeepFlavCvsL.clear()
     jet_DeepFlavCvsB.clear()
     jet_qgl.clear()
@@ -1075,6 +1156,14 @@ for entry in inputTree:
     jet_CustomProb_bb.clear()  # new
     jet_CustomProb_c.clear()  # new
     jet_CustomProb_l.clear()  # new
+    jet_CustomNoiseProb_b.clear()  # new
+    jet_CustomNoiseProb_bb.clear()  # new
+    jet_CustomNoiseProb_c.clear()  # new
+    jet_CustomNoiseProb_l.clear()  # new
+    jet_CustomFGSMProb_b.clear()  # new
+    jet_CustomFGSMProb_bb.clear()  # new
+    jet_CustomFGSMProb_c.clear()  # new
+    jet_CustomFGSMProb_l.clear()  # new
     jet_btagCSVV2.clear()
     jet_btagDeepFlavB.clear()
 
@@ -1100,9 +1189,15 @@ for entry in inputTree:
 
     # =========================== Select Leptons ===============================
     if era == 2016:
+        if lepsel_debug_print == False:
+            print "store leptons, variables from era 2016"
+            lepsel_debug_print = True
         ElectronID = entry.Electron_mvaSpring16GP_WP80  # don't know if available in PFNano
         elePtCut = 30
     elif era == 2017 or era == 2018:
+        if lepsel_debug_print == False:
+            print "store leptons, variables from era 2017 or 2018"
+            lepsel_debug_print = True
         if "Electron_mvaFall17V2Iso_WP80" in validBranches:
             ElectronID = entry.Electron_mvaFall17V2Iso_WP80  # same in PFNano
         else:
@@ -1260,8 +1355,16 @@ for entry in inputTree:
     #totalJetCustomBvsL = 0  # new
     #totalJetCustomBvsLpt = 0  # new
     min_dPhi_jet_MET[0] = 1000
-    if era == 2016: jetetamax = 2.4
-    elif era == 2017 or era == 2018: jetetamax = 2.5
+    if era == 2016: 
+        if jetsel_debug_print == False:
+            print "jet selection, variables from era 2016"
+            jetsel_debug_print = True
+        jetetamax = 2.4
+    elif era == 2017 or era == 2018: 
+        if jetsel_debug_print == False:
+            print "jet selection, variables from era 2017 or 2018"
+            jetsel_debug_print = True
+        jetetamax = 2.5
     #print "Currently running the event loop for the %d. time, in this event, there are %d jets for which the loop will now start" % (count, len(jetPt))
     for i in range(0, len(jetPt)):
         #flatjetcount += 1  # the trick is to count the jets before any cuts
@@ -1271,8 +1374,8 @@ for entry in inputTree:
         if entry.Jet_jetId[i] < 5: continue  # same in PFNano
         if entry.Jet_puId[i] < 7 and jetPt[i] < 50: continue  # same in PFNano
 #        if jetFilterFlags[i] == False: continue
-        #if isMC:
-        #    if entry.Jet_DeepCSV_vertexCategory[i] != 0: continue  # because my custom tagger was only trained on vertex category 0, the performance for cat. 1 and 2 might be pretty bad - however one does not have to impose the condition, the tagger will "work" regardless of that
+        #if isMC: # now the data also has this variable
+        if entry.Jet_DeepCSV_vertexCategory[i] != 0: continue  # because my custom tagger was only trained on vertex category 0, the performance for cat. 1 and 2 might be pretty bad - however one does not have to impose the condition, the tagger will "work" regardless of that
         Jet_muEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neEmEF[i] + entry.Jet_neHEF[i])  # same in PFNano
         Jet_muplusneEmEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neHEF[i])  # same in PFNano
         # if Jet_muEF > 0.8: continue
@@ -1304,6 +1407,14 @@ for entry in inputTree:
         jet_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets+i])  # new
         jet_CustomCvsB_List.append(customTaggerCvsB[prevSeenOrSkippedJets+i])  # new
         jet_CustomCvsL_List.append(customTaggerCvsL[prevSeenOrSkippedJets+i])  # new
+        if isMC:
+            jet_CustomNoiseBvsL_List.append(customTaggerNoiseBvsL[prevSeenOrSkippedJets+i])  # new
+            jet_CustomNoiseCvsB_List.append(customTaggerNoiseCvsB[prevSeenOrSkippedJets+i])  # new
+            jet_CustomNoiseCvsL_List.append(customTaggerNoiseCvsL[prevSeenOrSkippedJets+i])  # new
+            jet_CustomFGSMBvsL_List.append(customTaggerFGSMBvsL[prevSeenOrSkippedJets+i])  # new
+            jet_CustomFGSMCvsB_List.append(customTaggerFGSMCvsB[prevSeenOrSkippedJets+i])  # new
+            jet_CustomFGSMCvsL_List.append(customTaggerFGSMCvsL[prevSeenOrSkippedJets+i])  # new
+            
         #else:
         #    jet_CustomBvsL_List.append(entry.Jet_btagDeepB[i])
         # ------------------------------------------------------------------------------------------------------------
@@ -1329,6 +1440,13 @@ for entry in inputTree:
         j_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets + i])  # new
         j_CustomCvsB_List.append(customTaggerCvsB[prevSeenOrSkippedJets + i])  # new
         j_CustomCvsL_List.append(customTaggerCvsL[prevSeenOrSkippedJets + i])  # new
+        if isMC:
+            j_CustomNoiseBvsL_List.append(customTaggerNoiseBvsL[prevSeenOrSkippedJets + i])  # new
+            j_CustomNoiseCvsB_List.append(customTaggerNoiseCvsB[prevSeenOrSkippedJets + i])  # new
+            j_CustomNoiseCvsL_List.append(customTaggerNoiseCvsL[prevSeenOrSkippedJets + i])  # new
+            j_CustomFGSMBvsL_List.append(customTaggerFGSMBvsL[prevSeenOrSkippedJets + i])  # new
+            j_CustomFGSMCvsB_List.append(customTaggerFGSMCvsB[prevSeenOrSkippedJets + i])  # new
+            j_CustomFGSMCvsL_List.append(customTaggerFGSMCvsL[prevSeenOrSkippedJets + i])  # new
         #else:
         #    j_CustomBvsL_List.append(entry.Jet_btagDeepB[i])
         j_qgl_List.append(entry.Jet_qgl[i])  # same in PFNano
@@ -1364,6 +1482,16 @@ for entry in inputTree:
         jet_CustomProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
         jet_CustomProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
         jet_CustomProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+        if isMC:
+            jet_CustomNoiseProb_b.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][0])  # new
+            jet_CustomNoiseProb_bb.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][1])  # new
+            jet_CustomNoiseProb_c.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][2])  # new
+            jet_CustomNoiseProb_l.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][3])  # new
+            jet_CustomFGSMProb_b.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][0])  # new
+            jet_CustomFGSMProb_bb.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][1])  # new
+            jet_CustomFGSMProb_c.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][2])  # new
+            jet_CustomFGSMProb_l.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][3])  # new
+            
         #else:  # as soon as I have data with Jet_DeepCSV variables, this can be removed and there will be custom tagger outputs
             #jet_CustomProb_b.push_back(entry.Jet_btagDeepB_b[i])  # new
             #jet_CustomProb_bb.push_back(entry.Jet_btagDeepB_bb[i])  # new
@@ -1406,6 +1534,13 @@ for entry in inputTree:
     leadCustomBvsL_jetidx[0] = jet_CustomBvsL_List.index(max(jet_CustomBvsL_List))  # new
     leadCustomCvsB_jetidx[0] = jet_CustomCvsB_List.index(max(jet_CustomCvsB_List))  # new
     leadCustomCvsL_jetidx[0] = jet_CustomCvsL_List.index(max(jet_CustomCvsL_List))  # new
+    if isMC:
+        leadCustomNoiseBvsL_jetidx[0] = jet_CustomNoiseBvsL_List.index(max(jet_CustomNoiseBvsL_List))  # new
+        leadCustomNoiseCvsB_jetidx[0] = jet_CustomNoiseCvsB_List.index(max(jet_CustomNoiseCvsB_List))  # new
+        leadCustomNoiseCvsL_jetidx[0] = jet_CustomNoiseCvsL_List.index(max(jet_CustomNoiseCvsL_List))  # new
+        leadCustomFGSMBvsL_jetidx[0] = jet_CustomFGSMBvsL_List.index(max(jet_CustomFGSMBvsL_List))  # new
+        leadCustomFGSMCvsB_jetidx[0] = jet_CustomFGSMCvsB_List.index(max(jet_CustomFGSMCvsB_List))  # new
+        leadCustomFGSMCvsL_jetidx[0] = jet_CustomFGSMCvsL_List.index(max(jet_CustomFGSMCvsL_List))  # new
     #else:  # maybe something else in the future for data, not sure
     #    leadCustomBvsL_jetidx[0] = jet_CustomBvsL_List.index(max(jet_CustomBvsL_List))  # new
     # ------------------------------------------------------------------------------------------------------------
@@ -1473,8 +1608,14 @@ for entry in inputTree:
         print "HLT_IsoTkMu24"
         print "HLT_Ele27_WPTight_Gsf"
     if era == 2016:
+        if triggersel_debug_print == False:
+            print "trigger sel: era 2016"
+            triggersel_debug_print = True
         if ( entry.HLT_IsoMu24 == 0 ) and ( entry.HLT_IsoTkMu24 == 0 ) and (entry.HLT_Ele27_WPTight_Gsf == 0 )  : continue  # not able to check varnames from 2016
     elif era == 2017:
+        if triggersel_debug_print == False:
+            print "trigger sel: era 2017"
+            triggersel_debug_print = True
         # if "HLT_Ele32_WPTight_Gsf" in validBranches:
         #     eleTrig2017 = (bool(entry.HLT_Ele32_WPTight_Gsf_L1DoubleEG) and bool(entry.HLT_Ele35_WPTight_Gsf_L1EGMT)) or bool(entry.HLT_Ele32_WPTight_Gsf)
         # else:
@@ -1482,11 +1623,17 @@ for entry in inputTree:
         eleTrig2017 = entry.HLT_Ele32_WPTight_Gsf_L1DoubleEG  # same in PFNano
         if ( entry.HLT_IsoMu27 == 0 ) and ( eleTrig2017 == 0 )  : continue  # same in PFNano
     elif era == 2018:
+        if triggersel_debug_print == False:
+            print "trigger sel: era 2018"
+            triggersel_debug_print = True
         if ( entry.HLT_IsoMu24 == 0 ) and ( entry.HLT_Ele32_WPTight_Gsf == 0 ): continue  # same in PFNano
         
     TriggerPass = True
 
     if era == 2016: #Not used, hence not done for 2017
+        if passedtrig_debug_print == False:
+            print "passed trigger, era 2016"
+            passedtrig_debug_print = True
         if ( entry.HLT_IsoMu24 == 1 ) or ( entry.HLT_IsoTkMu24 == 1 ):
             muTrig[0] = 1
         else:
@@ -1501,6 +1648,7 @@ for entry in inputTree:
 #    minDR = 7
     jetMu_Charge = -1000
     nMuJet[0] = 0
+
 
     foundMuJet = False
     for ij in range(len(j_Pt_List)):
@@ -1644,6 +1792,13 @@ for entry in inputTree:
         jet_CustomBvsL.push_back(j_CustomBvsL_List[i])  # new
         jet_CustomCvsB.push_back(j_CustomCvsB_List[i])  # new
         jet_CustomCvsL.push_back(j_CustomCvsL_List[i])  # new
+        if isMC:
+            jet_CustomNoiseBvsL.push_back(j_CustomNoiseBvsL_List[i])  # new
+            jet_CustomNoiseCvsB.push_back(j_CustomNoiseCvsB_List[i])  # new
+            jet_CustomNoiseCvsL.push_back(j_CustomNoiseCvsL_List[i])  # new
+            jet_CustomFGSMBvsL.push_back(j_CustomFGSMBvsL_List[i])  # new
+            jet_CustomFGSMCvsB.push_back(j_CustomFGSMCvsB_List[i])  # new
+            jet_CustomFGSMCvsL.push_back(j_CustomFGSMCvsL_List[i])  # new
         jet_qgl.push_back(j_qgl_List[i])
         if isMC:
             jet_hadronFlv.push_back(j_hadronFlv_List[i])
@@ -1735,6 +1890,9 @@ for entry in inputTree:
 
         # PU Weights
         if era != 2018 and era != 2017:
+            if puweights_debug_print == False:
+                print "era 2016, PUweights available"
+                puweights_debug_print = True
             # ==========================================================================================================================
             ####### ToDo: check this variable (do I need it? is it there, maybe under another name? if not, and needed, how to get it?)
             PUWeight[0] = entry.puWeight  # so far, not found for 2017 PFNano, therefore the condition above has been modified to exclude 2017 as well
@@ -1743,12 +1901,18 @@ for entry in inputTree:
                 PUWeight_down[0] = entry.puWeightDown/PUWeight[0]  # so far, not found, is it maybe L1PreFiringWeight_Dn?
             # --------------------------------------------------------------------------------------------------------------------------
         elif era == 2017:
+            if puweights_debug_print == False:
+                print "era 2017, no PU weights available"
+                puweights_debug_print = True
             pass
             #PUWeight[0] = getPUweight(entry.Pileup_nTrueInt,0)  # same in PFNano
             #if PUWeight[0]!=0:
             #    PUWeight_up[0] = getPUweight(entry.Pileup_nTrueInt,1)/PUWeight[0]  # same in PFNano
             #    PUWeight_down[0] = getPUweight(entry.Pileup_nTrueInt,-1)/PUWeight[0]  # same in PFNano
         else:
+            if puweights_debug_print == False:
+                print "era 2018, PUweights will be computed"
+                puweights_debug_print = True
             PUWeight[0] = getPUweight(entry.Pileup_nTrueInt,0)  # same in PFNano
             if PUWeight[0]!=0:
                 PUWeight_up[0] = getPUweight(entry.Pileup_nTrueInt,1)/PUWeight[0]  # same in PFNano

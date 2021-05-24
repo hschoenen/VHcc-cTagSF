@@ -3,7 +3,8 @@
     echo $HOSTNAME
     echo "Who am I?"
     whoami
-
+    echo "hostname"
+    hostname -f
     echo "   Current dir:"
     pwd
     echo "CONDOR_SCRATCH_DIR = $_CONDOR_SCRATCH_DIR"
@@ -11,7 +12,7 @@
 
 #	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_$4_minimal/
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210511_2017_$4_PFNano/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210523_2017_$4_PFNano/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
