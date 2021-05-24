@@ -267,6 +267,12 @@ jet_CvsB           = std.vector('double')()
 jet_CustomBvsL     = std.vector('double')()  # new
 jet_CustomCvsL           = std.vector('double')()
 jet_CustomCvsB           = std.vector('double')()
+jet_CustomNoiseBvsL     = std.vector('double')()  # new
+jet_CustomNoiseCvsB     = std.vector('double')()  # new
+jet_CustomNoiseCvsL     = std.vector('double')()  # new
+jet_CustomFGSMBvsL     = std.vector('double')()  # new
+jet_CustomFGSMCvsB     = std.vector('double')()  # new
+jet_CustomFGSMCvsL     = std.vector('double')()  # new
 jet_DeepFlavCvsL   = std.vector('double')()
 jet_DeepFlavCvsB   = std.vector('double')()
 jet_qgl            = std.vector('double')()
@@ -287,6 +293,14 @@ jet_CustomProb_b   = std.vector('double')()  # new
 jet_CustomProb_bb  = std.vector('double')()  # new
 jet_CustomProb_c   = std.vector('double')()  # new
 jet_CustomProb_l   = std.vector('double')()  # new
+jet_CustomNoiseProb_b   = std.vector('double')()  # new
+jet_CustomNoiseProb_bb  = std.vector('double')()  # new
+jet_CustomNoiseProb_c   = std.vector('double')()  # new
+jet_CustomNoiseProb_l   = std.vector('double')()  # new
+jet_CustomFGSMProb_b   = std.vector('double')()  # new
+jet_CustomFGSMProb_bb  = std.vector('double')()  # new
+jet_CustomFGSMProb_c   = std.vector('double')()  # new
+jet_CustomFGSMProb_l   = std.vector('double')()  # new
 jet_btagDeepFlavB  = std.vector('double')()
 
 jetMu_Pt           = array('d',[0])
@@ -309,6 +323,12 @@ leadCvsB_jetidx      = array('d',[0])
 leadCustomBvsL_jetidx      = array('d',[0])  # new
 leadCustomCvsL_jetidx      = array('d',[0])
 leadCustomCvsB_jetidx      = array('d',[0])
+leadCustomNoiseBvsL_jetidx      = array('d',[0])  # new
+leadCustomNoiseCvsL_jetidx      = array('d',[0])  # new
+leadCustomNoiseCvsB_jetidx      = array('d',[0])  # new
+leadCustomFGSMBvsL_jetidx      = array('d',[0])  # new
+leadCustomFGSMCvsL_jetidx      = array('d',[0])  # new
+leadCustomFGSMCvsB_jetidx      = array('d',[0])  # new
 
 QCDveto             = array('d',[0])
 
@@ -503,6 +523,12 @@ outputTree.Branch('jet_CvsB'         ,jet_CvsB      )
 outputTree.Branch('jet_CustomBvsL'         ,jet_CustomBvsL      )  # new
 outputTree.Branch('jet_CustomCvsL'         ,jet_CustomCvsL      )
 outputTree.Branch('jet_CustomCvsB'         ,jet_CustomCvsB      )
+outputTree.Branch('jet_CustomNoiseBvsL'         ,jet_CustomNoiseBvsL      )  # new
+outputTree.Branch('jet_CustomNoiseCvsL'         ,jet_CustomNoiseCvsL      )  # new
+outputTree.Branch('jet_CustomNoiseCvsB'         ,jet_CustomNoiseCvsB      )  # new
+outputTree.Branch('jet_CustomFGSMBvsL'         ,jet_CustomFGSMBvsL      )  # new
+outputTree.Branch('jet_CustomFGSMCvsL'         ,jet_CustomFGSMCvsL      )  # new
+outputTree.Branch('jet_CustomFGSMCvsB'         ,jet_CustomFGSMCvsB      )  # new
 outputTree.Branch('jet_DeepFlavCvsL' ,jet_DeepFlavCvsL      )
 outputTree.Branch('jet_DeepFlavCvsB' ,jet_DeepFlavCvsB      )
 outputTree.Branch('jet_qgl'          ,jet_qgl      )
@@ -522,6 +548,14 @@ outputTree.Branch('jet_CustomProb_b'   ,jet_CustomProb_b      )  # new
 outputTree.Branch('jet_CustomProb_bb'   ,jet_CustomProb_bb      )  # new
 outputTree.Branch('jet_CustomProb_c'   ,jet_CustomProb_c      )  # new
 outputTree.Branch('jet_CustomProb_l'   ,jet_CustomProb_l      )  # new
+outputTree.Branch('jet_CustomNoiseProb_b'   ,jet_CustomNoiseProb_b      )  # new 
+outputTree.Branch('jet_CustomNoiseProb_bb'   ,jet_CustomNoiseProb_bb      )  # new
+outputTree.Branch('jet_CustomNoiseProb_c'   ,jet_CustomNoiseProb_c      )  # new
+outputTree.Branch('jet_CustomNoiseProb_l'   ,jet_CustomNoiseProb_l      )  # new
+outputTree.Branch('jet_CustomFGSMProb_b'   ,jet_CustomFGSMProb_b      )  # new 
+outputTree.Branch('jet_CustomFGSMProb_bb'   ,jet_CustomFGSMProb_bb      )  # new
+outputTree.Branch('jet_CustomFGSMProb_c'   ,jet_CustomFGSMProb_c      )  # new
+outputTree.Branch('jet_CustomFGSMProb_l'   ,jet_CustomFGSMProb_l      )  # new
 outputTree.Branch('jet_btagDeepFlavB'   ,jet_btagDeepFlavB      )
 outputTree.Branch('jet_btagCSVV2'   ,jet_btagCSVV2     )
 
@@ -545,6 +579,12 @@ outputTree.Branch('leadCvsL_jetidx'        ,leadCvsL_jetidx     ,'leadCvsL_jetid
 outputTree.Branch('leadCustomBvsL_jetidx'        ,leadCustomBvsL_jetidx     ,'leadCustomBvsL_jetidx/D')  # new
 outputTree.Branch('leadCustomCvsB_jetidx'        ,leadCustomCvsB_jetidx     ,'leadCustomCvsB_jetidx/D')
 outputTree.Branch('leadCustomCvsL_jetidx'        ,leadCustomCvsL_jetidx     ,'leadCustomCvsL_jetidx/D')
+outputTree.Branch('leadCustomNoiseBvsL_jetidx'        ,leadCustomNoiseBvsL_jetidx     ,'leadCustomNoiseBvsL_jetidx/D')  # new
+outputTree.Branch('leadCustomNoiseCvsB_jetidx'        ,leadCustomNoiseCvsB_jetidx     ,'leadCustomNoiseCvsB_jetidx/D')  # new
+outputTree.Branch('leadCustomNoiseCvsL_jetidx'        ,leadCustomNoiseCvsL_jetidx     ,'leadCustomNoiseCvsL_jetidx/D')  # new
+outputTree.Branch('leadCustomFGSMBvsL_jetidx'        ,leadCustomFGSMBvsL_jetidx     ,'leadCustomFGSMBvsL_jetidx/D')  # new
+outputTree.Branch('leadCustomFGSMCvsB_jetidx'        ,leadCustomFGSMCvsB_jetidx     ,'leadCustomFGSMCvsB_jetidx/D')  # new
+outputTree.Branch('leadCustomFGSMCvsL_jetidx'        ,leadCustomFGSMCvsL_jetidx     ,'leadCustomFGSMCvsL_jetidx/D')  # new
 
 outputTree.Branch('QCDveto'        ,QCDveto     ,'QCDveto/D')
 
@@ -725,6 +765,12 @@ for entry in inputTree:
     jet_CustomBvsL_List       = []  # new
     jet_CustomCvsL_List       = []
     jet_CustomCvsB_List       = []
+    jet_CustomNoiseBvsL_List       = []  # new
+    jet_CustomNoiseCvsL_List       = []  # new
+    jet_CustomNoiseCvsB_List       = []  # new
+    jet_CustomFGSMBvsL_List       = []  # new
+    jet_CustomFGSMCvsL_List       = []  # new
+    jet_CustomFGSMCvsB_List       = []  # new
     jet_CvsB_CvsL_List  = []
     jet_CvsB_CvsL_List2 = []
 
@@ -755,6 +801,12 @@ for entry in inputTree:
     j_CustomBvsL_List              = []  # new
     j_CustomCvsL_List              = []
     j_CustomCvsB_List              = []
+    j_CustomNoiseBvsL_List              = []  # new
+    j_CustomNoiseCvsL_List              = []  # new
+    j_CustomNoiseCvsB_List              = []  # new
+    j_CustomFGSMBvsL_List              = []  # new
+    j_CustomFGSMCvsL_List              = []  # new
+    j_CustomFGSMCvsB_List              = []  # new
     j_qgl_List               = []
     if isMC:
         j_hadronFlv_List         = []
@@ -830,6 +882,14 @@ for entry in inputTree:
     leadCvsB_jetidx[0]        = -1
     leadCvsL_jetidx[0]        = -1
     leadCustomBvsL_jetidx[0]        = -1  # new
+    leadCustomCvsB_jetidx[0]        = -1  # new
+    leadCustomCvsL_jetidx[0]        = -1  # new
+    leadCustomNoiseBvsL_jetidx[0]        = -1  # new
+    leadCustomNoiseCvsB_jetidx[0]        = -1  # new
+    leadCustomNoiseCvsL_jetidx[0]        = -1  # new
+    leadCustomFGSMBvsL_jetidx[0]        = -1  # new
+    leadCustomFGSMCvsB_jetidx[0]        = -1  # new
+    leadCustomFGSMCvsL_jetidx[0]        = -1  # new
     QCDveto[0]              = -1
 
     nPV[0]                 = -1
@@ -920,6 +980,12 @@ for entry in inputTree:
     jet_CustomBvsL.clear()  # new
     jet_CustomCvsL.clear()
     jet_CustomCvsB.clear()
+    jet_CustomNoiseBvsL.clear()  # new
+    jet_CustomNoiseCvsL.clear()  # new
+    jet_CustomNoiseCvsB.clear()  # new
+    jet_CustomFGSMBvsL.clear()  # new
+    jet_CustomFGSMCvsL.clear()  # new
+    jet_CustomFGSMCvsB.clear()  # new
     jet_DeepFlavCvsL.clear()
     jet_DeepFlavCvsB.clear()
     jet_qgl.clear()
@@ -939,6 +1005,14 @@ for entry in inputTree:
     jet_CustomProb_bb.clear()  # new
     jet_CustomProb_c.clear()  # new
     jet_CustomProb_l.clear()  # new
+    jet_CustomNoiseProb_b.clear()  # new
+    jet_CustomNoiseProb_bb.clear()  # new
+    jet_CustomNoiseProb_c.clear()  # new
+    jet_CustomNoiseProb_l.clear()  # new
+    jet_CustomFGSMProb_b.clear()  # new
+    jet_CustomFGSMProb_bb.clear()  # new
+    jet_CustomFGSMProb_c.clear()  # new
+    jet_CustomFGSMProb_l.clear()  # new
     jet_btagCSVV2.clear()
     jet_btagDeepFlavB.clear()
 
@@ -1124,7 +1198,7 @@ for entry in inputTree:
         if entry.Jet_jetId[i] < 5: continue
         if entry.Jet_puId[i] < 7 and jetPt[i] < 50: continue
 #        if jetFilterFlags[i] == False: continue
-
+        if entry.Jet_DeepCSV_vertexCategory[i] != 0: continue
         Jet_muEF = 1 - (entry.Jet_chEmEF[i] + entry.Jet_chHEF[i] + entry.Jet_neEmEF[i] + entry.Jet_neHEF[i])
         # if Jet_muEF > 0.8: continue
         if entry.Jet_muonIdx1[i] >= 0:
@@ -1154,9 +1228,17 @@ for entry in inputTree:
         jet_CvsB_List.append(entry.Jet_btagDeepCvB[i])
         jet_CvsB_CvsL_List.append((entry.Jet_btagDeepCvB[i])+(entry.Jet_btagDeepCvL[i]))
         jet_CvsB_CvsL_List2.append((entry.Jet_btagDeepCvB[i])**2+(entry.Jet_btagDeepCvL[i])**2)
-        jet_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets+i])
-        jet_CustomCvsB_List.append(customTaggerCvsB[prevSeenOrSkippedJets+i])
-        jet_CustomCvsL_List.append(customTaggerCvsL[prevSeenOrSkippedJets+i])
+        
+        jet_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets+i]) # new
+        jet_CustomCvsB_List.append(customTaggerCvsB[prevSeenOrSkippedJets+i]) # new
+        jet_CustomCvsL_List.append(customTaggerCvsL[prevSeenOrSkippedJets+i]) # new
+        if isMC:
+            jet_CustomNoiseBvsL_List.append(customTaggerNoiseBvsL[prevSeenOrSkippedJets+i])  # new
+            jet_CustomNoiseCvsB_List.append(customTaggerNoiseCvsB[prevSeenOrSkippedJets+i])  # new
+            jet_CustomNoiseCvsL_List.append(customTaggerNoiseCvsL[prevSeenOrSkippedJets+i])  # new
+            jet_CustomFGSMBvsL_List.append(customTaggerFGSMBvsL[prevSeenOrSkippedJets+i])  # new
+            jet_CustomFGSMCvsB_List.append(customTaggerFGSMCvsB[prevSeenOrSkippedJets+i])  # new
+            jet_CustomFGSMCvsL_List.append(customTaggerFGSMCvsL[prevSeenOrSkippedJets+i])  # new
         
         HT_temp         += jetPt[i]
         totalJetEnergy  += jet.E()
@@ -1172,6 +1254,13 @@ for entry in inputTree:
         j_CustomBvsL_List.append(customTaggerBvsL[prevSeenOrSkippedJets + i])  # new
         j_CustomCvsB_List.append(customTaggerCvsB[prevSeenOrSkippedJets + i])  # new
         j_CustomCvsL_List.append(customTaggerCvsL[prevSeenOrSkippedJets + i])  # new
+        if isMC:
+            j_CustomNoiseBvsL_List.append(customTaggerNoiseBvsL[prevSeenOrSkippedJets + i])  # new
+            j_CustomNoiseCvsB_List.append(customTaggerNoiseCvsB[prevSeenOrSkippedJets + i])  # new
+            j_CustomNoiseCvsL_List.append(customTaggerNoiseCvsL[prevSeenOrSkippedJets + i])  # new
+            j_CustomFGSMBvsL_List.append(customTaggerFGSMBvsL[prevSeenOrSkippedJets + i])  # new
+            j_CustomFGSMCvsB_List.append(customTaggerFGSMCvsB[prevSeenOrSkippedJets + i])  # new
+            j_CustomFGSMCvsL_List.append(customTaggerFGSMCvsL[prevSeenOrSkippedJets + i])  # new
         j_qgl_List.append(entry.Jet_qgl[i])
         
         if "Jet_btagDeepFlavCvL" in validBranches:
@@ -1196,6 +1285,15 @@ for entry in inputTree:
         jet_CustomProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
         jet_CustomProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
         jet_CustomProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+        if isMC:
+            jet_CustomNoiseProb_b.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][0])  # new
+            jet_CustomNoiseProb_bb.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][1])  # new
+            jet_CustomNoiseProb_c.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][2])  # new
+            jet_CustomNoiseProb_l.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][3])  # new
+            jet_CustomFGSMProb_b.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][0])  # new
+            jet_CustomFGSMProb_bb.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][1])  # new
+            jet_CustomFGSMProb_c.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][2])  # new
+            jet_CustomFGSMProb_l.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][3])  # new
         
         if isMC:
             j_hadronFlv_List.append(entry.Jet_hadronFlavour[i])
@@ -1229,6 +1327,13 @@ for entry in inputTree:
     leadCustomBvsL_jetidx[0] = jet_CustomBvsL_List.index(max(jet_CustomBvsL_List))  # new
     leadCustomCvsB_jetidx[0] = jet_CustomCvsB_List.index(max(jet_CustomCvsB_List))  # new
     leadCustomCvsL_jetidx[0] = jet_CustomCvsL_List.index(max(jet_CustomCvsL_List))  # new
+    if isMC:
+        leadCustomNoiseBvsL_jetidx[0] = jet_CustomNoiseBvsL_List.index(max(jet_CustomNoiseBvsL_List))  # new
+        leadCustomNoiseCvsB_jetidx[0] = jet_CustomNoiseCvsB_List.index(max(jet_CustomNoiseCvsB_List))  # new
+        leadCustomNoiseCvsL_jetidx[0] = jet_CustomNoiseCvsL_List.index(max(jet_CustomNoiseCvsL_List))  # new
+        leadCustomFGSMBvsL_jetidx[0] = jet_CustomFGSMBvsL_List.index(max(jet_CustomFGSMBvsL_List))  # new
+        leadCustomFGSMCvsB_jetidx[0] = jet_CustomFGSMCvsB_List.index(max(jet_CustomFGSMCvsB_List))  # new
+        leadCustomFGSMCvsL_jetidx[0] = jet_CustomFGSMCvsL_List.index(max(jet_CustomFGSMCvsL_List))  # new
     
     # Save jets according to hadron flavour
     if isMC:
@@ -1429,6 +1534,13 @@ for entry in inputTree:
         jet_CustomBvsL.push_back(j_CustomBvsL_List[i])  # new
         jet_CustomCvsB.push_back(j_CustomCvsB_List[i])  # new
         jet_CustomCvsL.push_back(j_CustomCvsL_List[i])  # new
+        if isMC:
+            jet_CustomNoiseBvsL.push_back(j_CustomNoiseBvsL_List[i])  # new
+            jet_CustomNoiseCvsB.push_back(j_CustomNoiseCvsB_List[i])  # new
+            jet_CustomNoiseCvsL.push_back(j_CustomNoiseCvsL_List[i])  # new
+            jet_CustomFGSMBvsL.push_back(j_CustomFGSMBvsL_List[i])  # new
+            jet_CustomFGSMCvsB.push_back(j_CustomFGSMCvsB_List[i])  # new
+            jet_CustomFGSMCvsL.push_back(j_CustomFGSMCvsL_List[i])  # new
         jet_qgl.push_back(j_qgl_List[i])
         if isMC:
             jet_hadronFlv.push_back(j_hadronFlv_List[i])

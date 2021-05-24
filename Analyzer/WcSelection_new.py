@@ -930,13 +930,13 @@ for entry in inputTree:
     j_CvsL_List              = []
     j_CvsB_List              = []
     j_CustomBvsL_List              = []  # new
-    j_CustomCvsL_List              = []  # nre
+    j_CustomCvsL_List              = []  # new
     j_CustomCvsB_List              = []  # new
     j_CustomNoiseBvsL_List              = []  # new
-    j_CustomNoiseCvsL_List              = []  # nre
+    j_CustomNoiseCvsL_List              = []  # new
     j_CustomNoiseCvsB_List              = []  # new
     j_CustomFGSMBvsL_List              = []  # new
-    j_CustomFGSMCvsL_List              = []  # nre
+    j_CustomFGSMCvsL_List              = []  # new
     j_CustomFGSMCvsB_List              = []  # new
     j_qgl_List               = []
     j_MuonIdx1_List          = []
