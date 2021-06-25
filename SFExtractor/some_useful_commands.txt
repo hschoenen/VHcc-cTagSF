@@ -1,0 +1,7 @@
+source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.22.00/x86_64-centos7-gcc48-opt/bin/thisroot.sh
+parallel python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_210624_2017_notflat_250_gamma2.0_alphaNone/Plots_210624_notflat_250_gamma2.0_alphaNone_minimal_Custom/output_2017_PFNano_central --doCustom -r :::: rangelist.txt
+python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_210624_2017_notflat_250_gamma2.0_alphaNone/Plots_210624_notflat_250_gamma2.0_alphaNone_minimal_Custom/output_2017_PFNano_central -r comb --doCustom
+parallel python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_210624_2017_notflat_250_gamma2.0_alphaNone/Plots_210624_notflat_250_gamma2.0_alphaNone_minimal_CustomNoise/output_2017_PFNano_central  --force --doCustomNoise -r :::: rangelist.txt
+python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_210624_2017_notflat_250_gamma2.0_alphaNone/Plots_210624_notflat_250_gamma2.0_alphaNone_minimal_CustomNoise/output_2017_PFNano_central -r comb --doCustomNoise
+parallel python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_210624_2017_notflat_250_gamma2.0_alphaNone/Plots_210624_notflat_250_gamma2.0_alphaNone_minimal_CustomFGSM/output_2017_PFNano_central  --force --doCustomFGSM -r :::: rangelist.txt
+python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_210624_2017_notflat_250_gamma2.0_alphaNone/Plots_210624_notflat_250_gamma2.0_alphaNone_minimal_CustomFGSM/output_2017_PFNano_central -r comb --doCustomFGSM

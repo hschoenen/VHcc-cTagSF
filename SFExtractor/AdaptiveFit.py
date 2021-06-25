@@ -45,6 +45,8 @@ parser.add_argument('-err','--maxrelerr',type=float,default=0.02)
 parser.add_argument('-r','--range',type=str,default="")
 parser.add_argument('--doDeepJet', action="store_true", default=False)
 parser.add_argument('--doCustom', action="store_true", default=False)
+parser.add_argument('--doCustomNoise', action="store_true", default=False)
+parser.add_argument('--doCustomFGSM', action="store_true", default=False)
 parser.add_argument('--indepbinning', action="store_true", default=False)
 parser.add_argument('--pseudo', action="store_true", default=False)
 parser.add_argument('--doTempRemodel', action="store_true", default=False)
@@ -59,6 +61,8 @@ minbinstocombine = args.minbinstocombine
 maxrelerr = args.maxrelerr
 doDeepJet = args.doDeepJet
 doCustom = args.doCustom
+doCustomNoise = args.doCustomNoise
+doCustomFGSM = args.doCustomFGSM
 pseudo = args.pseudo
 inputrange = args.range
 indepbin = args.indepbinning
@@ -75,7 +79,13 @@ if doDeepJet:
 if doCustom:
     deepSuff = "Custom"
     #doMinus1 = False
-
+if doCustomNoise:
+    deepSuff = "CustomNoise"
+    #doMinus1 = False
+if doCustomFGSM:
+    deepSuff = "CustomFGSM"
+    #doMinus1 = False
+    
 if inputrange!="" and inputrange!="m1": doMinus1 = False
 
 pseudoPre = ""
@@ -108,7 +118,7 @@ os.system("mkdir -p %s/%s"%(indir,resultsname))
             #and not (i.startswith("jet_CvsB") and "+jet_CvsB" in i)     
             #and not "_-0.2" in i        ]
 
-if not doDeepJet and not doCustom:
+if not doDeepJet and not doCustom and not doCustomNoise and not doCustomFGSM:
     rootlist = [i for i in os.listdir(indir) if i.endswith('.root')         \
                 and "%sCvsL"%deepSuff in i and "%sCvsB_0."%deepSuff in i and "DeepFlav" not in i and "Custom" not in i]
 else:

@@ -1,4 +1,4 @@
-	OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/systPlots_210517_2017_PFNano/Plots_2100517_PFNano_minimal_DeepCSV/
+	OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/systPlots_210624_2017_notflat_250_gamma2.0_alphaNone/Plots_210624_notflat_250_gamma2.0_alphaNone_minimal_CustomFGSM/
 	OUTPUTNAME=output_2017_PFNano
 
 	CONDOR_CLUSTER_ID=$1
@@ -11,7 +11,16 @@
         echo "username and group"
         id -n -u
         id -n -g
-
+        echo "tokens"
+        tokens
+        echo "klist -f"
+        klist -f
+        echo "try aklog"
+        aklog
+        echo "and again: tokens"
+        tokens
+        echo "as well as: klist -f"
+        klist -f
         echo "creating tempdir and copy"
         tmp_dir=$(mktemp -d)
         cp -r ../Stacker.py cmdList.txt ../Deep*.root ../samplesDict.py $tmp_dir

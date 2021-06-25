@@ -155,6 +155,10 @@ def makeHisto(dir,treeName,brName,brLabel,nbins,start,end,weightName="",selectio
         newbrexp = "max(min(%s,0.999999),-0.1)"%(brName)
         DF = DF.Define("newBr",newbrexp)
         newBr = "newBr"
+    #if "Custom" in brName:
+    #    newbrexp = "max(min(%s,0.999999),-0.1)"%(brName)
+    #    DF = DF.Define("newBr",newbrexp)
+    #    newBr = "newBr"
     else:
         DF = DF.Define("newBr",brName)
         newBr = "newBr"        
@@ -248,7 +252,8 @@ def makeHisto(dir,treeName,brName,brLabel,nbins,start,end,weightName="",selectio
                     exec("indtxt = int(%s)"%txtind)
                     # print indtxt
                     exec("flav2 = ev.jet_hadronFlv[%s]"%indtxt)
-                    exec("CvsBval = ev.jet_%sCvsB[%s]"%(taggerPref,indtxt))
+                    #exec("CvsBval = ev.jet_%sCvsB[%s]"%(taggerPref,indtxt))
+                    exec("CvsBval = min(ev.jet_%sCvsB[%s],0.99999)"%(taggerPref,indtxt))
                     exec("CvsLval = min(ev.jet_%sCvsL[%s],0.99999)"%(taggerPref,indtxt))
                     exec("xaxisval = ev.jet_%sCvs%s[%s]"%(taggerPref,("L" if "CvsL" in brName else "B"),indtxt))
                     oldwt = ev.newWeight2
@@ -764,7 +769,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
             MCNormFactor = DataCount/MCCount
 
             myStack.Delete()
-            myStack = THStack("myStack","")
+            myStack = ROOT.THStack("myStack","")
 
             for iName in sampleNamesSet:
                 finalHists[iName].Scale(MCNormFactor)
