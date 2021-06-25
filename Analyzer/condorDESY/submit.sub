@@ -1,19 +1,19 @@
 universe = vanilla
 Executable = condor_runscript_common_NoJEC.sh
-Output = condor_$(SEL)_PF_3/log-$(ClusterId).$(ProcId).out
-Error  = condor_$(SEL)_PF_3/log-$(ClusterId).$(ProcId).err
-Log    = condor_$(SEL)_PF_3/log-$(ClusterId).$(ProcId).log
+Output = condor_$(SEL)_notflat_100_gamma20.0_alphaNone/log-$(ClusterId).$(ProcId).out
+Error  = condor_$(SEL)_notflat_100_gamma20.0_alphaNone/log-$(ClusterId).$(ProcId).err
+Log    = condor_$(SEL)_notflat_100_gamma20.0_alphaNone/log-$(ClusterId).$(ProcId).log
 arguments    = $(ClusterId) $(ProcId) $(INFILE) $(SEL)
 transfer_input_files = x509up_u38320
 transfer_output_files = ""
 Should_Transfer_Files = YES
-max_materialize  = 4000
-materialize_max_idle = 4000
+max_materialize  = 1000
+materialize_max_idle = 500
 Notification = never
 #Request_Memory = 10GB
-on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
+on_exit_hold = (ExitBySignal == True) || (ExitStatus != 0) || (ExitCode != 0)
 
 
-queue SEL,INFILE from cmdList_sim_Wc_PFNano.txt
+queue SEL,INFILE from cmdList_sim_Wc_PFNano_for_testing.txt
 
 

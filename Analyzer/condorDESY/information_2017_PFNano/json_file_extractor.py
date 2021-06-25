@@ -26,7 +26,7 @@ with open('ajson.json') as json_file:
         for entry in json_paths['W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8']:
             txtfile.write(entry+'\n')
     with open('WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.txt','w') as txtfile:
-        for entry in json_paths['W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8']:
+        for entry in json_paths['WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8']:
             txtfile.write(entry+'\n')
             
 with open('v2x17.json') as json_file:
@@ -59,9 +59,3 @@ with open('v2x17.json') as json_file:
     with open('ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.txt','w') as txtfile:
         for entry in json_paths['ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8']:
             txtfile.write(entry+'\n')
-    #with open('ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.txt','w') as txtfile:
-    #    for entry in json_paths['ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8']:
-    #        txtfile.write(entry+'\n')
-    #with open('ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.txt','w') as txtfile:
-    #    for entry in json_paths['ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8']:
-    #        txtfile.write(entry+'\n')

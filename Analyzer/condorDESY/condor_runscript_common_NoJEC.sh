@@ -5,14 +5,28 @@
     whoami
     echo "hostname"
     hostname -f
+    echo "tokens"
+    tokens
+    echo "klist -f"
+    klist -f
+    echo "try aklog"
+    aklog
+    echo "and again: tokens"
+    tokens
+    echo "as well as: klist -f"
+    klist -f
     echo "   Current dir:"
     pwd
     echo "CONDOR_SCRATCH_DIR = $_CONDOR_SCRATCH_DIR"
     ls -lh
+    
+    # adjust the weighting method, look up the definitions in customTaggerInference.py
+    WM="_notflat_100_gamma20.0_alphaNone"
+
 
 #	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_$4_minimal/
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210523_2017_$4_PFNano/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210625_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
@@ -47,7 +61,7 @@
         #tmp_dir=$(mktemp -d)
         #cp -r ../${PYFILE} customTaggerInference.py ../nuSolutions.py ../scalefactors* $tmp_dir
         echo "copy scripts to scratch"
-        cp -r /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/${PYFILE} /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customTaggerInference.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nuSolutions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/scalefactors* $_CONDOR_SCRATCH_DIR
+        cp -r /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/${PYFILE} /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customTaggerInference.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/focal_loss.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nuSolutions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/scalefactors* $_CONDOR_SCRATCH_DIR
         #echo "changing to tempdir (first time)"
         #cd $tmp_dir
                 
@@ -116,7 +130,7 @@
         echo "    echo PATH:"
         echo $PATH
         echo "start with custom tagger"
-        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} '_new' ${OUTPUTDIR}
+        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
         
         
         

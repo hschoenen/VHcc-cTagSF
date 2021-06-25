@@ -16,12 +16,15 @@ from sklearn.preprocessing import StandardScaler
 
 import time
 
+from focal_loss import FocalLoss, focal_loss
+
 print("Torch version =",torch.__version__)
 
 minima = np.load('/nfs/dust/cms/user/anstein/additional_files/default_value_studies_minima.npy')
 default = 0.001
 #defaults_per_variable = minima - 0.001
 defaults_per_variable = minima - default
+
 
 def cleandataset(f, defaults_per_variable, isMC):
     print('Doing cleaning, isMC = ',isMC)
@@ -70,8 +73,9 @@ def cleandataset(f, defaults_per_variable, isMC):
         datavectors[:, j][datavectors[:, j] == np.nan]  = defaults_per_variable[j]
         datavectors[:, j][datavectors[:, j] <= -np.inf] = defaults_per_variable[j]
         datavectors[:, j][datavectors[:, j] >= np.inf]  = defaults_per_variable[j]
-        datavectors[:, j][datavectors[:, j] == -999]  = defaults_per_variable[j]  # this one line is new and the reason for that is that there can be "original" -999 defaults in the inputs that should now also move into the new
-                                                               # default bin, it was not necessary in my old clean_1_2.py code, because I could just leave them where they are, here they need to to be modified
+        datavectors[:, j][datavectors[:, j] == -999]  = defaults_per_variable[j] 
+        # this one line is new and the reason for that is that there can be "original" -999 defaults in the inputs that should now also move into the new
+        # default bin, it was not necessary in my old clean_1_2.py code, because I could just leave them where they are, here they need to to be modified
         #print(np.unique(datavectors[:,-1]))
     #print(np.unique(datavectors[:,-1]))
     datavecak = ak.from_numpy(datavectors)
@@ -137,13 +141,14 @@ def preprocess(rootfile, isMC):
     #print(np.unique(dataset_input_target[:,-1]))
     #sys.exit()
     inputs = torch.Tensor(dataset_input_target[:,0:67])
-    # targets only make sense for MC, but it does no harm when calling it on Data (the last column is different though)
+    # targets only make sense for MC, but nothing 'breaks' when calling it on Data (the last column is different though)
     targets = torch.Tensor(dataset_input_target[:,-1]).long()
     #print(torch.unique(targets))        
     scalers = []
     
-    for i in range(0,67): # do not apply scaling to default values, which were set to -999
-        scaler = StandardScaler().fit(inputs[:,i][inputs[:,i]!=defaults_per_variable[i]].reshape(-1,1))
+    for i in range(0,67): # do not apply scaling to default values; use already calculated scalers (same for all files)
+        #scaler = StandardScaler().fit(inputs[:,i][inputs[:,i]!=defaults_per_variable[i]].reshape(-1,1))
+        scaler = torch.load(f'/nfs/dust/cms/user/anstein/additional_files/scalers/scaler_{i}_with_default_{default}.pt')
         inputs[:,i]   = torch.Tensor(scaler.transform(inputs[:,i].reshape(-1,1)).reshape(1,-1))
         scalers.append(scaler)
 
@@ -196,6 +201,7 @@ def fgsm_attack(epsilon=1e-2,sample=None,targets=None,reduced=True, scalers=None
     #print(torch.unique(targets))
     #print(preds)
     loss = criterion(preds, targets).mean()
+    # maybe add sample weights here as well for the ptetaflavloss weighting method
     model.zero_grad()
     loss.backward()
     
@@ -257,6 +263,94 @@ def predict(inputs, targets, scalers, method):
         criterion = nn.CrossEntropyLoss()
         modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_all_TT_350_epochs_v10_GPU_weighted_new_49_datasets_with_default_0.001.pt'
         
+    
+    # ==========================================================================
+    #
+    #                               NEW: may_21
+    #
+    
+    elif method == '_ptetaflavloss20':
+        criterion = nn.CrossEntropyLoss(reduction='none')
+        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_124_epochs_v10_GPU_weighted_ptetaflavloss_20_datasets_with_default_0.001_-1.pt'
+    
+    elif method == '_ptetaflavloss278':
+        criterion = nn.CrossEntropyLoss(reduction='none')
+        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_1_epochs_v10_GPU_weighted_ptetaflavloss_278_datasets_with_default_0.001_-1.pt'
+    
+    #
+    #
+    #
+    # --------------------------------------------------------------------------
+    
+    
+    # ==========================================================================
+    #
+    #                               NEW: as of June, 16th
+    #
+    
+    elif method == '_ptetaflavloss_focalloss':
+        # for focal loss: parameters
+        alpha = None  # weights are handled differently, not with the focal loss but with sample weights if wanted
+        gamma = 2
+        criterion = FocalLoss(alpha, gamma, reduction='none')
+        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+    
+    elif method == '_flatptetaflavloss_focalloss':
+        # for focal loss: parameters
+        alpha = None  # weights are handled differently, not with the focal loss but with sample weights if wanted
+        gamma = 2
+        criterion = FocalLoss(alpha, gamma, reduction='none')
+        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_200_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+    
+    #
+    #
+    #
+    # --------------------------------------------------------------------------
+    
+    
+    
+    # ==========================================================================
+    #
+    #                               NEW: as of June, 25th
+    #
+    
+    elif method == '_notflat_250_gamma2.0_alphaNone':
+        # for focal loss: parameters
+        alpha = None
+        gamma = 2.0
+        criterion = FocalLoss(alpha, gamma, reduction='none')
+        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_250_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+    
+    elif method == '_flat_230_gamma2.0_alphaNone':
+        # for focal loss: parameters
+        alpha = None
+        gamma = 2.0
+        criterion = FocalLoss(alpha, gamma, reduction='none')
+        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_230_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+        
+    elif method == '_notflat_100_gamma20.0_alphaNone':
+        # for focal loss: parameters
+        alpha = None
+        gamma = 20.0
+        criterion = FocalLoss(alpha, gamma, reduction='none')
+        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_100_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma20.0_278_datasets_with_default_0.001_-1.pt'
+        
+    elif method == '_notflat_100_gamma4.0_alpha0.4,0.4,0.2,0.2':
+        # for focal loss: parameters
+        alpha = torch.Tensor([0.4,0.4,0.2,0.2])
+        gamma = 20.0
+        criterion = FocalLoss(alpha, gamma, reduction='none')
+        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_100_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma4.0_alpha0.4,0.4,0.2,0.2_278_datasets_with_default_0.001_-1.pt'
+        
+    
+    
+    #
+    #
+    #
+    # --------------------------------------------------------------------------
+    
+    
+    # old
     else:
         criterion = nn.CrossEntropyLoss()
         modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_all_TT_350_epochs_v10_GPU_weighted_as_is_49_datasets_with_default_0.001.pt'
@@ -270,16 +364,63 @@ def predict(inputs, targets, scalers, method):
     model.eval()
     return model(inputs).detach().numpy()
 
-    
-def calcBvsL(predictions):  # P(b)+P(bb)
-    return predictions[:,0]+predictions[:,1]
-    
-def calcCvsB(predictions):  # P(c)/(P(b)+P(bb)+P(c))
-    return (predictions[:,2])/(predictions[:,0]+predictions[:,1]+predictions[:,2])
-    
-def calcCvsL(predictions):  # P(c)/(P(udsg)+P(c))
-    return (predictions[:,2])/(predictions[:,3]+predictions[:,2])
 
+def calcBvsL(matching_predictions):
+    global n_jets
+    matching_predictions = np.where(np.tile((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,3] != 0), (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
+    
+    custom_BvL = np.where(((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,3]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1), (matching_predictions[:,0]+matching_predictions[:,1])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,3]), (-1.0)*np.ones(n_jets))
+    
+    return custom_BvL
+
+def calcBvsC(matching_predictions):
+    global n_jets
+    matching_predictions = np.where(np.tile((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2] != 0) , (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
+    
+    custom_BvC = np.where(((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1), (matching_predictions[:,0]+matching_predictions[:,1])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]), (-1.0)*np.ones(n_jets))
+    
+    return custom_BvC
+    
+def calcCvsB(matching_predictions):
+    global n_jets
+    matching_predictions = np.where(np.tile((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2] != 0), (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
+    
+    custom_CvB = np.where(((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1), (matching_predictions[:,2])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]), (-1.0)*np.ones(n_jets))
+    
+    return custom_CvB
+    
+def calcCvsL(matching_predictions):
+    global n_jets
+    matching_predictions = np.where(np.tile((matching_predictions[:,2]+matching_predictions[:,3] != 0), (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
+    
+    custom_CvL = np.where(((matching_predictions[:,2]+matching_predictions[:,3]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1), (matching_predictions[:,2])/(matching_predictions[:,2]+matching_predictions[:,3]), (-1.0)*np.ones(n_jets))
+    return custom_CvL
+
+    
+def calcBvsL_legacy(predictions):  # P(b)+P(bb)/(P(b)+P(bb)+P(udsg))
+    bvsl = (predictions[:,0]+predictions[:,1])/(1-predictions[:,2])
+    bvsl[bvsl < 0.000001] = 0.000001
+    bvsl[bvsl > 0.999999] = 0.999999
+    return bvsl    
+def calcBvsC_legacy(predictions):  # P(b)+P(bb)/(P(b)+P(bb)+P(c))
+    bvsc = (predictions[:,0]+predictions[:,1])/(1-predictions[:,3])
+    bvsc[bvsc < 0.000001] = 0.000001
+    bvsc[bvsc > 0.999999] = 0.999999
+    return bvsc
+    
+def calcCvsB_legacy(predictions):  # P(c)/(P(b)+P(bb)+P(c))
+    cvsb =  (predictions[:,2])/(predictions[:,0]+predictions[:,1]+predictions[:,2])
+    cvsb[cvsb < 0.000001] = 0.000001
+    cvsb[cvsb > 0.999999] = 0.999999
+    cvsb[np.isnan(cvsb)] = -1
+    return cvsb
+    
+def calcCvsL_legacy(predictions):  # P(c)/(P(udsg)+P(c))
+    cvsl = (predictions[:,2])/(predictions[:,3]+predictions[:,2])
+    cvsl[cvsl < 0.000001] = 0.000001
+    cvsl[cvsl > 0.999999] = 0.999999
+    cvsl[np.isnan(cvsl)] = -1
+    return cvsl
 
 
 if __name__ == "__main__":
@@ -377,109 +518,316 @@ if __name__ == "__main__":
         isMC = False
     print("Using channel =",channel, "; isMC:", isMC, "; era: %d"%era)
     
+    global n_jets
     
     #inputs, targets, scalers = preprocess(fullName, isMC)
     inputs, targets, scalers = preprocess('infile.root', isMC)
     
-    if weightingMethod == "_both":
-        methods = ["_as_is","_new"]
-    else:
-        methods = [weightingMethod]
+    n_jets = len(targets)
     
-    for wm in methods:
-        #outputPredsdir = "%s/%s/outPreds_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
-        #outputBvsLdir = "%s/%s/outBvsL_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
-        outputPredsdir = "outPreds_%s%s.npy"%(outNo,wm)
-        outputBvsLdir = "outBvsL_%s%s.npy"%(outNo,wm)
-        outputCvsBdir = "outCvsB_%s%s.npy"%(outNo,wm)
-        outputCvsLdir = "outCvsL_%s%s.npy"%(outNo,wm)
-        
-        noise_outputPredsdir = "noise_outPreds_%s%s.npy"%(outNo,wm)
-        noise_outputBvsLdir = "noise_outBvsL_%s%s.npy"%(outNo,wm)
-        noise_outputCvsBdir = "noise_outCvsB_%s%s.npy"%(outNo,wm)
-        noise_outputCvsLdir = "noise_outCvsL_%s%s.npy"%(outNo,wm)
-        
-        fgsm_outputPredsdir = "fgsm_outPreds_%s%s.npy"%(outNo,wm)
-        fgsm_outputBvsLdir = "fgsm_outBvsL_%s%s.npy"%(outNo,wm)
-        fgsm_outputCvsBdir = "fgsm_outCvsB_%s%s.npy"%(outNo,wm)
-        fgsm_outputCvsLdir = "fgsm_outCvsL_%s%s.npy"%(outNo,wm)
+    #if weightingMethod == "_both":
+    #    methods = ["_as_is","_new"]
+    #else:
+    #    methods = [weightingMethod]
+    
+    
+    wm = weightingMethod
+    #for wm in methods:  # was formerly using a loop over all weighting methods, but this would require using also multiple w.m. in the Analyzer
+    #outputPredsdir = "%s/%s/outPreds_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
+    #outputBvsLdir = "%s/%s/outBvsL_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
+    
+    # new version doesn't store the w.m. in the filename
+    outputPredsdir = "outPreds_%s.npy"%(outNo)
+    outputCvsBdir = "outCvsB_%s.npy"%(outNo)
+    outputCvsLdir = "outCvsL_%s.npy"%(outNo)
+    outputBvsCdir = "outBvsC_%s.npy"%(outNo)
+    outputBvsLdir = "outBvsL_%s.npy"%(outNo)
 
-        #print("Saving into %s/%s"%(condoroutdir,sampName))
+    noise_outputPredsdir = "noise_outPreds_%s.npy"%(outNo)
+    noise_outputCvsBdir = "noise_outCvsB_%s.npy"%(outNo)
+    noise_outputCvsLdir = "noise_outCvsL_%s.npy"%(outNo)
+    noise_outputBvsCdir = "noise_outBvsC_%s.npy"%(outNo)
+    noise_outputBvsLdir = "noise_outBvsL_%s.npy"%(outNo)
 
-        
+    fgsm_outputPredsdir = "fgsm_outPreds_%s.npy"%(outNo)
+    fgsm_outputCvsBdir = "fgsm_outCvsB_%s.npy"%(outNo)
+    fgsm_outputCvsLdir = "fgsm_outCvsL_%s.npy"%(outNo)
+    fgsm_outputBvsCdir = "fgsm_outBvsC_%s.npy"%(outNo)
+    fgsm_outputBvsLdir = "fgsm_outBvsL_%s.npy"%(outNo)
 
-        predictions = predict(inputs, targets, scalers, wm)
-        #print(predictions[:100,:])
-        np.save(outputPredsdir, predictions)
-        bvl = calcBvsL(predictions)
+    #print("Saving into %s/%s"%(condoroutdir,sampName))
+
+
+
+    predictions = predict(inputs, targets, scalers, wm)
+    #print(predictions[:100,:])
+    #hist, bin_edges = np.histogram(predictions[:,0],bins=20)
+    #print('Flavour b predictions: bin_edges and histogram')
+    #print(bin_edges)
+    #print(hist)
+    #del hist
+    #del bin_edges
+    #gc.collect()
+    #hist, bin_edges = np.histogram(predictions[:,1],bins=20)
+    #print('Flavour bb predictions: bin_edges and histogram')
+    #print(bin_edges)
+    #print(hist)
+    #del hist
+    #del bin_edges
+    #gc.collect()
+    #hist, bin_edges = np.histogram(predictions[:,2],bins=20)
+    #print('Flavour c predictions: bin_edges and histogram')
+    #print(bin_edges)
+    #print(hist)
+    #del hist
+    #del bin_edges
+    #gc.collect()
+    #hist, bin_edges = np.histogram(predictions[:,3],bins=20)
+    #print('Flavour udsg predictions: bin_edges and histogram')
+    #print(bin_edges)
+    #print(hist)
+    #del hist
+    #del bin_edges
+    #gc.collect()
+    bvl = calcBvsL(predictions)
+    #hist, bin_edges = np.histogram(bvl)
+    #print('bvl: bin_edges and histogram')
+    #print(bin_edges)
+    #print(hist)
+    #del hist
+    #del bin_edges
+    #gc.collect()
+    #print(bvl[:100])
+    np.save(outputBvsLdir, bvl)
+    del bvl
+    gc.collect()
+
+    bvc = calcBvsC(predictions)
+    np.save(outputBvsCdir, bvc)
+    del bvc
+    gc.collect()
+
+    cvb = calcCvsB(predictions)
+    #hist, bin_edges = np.histogram(cvb)
+    #print('cvb: bin_edges and histogram before assigning -1')
+    #print(bin_edges)
+    #print(hist)
+    #
+    #
+    #
+    # NOTE:
+    #
+    # The -1 bins are now already assigned inside the functions for BvsL, CvsB and CvsL !!
+    #
+    # handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
+    #cvb[(predictions[:,0]+predictions[:,1]+predictions[:,2]) == 0] = -1
+    #cvb[(predictions[:,3]+predictions[:,2]) == 0] = -1
+    #hist, bin_edges = np.histogram(cvb,bins=20)
+    #print('cvb: bin_edges and histogram after assigning -1')
+    #print(bin_edges)
+    #print(hist)
+    #del hist
+    #del bin_edges
+    #gc.collect()
+    #print(bvl[:100])
+    np.save(outputCvsBdir, cvb)
+    del cvb
+    gc.collect()
+    cvl = calcCvsL(predictions)
+    #hist, bin_edges = np.histogram(cvl)
+    #print('cvl: bin_edges and histogram before assigning -1')
+    #print(bin_edges)
+    #print(hist)
+    #cvl[(predictions[:,0]+predictions[:,1]+predictions[:,2]) == 0] = -1
+    #cvl[(predictions[:,3]+predictions[:,2]) == 0] = -1
+    #hist, bin_edges = np.histogram(cvl,bins=20)
+    #print('cvl: bin_edges and histogram after assigning -1')
+    #print(bin_edges)
+    #print(hist)
+    #del hist
+    #del bin_edges
+    #gc.collect()
+    #print(bvl[:100])
+    np.save(outputCvsLdir, cvl)
+    del cvl
+    gc.collect()
+
+
+    predictions[:,0][predictions[:,0] > 0.99999] = 0.99999
+    predictions[:,1][predictions[:,1] > 0.99999] = 0.99999
+    predictions[:,2][predictions[:,2] > 0.99999] = 0.99999
+    predictions[:,3][predictions[:,3] > 0.99999] = 0.99999
+    #predictions[:,0][predictions[:,0] < 0.000001] = 0.000001
+    #predictions[:,1][predictions[:,1] < 0.000001] = 0.000001
+    #predictions[:,2][predictions[:,2] < 0.000001] = 0.000001
+    #predictions[:,3][predictions[:,3] < 0.000001] = 0.000001
+    np.save(outputPredsdir, predictions)
+    del predictions
+    gc.collect()
+
+    if isMC == True:
+
+        noise_preds = predict(apply_noise(inputs, scalers, magn=1e-2,offset=[0]), targets, scalers, wm)
+        #hist, bin_edges = np.histogram(noise_preds[:,0],bins=20)
+        #print('Flavour b noise_preds: bin_edges and histogram')
+        #print(bin_edges)
+        #print(hist)
+        #del hist
+        #del bin_edges
+        #gc.collect()
+        #hist, bin_edges = np.histogram(noise_preds[:,1],bins=20)
+        #print('Flavour bb noise_preds: bin_edges and histogram')
+        #print(bin_edges)
+        #print(hist)
+        #del hist
+        #del bin_edges
+        #gc.collect()
+        #hist, bin_edges = np.histogram(noise_preds[:,2],bins=20)
+        #print('Flavour c noise_preds: bin_edges and histogram')
+        #print(bin_edges)
+        #print(hist)
+        #del hist
+        #del bin_edges
+        #gc.collect()
+        #hist, bin_edges = np.histogram(noise_preds[:,3],bins=20)
+        #print('Flavour udsg noise_preds: bin_edges and histogram')
+        #print(bin_edges)
+        #print(hist)
+        #del hist
+        #del bin_edges
+        #gc.collect()
+        noise_bvl = calcBvsL(noise_preds)
         #print(bvl[:100])
-        np.save(outputBvsLdir, bvl)
-        del bvl
+        np.save(noise_outputBvsLdir, noise_bvl)
+        del noise_bvl
         gc.collect()
-        cvb = calcCvsB(predictions)
-        # handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
-        cvb[(predictions[:,0]+predictions[:,1]+predictions[:,2]) == 0] = -1
-        cvb[(predictions[:,3]+predictions[:,2]) == 0] = -1
+
+        noise_bvc = calcBvsC(noise_preds)
+        np.save(noise_outputBvsCdir, noise_bvc)
+        del noise_bvc
+        gc.collect()
+
+        noise_cvb = calcCvsB(noise_preds)
+        #hist, bin_edges = np.histogram(noise_cvb)
+        #print('noise_cvb: bin_edges and histogram before assigning -1')
+        #print(bin_edges)
+        #print(hist)
+        ## handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
+        #noise_cvb[(noise_preds[:,0]+noise_preds[:,1]+noise_preds[:,2]) == 0] = -1
+        #noise_cvb[(noise_preds[:,3]+noise_preds[:,2]) == 0] = -1
+        #hist, bin_edges = np.histogram(noise_cvb,bins=20)
+        #print('noise_cvb: bin_edges and histogram after assigning -1')
+        #print(bin_edges)
+        #print(hist)
+        #del hist
+        #del bin_edges
+        #gc.collect()
         #print(bvl[:100])
-        np.save(outputCvsBdir, cvb)
-        del cvb
+        np.save(noise_outputCvsBdir, noise_cvb)
+        del noise_cvb
         gc.collect()
-        cvl = calcCvsL(predictions)
-        cvl[(predictions[:,0]+predictions[:,1]+predictions[:,2]) == 0] = -1
-        cvl[(predictions[:,3]+predictions[:,2]) == 0] = -1
+        noise_cvl = calcCvsL(noise_preds)
+        #hist, bin_edges = np.histogram(noise_cvl)
+        #print('noise_cvl: bin_edges and histogram before assigning -1')
+        #print(bin_edges)
+        #print(hist)
+        #noise_cvl[(noise_preds[:,0]+noise_preds[:,1]+noise_preds[:,2]) == 0] = -1
+        #noise_cvl[(noise_preds[:,3]+noise_preds[:,2]) == 0] = -1
+        #hist, bin_edges = np.histogram(noise_cvl,bins=20)
+        #print('noise_cvl: bin_edges and histogram after assigning -1')
+        #print(bin_edges)
+        #print(hist)
+        #del hist
+        #del bin_edges
+        #gc.collect()
         #print(bvl[:100])
-        np.save(outputCvsLdir, cvl)
-        del cvl
-        del predictions
+        np.save(noise_outputCvsLdir, noise_cvl)
+        del noise_cvl
+        noise_preds[:,0][noise_preds[:,0] > 0.99999] = 0.99999
+        noise_preds[:,1][noise_preds[:,1] > 0.99999] = 0.99999
+        noise_preds[:,2][noise_preds[:,2] > 0.99999] = 0.99999
+        noise_preds[:,3][noise_preds[:,3] > 0.99999] = 0.99999
+        #noise_preds[:,0][noise_preds[:,0] < 0.000001] = 0.000001
+        #noise_preds[:,1][noise_preds[:,1] < 0.000001] = 0.000001
+        #noise_preds[:,2][noise_preds[:,2] < 0.000001] = 0.000001
+        #noise_preds[:,3][noise_preds[:,3] < 0.000001] = 0.000001
+        np.save(noise_outputPredsdir, noise_preds)
+        del noise_preds
         gc.collect()
-        
-        if isMC == True:
-
-            noise_preds = predict(apply_noise(inputs, scalers, magn=1e-2,offset=[0]), targets, scalers, wm)
-            np.save(noise_outputPredsdir, noise_preds)
-            noise_bvl = calcBvsL(noise_preds)
-            #print(bvl[:100])
-            np.save(noise_outputBvsLdir, noise_bvl)
-            del noise_bvl
-            gc.collect()
-            noise_cvb = calcCvsB(noise_preds)
-            # handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
-            noise_cvb[(noise_preds[:,0]+noise_preds[:,1]+noise_preds[:,2]) == 0] = -1
-            noise_cvb[(noise_preds[:,3]+noise_preds[:,2]) == 0] = -1
-            #print(bvl[:100])
-            np.save(noise_outputCvsBdir, noise_cvb)
-            del noise_cvb
-            gc.collect()
-            noise_cvl = calcCvsL(noise_preds)
-            noise_cvl[(noise_preds[:,0]+noise_preds[:,1]+noise_preds[:,2]) == 0] = -1
-            noise_cvl[(noise_preds[:,3]+noise_preds[:,2]) == 0] = -1
-            #print(bvl[:100])
-            np.save(noise_outputCvsLdir, noise_cvl)
-            del noise_cvl
-            del noise_preds
-            gc.collect()
 
 
-            fgsm_preds = predict(fgsm_attack(epsilon=1e-2,sample=inputs,targets=targets,reduced=True, scalers=scalers), targets, scalers, wm)
-            np.save(fgsm_outputPredsdir, fgsm_preds)
-            fgsm_bvl = calcBvsL(fgsm_preds)
-            #print(bvl[:100])
-            np.save(fgsm_outputBvsLdir, fgsm_bvl)
-            del fgsm_bvl
-            gc.collect()
-            fgsm_cvb = calcCvsB(fgsm_preds)
-            # handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
-            fgsm_cvb[(fgsm_preds[:,0]+fgsm_preds[:,1]+fgsm_preds[:,2]) == 0] = -1
-            fgsm_cvb[(fgsm_preds[:,3]+fgsm_preds[:,2]) == 0] = -1
-            #print(bvl[:100])
-            np.save(fgsm_outputCvsBdir, fgsm_cvb)
-            del fgsm_cvb
-            gc.collect()
-            fgsm_cvl = calcCvsL(fgsm_preds)
-            fgsm_cvl[(fgsm_preds[:,0]+fgsm_preds[:,1]+fgsm_preds[:,2]) == 0] = -1
-            fgsm_cvl[(fgsm_preds[:,3]+fgsm_preds[:,2]) == 0] = -1
-            #print(bvl[:100])
-            np.save(fgsm_outputCvsLdir, fgsm_cvl)
-            del fgsm_cvl
-            del fgsm_preds
-            gc.collect()
+        fgsm_preds = predict(fgsm_attack(epsilon=1e-2,sample=inputs,targets=targets,reduced=True, scalers=scalers), targets, scalers, wm)
+        #hist, bin_edges = np.histogram(fgsm_preds[:,0],bins=20)
+        #print('Flavour b fgsm_preds: bin_edges and histogram')
+        #print(bin_edges)
+        #print(hist)
+        #hist, bin_edges = np.histogram(fgsm_preds[:,1],bins=20)
+        #print('Flavour bb fgsm_preds: bin_edges and histogram')
+        #print(bin_edges)
+        #print(hist)
+        #hist, bin_edges = np.histogram(fgsm_preds[:,2],bins=20)
+        #print('Flavour c fgsm_preds: bin_edges and histogram')
+        #print(bin_edges)
+        #print(hist)
+        #hist, bin_edges = np.histogram(fgsm_preds[:,3],bins=20)
+        #print('Flavour udsg fgsm_preds: bin_edges and histogram')
+        #print(bin_edges)
+        #print(hist)
+        fgsm_bvl = calcBvsL(fgsm_preds)
+        #print(bvl[:100])
+        np.save(fgsm_outputBvsLdir, fgsm_bvl)
+        del fgsm_bvl
+        gc.collect()
+
+        fgsm_bvc = calcBvsC(fgsm_preds)
+        np.save(fgsm_outputBvsCdir, fgsm_bvc)
+        del fgsm_bvc
+        gc.collect()
+
+        fgsm_cvb = calcCvsB(fgsm_preds)
+        #hist, bin_edges = np.histogram(fgsm_cvb)
+        #print('fgsm_cvb: bin_edges and histogram before assigning -1')
+        #print(bin_edges)
+        #print(hist)
+        ## handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
+        #fgsm_cvb[(fgsm_preds[:,0]+fgsm_preds[:,1]+fgsm_preds[:,2]) == 0] = -1
+        #fgsm_cvb[(fgsm_preds[:,3]+fgsm_preds[:,2]) == 0] = -1
+        #hist, bin_edges = np.histogram(fgsm_cvb,bins=20)
+        #print('fgsm_cvb: bin_edges and histogram after assigning -1')
+        #print(bin_edges)
+        #print(hist)
+        #del hist
+        #del bin_edges
+        #gc.collect()
+        #print(bvl[:100])
+        np.save(fgsm_outputCvsBdir, fgsm_cvb)
+        del fgsm_cvb
+        gc.collect()
+        fgsm_cvl = calcCvsL(fgsm_preds)
+        #hist, bin_edges = np.histogram(fgsm_cvl)
+        #print('fgsm_cvl: bin_edges and histogram before assigning -1')
+        #print(bin_edges)
+        #print(hist)
+        #fgsm_cvl[(fgsm_preds[:,0]+fgsm_preds[:,1]+fgsm_preds[:,2]) == 0] = -1
+        #fgsm_cvl[(fgsm_preds[:,3]+fgsm_preds[:,2]) == 0] = -1
+        #hist, bin_edges = np.histogram(fgsm_cvl,bins=20)
+        #print('fgsm_cvl: bin_edges and histogram after assigning -1')
+        #print(bin_edges)
+        #print(hist)
+        #del hist
+        #del bin_edges
+        #gc.collect()
+        #print(bvl[:100])
+        np.save(fgsm_outputCvsLdir, fgsm_cvl)
+        del fgsm_cvl
+        fgsm_preds[:,0][fgsm_preds[:,0] > 0.99999] = 0.99999
+        fgsm_preds[:,1][fgsm_preds[:,1] > 0.99999] = 0.99999
+        fgsm_preds[:,2][fgsm_preds[:,2] > 0.99999] = 0.99999
+        fgsm_preds[:,3][fgsm_preds[:,3] > 0.99999] = 0.99999
+        #fgsm_preds[:,0][fgsm_preds[:,0] < 0.000001] = 0.000001
+        #fgsm_preds[:,1][fgsm_preds[:,1] < 0.000001] = 0.000001
+        #fgsm_preds[:,2][fgsm_preds[:,2] < 0.000001] = 0.000001
+        #fgsm_preds[:,3][fgsm_preds[:,3] < 0.000001] = 0.000001
+        np.save(fgsm_outputPredsdir, fgsm_preds)
+        del fgsm_preds
+        gc.collect()
