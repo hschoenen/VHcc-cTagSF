@@ -155,6 +155,10 @@ def makeHisto(dir,treeName,brName,brLabel,nbins,start,end,weightName="",selectio
         newbrexp = "max(min(%s,0.999999),-0.1)"%(brName)
         DF = DF.Define("newBr",newbrexp)
         newBr = "newBr"
+    elif "Bvs" in brName:
+        newbrexp = "max(min(%s,0.999999),-0.1)"%(brName)
+        DF = DF.Define("newBr",newbrexp)
+        newBr = "newBr"
     #if "Custom" in brName:
     #    newbrexp = "max(min(%s,0.999999),-0.1)"%(brName)
     #    DF = DF.Define("newBr",newbrexp)
@@ -764,9 +768,12 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
         histoD, nTot = makeHisto(datadir,"Events",brName,brLabel,nbins,start,end,weightName=DataWeightName,selections=selections,brName2D=brName2D,nbins2=nbins2,start2=start2,end2=end2,varBin1=array('d',varBin1),varBin2=array('d',varBin2))
 
         if normTotalMC:
+            print "Will normalize total MC to data, with factor:"
             MCCount = myStack.GetStack().Last().Integral()
             DataCount = histoD.Integral()
             MCNormFactor = DataCount/MCCount
+            # find out if normalization works
+            print MCNormFactor
 
             myStack.Delete()
             myStack = ROOT.THStack("myStack","")

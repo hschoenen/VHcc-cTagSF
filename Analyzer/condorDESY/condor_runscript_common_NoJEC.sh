@@ -21,12 +21,12 @@
     ls -lh
     
     # adjust the weighting method, look up the definitions in customTaggerInference.py
-    WM="_notflat_100_gamma20.0_alphaNone"
+    WM="_flat_200_gamma25.0_alphaNone"
 
 
 #	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_$4_minimal/
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210625_2017_$4${WM}/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210629_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1

@@ -21,7 +21,7 @@ gErrorIgnoreLevel = 4001
 # ================== Set parameters =====================
 plotProgress = False
 firstbinidx = 11
-learningrate = 0.005		#0.002 for DeepCSV 2017, 0.005 for DeepJet 2017
+learningrate = 0.002		#0.002 for DeepCSV 2017, 0.005 for DeepJet 2017
 maxrelerr = 0.01
 maxbinstocombine = 5
 minbinstocombine = 1
@@ -353,6 +353,7 @@ def getintglerr(hist):
     herr = herr**0.5
     return intgl, herr
 
+'''
 # ====================== Template remodelling, deprecated ========================
 for dist in mergedDict:
     for rng in mergedDict[dist]:        
@@ -428,7 +429,7 @@ for dist in mergedDict:
                     count += 1
                 outname = "%s/%s+%s+%s_fixed.png"%(workdir,dist,rng,flav)
                 canv.SaveAs(outname)
-
+'''
 # ======================================================
 
 # ================== Define some functions ==================            
@@ -872,7 +873,8 @@ if inputrange == "comb":
                 for key2 in unpack[key]:
                     SFResults[key][key2] = unpack[key][key2]
                     print("Reading:", key, key2)
-
+    #print SFResults
+    
 elif inputrange!="":
     pickle.dump(SFResults,open("%s/SFs_%s.pkl"%(workdir,inputrange),"wb"))
     sys.exit(0)
@@ -920,12 +922,19 @@ for flav in ['c','b','l']:
                     dist = SFResults["%sCvsL"%deepSuff][rng][flav]
                     bins = dist[0]
                     SF = dist[1]
-                    SFerr = dist[2]
+                    try:
+                        SFerr = dist[2]
+                    except:
+                        pass
+                        #print dist
                     yeL = (high-low)/2
                     for iSF in range(len(SF)):
                         if x >= bins[iSF] and x < bins[iSF+1]:
                             SFvalL = SF[iSF]
-                            SFuncL = SFerr[iSF]
+                            try:
+                                SFuncL = SFerr[iSF]
+                            except:
+                                pass
                             xeL = (bins[iSF+1]-bins[iSF])/2
                             break
                     break

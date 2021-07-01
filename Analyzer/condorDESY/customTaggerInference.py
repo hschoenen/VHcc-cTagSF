@@ -146,7 +146,8 @@ def preprocess(rootfile, isMC):
     #print(torch.unique(targets))        
     scalers = []
     
-    for i in range(0,67): # do not apply scaling to default values; use already calculated scalers (same for all files)
+    for i in range(0,67): # use already calculated scalers (same for all files),
+        # for the calculation, only train samples and only non-defaults were used
         #scaler = StandardScaler().fit(inputs[:,i][inputs[:,i]!=defaults_per_variable[i]].reshape(-1,1))
         scaler = torch.load(f'/nfs/dust/cms/user/anstein/additional_files/scalers/scaler_{i}_with_default_{default}.pt')
         inputs[:,i]   = torch.Tensor(scaler.transform(inputs[:,i].reshape(-1,1)).reshape(1,-1))
@@ -155,31 +156,32 @@ def preprocess(rootfile, isMC):
     return inputs, targets, scalers
 
 def apply_noise(sample, scalers, magn=1e-2,offset=[0]):
-    device = torch.device("cpu")
-    #scalers = torch.load(scalers_file_paths[s])
-    #test_inputs =  torch.load(test_input_file_paths[s]).to(device).float()
-    #val_inputs =  torch.load(val_input_file_paths[s]).to(device).float()
-    #train_inputs =  torch.load(train_input_file_paths[s]).to(device).float()
-    #test_targets =  torch.load(test_target_file_paths[s]).to(device)
-    #val_targets =  torch.load(val_target_file_paths[s]).to(device)
-    #train_targets =  torch.load(train_target_file_paths[s]).to(device)            
-    #all_inputs = torch.cat((test_inputs,val_inputs,train_inputs))
+    with torch.no_grad():
+        device = torch.device("cpu")
+        #scalers = torch.load(scalers_file_paths[s])
+        #test_inputs =  torch.load(test_input_file_paths[s]).to(device).float()
+        #val_inputs =  torch.load(val_input_file_paths[s]).to(device).float()
+        #train_inputs =  torch.load(train_input_file_paths[s]).to(device).float()
+        #test_targets =  torch.load(test_target_file_paths[s]).to(device)
+        #val_targets =  torch.load(val_target_file_paths[s]).to(device)
+        #train_targets =  torch.load(train_target_file_paths[s]).to(device)            
+        #all_inputs = torch.cat((test_inputs,val_inputs,train_inputs))
 
-    noise = torch.Tensor(np.random.normal(offset,magn,(len(sample),67))).to(device)
-    xadv = sample + noise
-    #all_inputs_noise = all_inputs + noise
-    #xadv = scalers[variable].inverse_transform(all_inputs_noise[:,variable].cpu())
-    integervars = [59,63,64,65,66]
-    for variable in integervars:
-        xadv[:,variable] = sample[:,variable]
+        noise = torch.Tensor(np.random.normal(offset,magn,(len(sample),67))).to(device)
+        xadv = sample + noise
+        #all_inputs_noise = all_inputs + noise
+        #xadv = scalers[variable].inverse_transform(all_inputs_noise[:,variable].cpu())
+        integervars = [59,63,64,65,66]
+        for variable in integervars:
+            xadv[:,variable] = sample[:,variable]
 
 
-    for i in range(67):
-        defaults = abs(scalers[i].inverse_transform(sample[:,i].cpu()) - defaults_per_variable[i]) < 0.001   # "floating point error" --> allow some error margin
-        if np.sum(defaults) != 0:
-            xadv[:,i][defaults] = sample[:,i][defaults]
+        for i in range(67):
+            defaults = abs(scalers[i].inverse_transform(sample[:,i].cpu()) - defaults_per_variable[i]) < 0.001   # "floating point error" --> allow some error margin
+            if np.sum(defaults) != 0:
+                xadv[:,i][defaults] = sample[:,i][defaults]
 
-    return xadv
+        return xadv
 
 def fgsm_attack(epsilon=1e-2,sample=None,targets=None,reduced=True, scalers=None):
     device = torch.device("cpu")
@@ -228,197 +230,219 @@ def predict(inputs, targets, scalers, method):
     #inputs, targets, scalers = preprocess(rootfile)
     #print(targets[:100])
     #sys.exit()
-    
-    device = torch.device("cpu")
-    global model
-    global criterion
-    model = nn.Sequential(nn.Linear(67, 100),
-                      nn.ReLU(),
-                      nn.Dropout(0.1),
-                      nn.Linear(100, 100),
-                      nn.ReLU(),
-                      nn.Dropout(0.1),
-                      nn.Linear(100, 100),
-                      nn.ReLU(),
-                      nn.Dropout(0.1),
-                      nn.Linear(100, 100),
-                      nn.ReLU(),
-                      nn.Dropout(0.1),
-                      nn.Linear(100, 100),
-                      nn.ReLU(),
-                      nn.Linear(100, 4),
-                      nn.Softmax(dim=1))
+    with torch.no_grad():
+        device = torch.device("cpu")
+        global model
+        global criterion
+        model = nn.Sequential(nn.Linear(67, 100),
+                          nn.ReLU(),
+                          nn.Dropout(0.1),
+                          nn.Linear(100, 100),
+                          nn.ReLU(),
+                          nn.Dropout(0.1),
+                          nn.Linear(100, 100),
+                          nn.ReLU(),
+                          nn.Dropout(0.1),
+                          nn.Linear(100, 100),
+                          nn.ReLU(),
+                          nn.Dropout(0.1),
+                          nn.Linear(100, 100),
+                          nn.ReLU(),
+                          nn.Linear(100, 4),
+                          nn.Softmax(dim=1))
 
-    if method == '_new':
-        #allweights = compute_class_weight(
-        #       'balanced',
-        #        classes=np.array([0,1,2,3]), 
-        #        y=targets.numpy().astype(int))
-        #class_weights = torch.FloatTensor(allweights).to(device)
-        #del allweights
-        #gc.collect()
-        #these classweights have been derived once for TTtoSemileptonic (the ones used for training)
-        #class_weights = torch.FloatTensor(np.array([ 0.37333512, 24.65012434,  2.25474568,  1.1942229 ])).to(device)
-        #criterion = nn.CrossEntropyLoss(weight=class_weights)
-        criterion = nn.CrossEntropyLoss()
-        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_all_TT_350_epochs_v10_GPU_weighted_new_49_datasets_with_default_0.001.pt'
-        
-    
-    # ==========================================================================
-    #
-    #                               NEW: may_21
-    #
-    
-    elif method == '_ptetaflavloss20':
-        criterion = nn.CrossEntropyLoss(reduction='none')
-        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_124_epochs_v10_GPU_weighted_ptetaflavloss_20_datasets_with_default_0.001_-1.pt'
-    
-    elif method == '_ptetaflavloss278':
-        criterion = nn.CrossEntropyLoss(reduction='none')
-        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_1_epochs_v10_GPU_weighted_ptetaflavloss_278_datasets_with_default_0.001_-1.pt'
-    
-    #
-    #
-    #
-    # --------------------------------------------------------------------------
-    
-    
-    # ==========================================================================
-    #
-    #                               NEW: as of June, 16th
-    #
-    
-    elif method == '_ptetaflavloss_focalloss':
-        # for focal loss: parameters
-        alpha = None  # weights are handled differently, not with the focal loss but with sample weights if wanted
-        gamma = 2
-        criterion = FocalLoss(alpha, gamma, reduction='none')
-        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
-    
-    elif method == '_flatptetaflavloss_focalloss':
-        # for focal loss: parameters
-        alpha = None  # weights are handled differently, not with the focal loss but with sample weights if wanted
-        gamma = 2
-        criterion = FocalLoss(alpha, gamma, reduction='none')
-        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_200_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
-    
-    #
-    #
-    #
-    # --------------------------------------------------------------------------
-    
-    
-    
-    # ==========================================================================
-    #
-    #                               NEW: as of June, 25th
-    #
-    
-    elif method == '_notflat_250_gamma2.0_alphaNone':
-        # for focal loss: parameters
-        alpha = None
-        gamma = 2.0
-        criterion = FocalLoss(alpha, gamma, reduction='none')
-        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_250_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
-    
-    elif method == '_flat_230_gamma2.0_alphaNone':
-        # for focal loss: parameters
-        alpha = None
-        gamma = 2.0
-        criterion = FocalLoss(alpha, gamma, reduction='none')
-        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_230_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
-        
-    elif method == '_notflat_100_gamma20.0_alphaNone':
-        # for focal loss: parameters
-        alpha = None
-        gamma = 20.0
-        criterion = FocalLoss(alpha, gamma, reduction='none')
-        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_100_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma20.0_278_datasets_with_default_0.001_-1.pt'
-        
-    elif method == '_notflat_100_gamma4.0_alpha0.4,0.4,0.2,0.2':
-        # for focal loss: parameters
-        alpha = torch.Tensor([0.4,0.4,0.2,0.2])
-        gamma = 20.0
-        criterion = FocalLoss(alpha, gamma, reduction='none')
-        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_100_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma4.0_alpha0.4,0.4,0.2,0.2_278_datasets_with_default_0.001_-1.pt'
-        
-    
-    
-    #
-    #
-    #
-    # --------------------------------------------------------------------------
-    
-    
-    # old
-    else:
-        criterion = nn.CrossEntropyLoss()
-        modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_all_TT_350_epochs_v10_GPU_weighted_as_is_49_datasets_with_default_0.001.pt'
-    
-    checkpoint = torch.load(modelPath, map_location=torch.device(device))
-    model.load_state_dict(checkpoint["model_state_dict"])
+        if method == '_new':
+            #allweights = compute_class_weight(
+            #       'balanced',
+            #        classes=np.array([0,1,2,3]), 
+            #        y=targets.numpy().astype(int))
+            #class_weights = torch.FloatTensor(allweights).to(device)
+            #del allweights
+            #gc.collect()
+            #these classweights have been derived once for TTtoSemileptonic (the ones used for training)
+            #class_weights = torch.FloatTensor(np.array([ 0.37333512, 24.65012434,  2.25474568,  1.1942229 ])).to(device)
+            #criterion = nn.CrossEntropyLoss(weight=class_weights)
+            criterion = nn.CrossEntropyLoss()
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_all_TT_350_epochs_v10_GPU_weighted_new_49_datasets_with_default_0.001.pt'
 
-    model.to(device)
 
-    #evaluate network on inputs
-    model.eval()
-    return model(inputs).detach().numpy()
+        # ==========================================================================
+        #
+        #                               NEW: may_21
+        #
+
+        elif method == '_ptetaflavloss20':
+            criterion = nn.CrossEntropyLoss(reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_124_epochs_v10_GPU_weighted_ptetaflavloss_20_datasets_with_default_0.001_-1.pt'
+
+        elif method == '_ptetaflavloss278':
+            criterion = nn.CrossEntropyLoss(reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_1_epochs_v10_GPU_weighted_ptetaflavloss_278_datasets_with_default_0.001_-1.pt'
+
+        #
+        #
+        #
+        # --------------------------------------------------------------------------
+
+
+        # ==========================================================================
+        #
+        #                               NEW: as of June, 16th
+        #
+
+        elif method == '_ptetaflavloss_focalloss':
+            # for focal loss: parameters
+            alpha = None  # weights are handled differently, not with the focal loss but with sample weights if wanted
+            gamma = 2
+            criterion = FocalLoss(alpha, gamma, reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+
+        elif method == '_flatptetaflavloss_focalloss':
+            # for focal loss: parameters
+            alpha = None  # weights are handled differently, not with the focal loss but with sample weights if wanted
+            gamma = 2
+            criterion = FocalLoss(alpha, gamma, reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_200_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+
+        #
+        #
+        #
+        # --------------------------------------------------------------------------
+
+
+
+        # ==========================================================================
+        #
+        #                               NEW: as of June, 25th
+        #
+
+        elif method == '_notflat_250_gamma2.0_alphaNone':
+            # for focal loss: parameters
+            alpha = None
+            gamma = 2.0
+            criterion = FocalLoss(alpha, gamma, reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_250_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+
+        elif method == '_flat_230_gamma2.0_alphaNone':
+            # for focal loss: parameters
+            alpha = None
+            gamma = 2.0
+            criterion = FocalLoss(alpha, gamma, reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_230_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+
+        elif method == '_notflat_100_gamma20.0_alphaNone':
+            # for focal loss: parameters
+            alpha = None
+            gamma = 20.0
+            criterion = FocalLoss(alpha, gamma, reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_100_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma20.0_278_datasets_with_default_0.001_-1.pt'
+
+        elif method == '_notflat_100_gamma4.0_alpha0.4,0.4,0.2,0.2':
+            # for focal loss: parameters
+            alpha = torch.Tensor([0.4,0.4,0.2,0.2])
+            gamma = 4.0
+            criterion = FocalLoss(alpha, gamma, reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_100_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma4.0_alpha0.4,0.4,0.2,0.2_278_datasets_with_default_0.001_-1.pt'
+
+        elif method == '_flat_200_gamma25.0_alphaNone':
+            # for focal loss: parameters
+            alpha = None
+            gamma = 25.0
+            criterion = FocalLoss(alpha, gamma, reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_200_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_gamma25.0_278_datasets_with_default_0.001_-1.pt'
+
+        #
+        #
+        #
+        # --------------------------------------------------------------------------
+
+
+        # old
+        else:
+            criterion = nn.CrossEntropyLoss()
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_all_TT_350_epochs_v10_GPU_weighted_as_is_49_datasets_with_default_0.001.pt'
+
+        checkpoint = torch.load(modelPath, map_location=torch.device(device))
+        model.load_state_dict(checkpoint["model_state_dict"])
+
+        model.to(device)
+
+        #evaluate network on inputs
+        model.eval()
+        return model(inputs).detach().numpy()
 
 
 def calcBvsL(matching_predictions):
     global n_jets
-    matching_predictions = np.where(np.tile((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,3] != 0), (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
+    #matching_predictions = np.where(np.tile((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,3] != 0), (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
     
-    custom_BvL = np.where(((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,3]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1), (matching_predictions[:,0]+matching_predictions[:,1])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,3]), (-1.0)*np.ones(n_jets))
+    custom_BvL = np.where(((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,3]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1) & (matching_predictions[:,2] >= 0) & (matching_predictions[:,2] <= 1) & (matching_predictions[:,3] >= 0) & (matching_predictions[:,3] <= 1), (matching_predictions[:,0]+matching_predictions[:,1])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,3]), (-1.0)*np.ones(n_jets))
+    
+    custom_BvL[(custom_BvL < 0.000001) & (custom_BvL > -0.000001)] = 0.000001
+    custom_BvL[(np.isnan(custom_BvL)) & (np.isinf(custom_BvL))] = -1.0
+    custom_BvL[custom_BvL > 0.99999] = 0.99999
     
     return custom_BvL
 
 def calcBvsC(matching_predictions):
     global n_jets
-    matching_predictions = np.where(np.tile((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2] != 0) , (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
+    #matching_predictions = np.where(np.tile((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2] != 0) , (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
     
-    custom_BvC = np.where(((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1), (matching_predictions[:,0]+matching_predictions[:,1])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]), (-1.0)*np.ones(n_jets))
+    custom_BvC = np.where(((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1) & (matching_predictions[:,2] >= 0) & (matching_predictions[:,2] <= 1) & (matching_predictions[:,3] >= 0) & (matching_predictions[:,3] <= 1), (matching_predictions[:,0]+matching_predictions[:,1])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]), (-1.0)*np.ones(n_jets))
+    
+    custom_BvC[(custom_BvC < 0.000001) & (custom_BvC > -0.000001)] = 0.000001
+    custom_BvC[(np.isnan(custom_BvC)) & (np.isinf(custom_BvC))] = -1.0
+    custom_BvC[custom_BvC > 0.99999] = 0.99999
     
     return custom_BvC
     
 def calcCvsB(matching_predictions):
     global n_jets
-    matching_predictions = np.where(np.tile((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2] != 0), (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
+    #matching_predictions = np.where(np.tile((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2] != 0), (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
     
-    custom_CvB = np.where(((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1), (matching_predictions[:,2])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]), (-1.0)*np.ones(n_jets))
+    custom_CvB = np.where(((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1) & (matching_predictions[:,2] >= 0) & (matching_predictions[:,2] <= 1) & (matching_predictions[:,3] >= 0) & (matching_predictions[:,3] <= 1), (matching_predictions[:,2])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]), (-1.0)*np.ones(n_jets))
+    
+    custom_CvB[(custom_CvB < 0.000001) & (custom_CvB > -0.000001)] = 0.000001
+    custom_CvB[(np.isnan(custom_CvB)) & (np.isinf(custom_CvB))] = -1.0
+    custom_CvB[custom_CvB > 0.99999] = 0.99999
     
     return custom_CvB
     
 def calcCvsL(matching_predictions):
     global n_jets
-    matching_predictions = np.where(np.tile((matching_predictions[:,2]+matching_predictions[:,3] != 0), (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
+    #matching_predictions = np.where(np.tile((matching_predictions[:,2]+matching_predictions[:,3] != 0), (4,1)).transpose(), matching_predictions, (-1.0)*np.ones((n_jets,4)))
     
-    custom_CvL = np.where(((matching_predictions[:,2]+matching_predictions[:,3]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1), (matching_predictions[:,2])/(matching_predictions[:,2]+matching_predictions[:,3]), (-1.0)*np.ones(n_jets))
+    custom_CvL = np.where(((matching_predictions[:,2]+matching_predictions[:,3]) != 0) & (matching_predictions[:,0] >= 0) & (matching_predictions[:,0] <= 1) & (matching_predictions[:,1] >= 0) & (matching_predictions[:,1] <= 1) & (matching_predictions[:,2] >= 0) & (matching_predictions[:,2] <= 1) & (matching_predictions[:,3] >= 0) & (matching_predictions[:,3] <= 1), (matching_predictions[:,2])/(matching_predictions[:,2]+matching_predictions[:,3]), (-1.0)*np.ones(n_jets))
+    
+    custom_CvL[(custom_CvL < 0.000001) & (custom_CvL > -0.000001)] = 0.000001
+    custom_CvL[(np.isnan(custom_CvL)) & (np.isinf(custom_CvL))] = -1.0
+    custom_CvL[custom_CvL > 0.99999] = 0.99999
+    
     return custom_CvL
 
     
 def calcBvsL_legacy(predictions):  # P(b)+P(bb)/(P(b)+P(bb)+P(udsg))
     bvsl = (predictions[:,0]+predictions[:,1])/(1-predictions[:,2])
     bvsl[bvsl < 0.000001] = 0.000001
-    bvsl[bvsl > 0.999999] = 0.999999
+    bvsl[bvsl > 0.99999] = 0.99999
     return bvsl    
 def calcBvsC_legacy(predictions):  # P(b)+P(bb)/(P(b)+P(bb)+P(c))
     bvsc = (predictions[:,0]+predictions[:,1])/(1-predictions[:,3])
     bvsc[bvsc < 0.000001] = 0.000001
-    bvsc[bvsc > 0.999999] = 0.999999
+    bvsc[bvsc > 0.99999] = 0.99999
     return bvsc
     
 def calcCvsB_legacy(predictions):  # P(c)/(P(b)+P(bb)+P(c))
     cvsb =  (predictions[:,2])/(predictions[:,0]+predictions[:,1]+predictions[:,2])
     cvsb[cvsb < 0.000001] = 0.000001
-    cvsb[cvsb > 0.999999] = 0.999999
+    cvsb[cvsb > 0.99999] = 0.99999
     cvsb[np.isnan(cvsb)] = -1
     return cvsb
     
 def calcCvsL_legacy(predictions):  # P(c)/(P(udsg)+P(c))
     cvsl = (predictions[:,2])/(predictions[:,3]+predictions[:,2])
     cvsl[cvsl < 0.000001] = 0.000001
-    cvsl[cvsl > 0.999999] = 0.999999
+    cvsl[cvsl > 0.99999] = 0.99999
     cvsl[np.isnan(cvsl)] = -1
     return cvsl
 
@@ -598,11 +622,14 @@ if __name__ == "__main__":
     #del bin_edges
     #gc.collect()
     #print(bvl[:100])
+    print('Raw bvl, bvc, cvb, cvl')
+    print(min(bvl), max(bvl))
     np.save(outputBvsLdir, bvl)
     del bvl
     gc.collect()
 
     bvc = calcBvsC(predictions)
+    print(min(bvc), max(bvc))
     np.save(outputBvsCdir, bvc)
     del bvc
     gc.collect()
@@ -630,6 +657,7 @@ if __name__ == "__main__":
     #del bin_edges
     #gc.collect()
     #print(bvl[:100])
+    print(min(cvb), max(cvb))
     np.save(outputCvsBdir, cvb)
     del cvb
     gc.collect()
@@ -648,19 +676,29 @@ if __name__ == "__main__":
     #del bin_edges
     #gc.collect()
     #print(bvl[:100])
+    print(min(cvl), max(cvl))
     np.save(outputCvsLdir, cvl)
     del cvl
     gc.collect()
 
-
+    
+    #print(min(predictions[:,0]), max(predictions[:,0]))
+    #print(min(predictions[:,1]), max(predictions[:,1]))
+    #print(min(predictions[:,2]), max(predictions[:,2]))
+    #print(min(predictions[:,3]), max(predictions[:,3]))
     predictions[:,0][predictions[:,0] > 0.99999] = 0.99999
     predictions[:,1][predictions[:,1] > 0.99999] = 0.99999
     predictions[:,2][predictions[:,2] > 0.99999] = 0.99999
     predictions[:,3][predictions[:,3] > 0.99999] = 0.99999
-    #predictions[:,0][predictions[:,0] < 0.000001] = 0.000001
-    #predictions[:,1][predictions[:,1] < 0.000001] = 0.000001
-    #predictions[:,2][predictions[:,2] < 0.000001] = 0.000001
-    #predictions[:,3][predictions[:,3] < 0.000001] = 0.000001
+    predictions[:,0][predictions[:,0] < 0.000001] = 0.000001
+    predictions[:,1][predictions[:,1] < 0.000001] = 0.000001
+    predictions[:,2][predictions[:,2] < 0.000001] = 0.000001
+    predictions[:,3][predictions[:,3] < 0.000001] = 0.000001
+    print('Raw b, bb, c, l min and max (after cutting over-/underflow)')
+    print(min(predictions[:,0]), max(predictions[:,0]))
+    print(min(predictions[:,1]), max(predictions[:,1]))
+    print(min(predictions[:,2]), max(predictions[:,2]))
+    print(min(predictions[:,3]), max(predictions[:,3]))
     np.save(outputPredsdir, predictions)
     del predictions
     gc.collect()
@@ -698,11 +736,14 @@ if __name__ == "__main__":
         #gc.collect()
         noise_bvl = calcBvsL(noise_preds)
         #print(bvl[:100])
+        print('Noise bvl, bvc, cvb, cvl')
+        print(min(noise_bvl), max(noise_bvl))
         np.save(noise_outputBvsLdir, noise_bvl)
         del noise_bvl
         gc.collect()
 
         noise_bvc = calcBvsC(noise_preds)
+        print(min(noise_bvc), max(noise_bvc))
         np.save(noise_outputBvsCdir, noise_bvc)
         del noise_bvc
         gc.collect()
@@ -723,6 +764,7 @@ if __name__ == "__main__":
         #del bin_edges
         #gc.collect()
         #print(bvl[:100])
+        print(min(noise_cvb), max(noise_cvb))
         np.save(noise_outputCvsBdir, noise_cvb)
         del noise_cvb
         gc.collect()
@@ -741,16 +783,22 @@ if __name__ == "__main__":
         #del bin_edges
         #gc.collect()
         #print(bvl[:100])
+        print(min(noise_cvl), max(noise_cvl))
         np.save(noise_outputCvsLdir, noise_cvl)
         del noise_cvl
         noise_preds[:,0][noise_preds[:,0] > 0.99999] = 0.99999
         noise_preds[:,1][noise_preds[:,1] > 0.99999] = 0.99999
         noise_preds[:,2][noise_preds[:,2] > 0.99999] = 0.99999
         noise_preds[:,3][noise_preds[:,3] > 0.99999] = 0.99999
-        #noise_preds[:,0][noise_preds[:,0] < 0.000001] = 0.000001
-        #noise_preds[:,1][noise_preds[:,1] < 0.000001] = 0.000001
-        #noise_preds[:,2][noise_preds[:,2] < 0.000001] = 0.000001
-        #noise_preds[:,3][noise_preds[:,3] < 0.000001] = 0.000001
+        noise_preds[:,0][noise_preds[:,0] < 0.000001] = 0.000001
+        noise_preds[:,1][noise_preds[:,1] < 0.000001] = 0.000001
+        noise_preds[:,2][noise_preds[:,2] < 0.000001] = 0.000001
+        noise_preds[:,3][noise_preds[:,3] < 0.000001] = 0.000001
+        print('Noise b, bb, c, l min and max (after cutting over-/underflow)')
+        print(min(noise_preds[:,0]), max(noise_preds[:,0]))
+        print(min(noise_preds[:,1]), max(noise_preds[:,1]))
+        print(min(noise_preds[:,2]), max(noise_preds[:,2]))
+        print(min(noise_preds[:,3]), max(noise_preds[:,3]))
         np.save(noise_outputPredsdir, noise_preds)
         del noise_preds
         gc.collect()
@@ -775,11 +823,14 @@ if __name__ == "__main__":
         #print(hist)
         fgsm_bvl = calcBvsL(fgsm_preds)
         #print(bvl[:100])
+        print('FGSM bvl, bvc, cvb, cvl')
+        print(min(fgsm_bvl), max(fgsm_bvl))
         np.save(fgsm_outputBvsLdir, fgsm_bvl)
         del fgsm_bvl
         gc.collect()
 
         fgsm_bvc = calcBvsC(fgsm_preds)
+        print(min(fgsm_bvc), max(fgsm_bvc))
         np.save(fgsm_outputBvsCdir, fgsm_bvc)
         del fgsm_bvc
         gc.collect()
@@ -800,6 +851,7 @@ if __name__ == "__main__":
         #del bin_edges
         #gc.collect()
         #print(bvl[:100])
+        print(min(fgsm_cvb), max(fgsm_cvb))
         np.save(fgsm_outputCvsBdir, fgsm_cvb)
         del fgsm_cvb
         gc.collect()
@@ -818,16 +870,22 @@ if __name__ == "__main__":
         #del bin_edges
         #gc.collect()
         #print(bvl[:100])
+        print(min(fgsm_cvl), max(fgsm_cvl))
         np.save(fgsm_outputCvsLdir, fgsm_cvl)
         del fgsm_cvl
         fgsm_preds[:,0][fgsm_preds[:,0] > 0.99999] = 0.99999
         fgsm_preds[:,1][fgsm_preds[:,1] > 0.99999] = 0.99999
         fgsm_preds[:,2][fgsm_preds[:,2] > 0.99999] = 0.99999
         fgsm_preds[:,3][fgsm_preds[:,3] > 0.99999] = 0.99999
-        #fgsm_preds[:,0][fgsm_preds[:,0] < 0.000001] = 0.000001
-        #fgsm_preds[:,1][fgsm_preds[:,1] < 0.000001] = 0.000001
-        #fgsm_preds[:,2][fgsm_preds[:,2] < 0.000001] = 0.000001
-        #fgsm_preds[:,3][fgsm_preds[:,3] < 0.000001] = 0.000001
+        fgsm_preds[:,0][fgsm_preds[:,0] < 0.000001] = 0.000001
+        fgsm_preds[:,1][fgsm_preds[:,1] < 0.000001] = 0.000001
+        fgsm_preds[:,2][fgsm_preds[:,2] < 0.000001] = 0.000001
+        fgsm_preds[:,3][fgsm_preds[:,3] < 0.000001] = 0.000001
+        print('FGSM b, bb, c, l min and max (after cutting over-/underflow)')
+        print(min(fgsm_preds[:,0]), max(fgsm_preds[:,0]))
+        print(min(fgsm_preds[:,1]), max(fgsm_preds[:,1]))
+        print(min(fgsm_preds[:,2]), max(fgsm_preds[:,2]))
+        print(min(fgsm_preds[:,3]), max(fgsm_preds[:,3]))
         np.save(fgsm_outputPredsdir, fgsm_preds)
         del fgsm_preds
         gc.collect()
