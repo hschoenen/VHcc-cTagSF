@@ -356,6 +356,48 @@ def predict(inputs, targets, scalers, method):
         #
         # --------------------------------------------------------------------------
 
+        # ==========================================================================
+        #
+        #                               NEW: as of July, 8th
+        #
+
+        elif method == '_notflat_200_gamma25.0_alphaNone_adv_tr_eps0.01':
+            # for focal loss: parameters
+            alpha = None
+            gamma = 25.0
+            criterion = FocalLoss(alpha, gamma, reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/adv_tr/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_adv_tr_eps0.01_278_datasets_with_default_0.001_-1.pt'
+            
+        elif method == '_notflat_200_gamma25.0_alphaNone':
+            # for focal loss: parameters
+            alpha = None
+            gamma = 25.0
+            criterion = FocalLoss(alpha, gamma, reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/basic_tr/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_278_datasets_with_default_0.001_-1.pt'
+            
+        
+        # special cases that can handle different epochs (checkpoints)    
+        elif method.startswith('adv'):
+            epoch = method.split('adv_tr_eps0.01_')[-1]
+            # for focal loss: parameters
+            alpha = None
+            gamma = 25.0
+            criterion = FocalLoss(alpha, gamma, reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/adv_tr/model_{epoch}_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_adv_tr_eps0.01_278_datasets_with_default_0.001_-1.pt'
+            
+        elif method.startswith('basic'):
+            epoch = method.split('basic_')[-1]
+            # for focal loss: parameters
+            alpha = None
+            gamma = 25.0
+            criterion = FocalLoss(alpha, gamma, reduction='none')
+            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/basic_tr/model_{epoch}_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_278_datasets_with_default_0.001_-1.pt'
+            
+
+        #
+        #
+        #
+        # --------------------------------------------------------------------------
 
         # old
         else:
@@ -554,338 +596,403 @@ if __name__ == "__main__":
     #else:
     #    methods = [weightingMethod]
     
-    
-    wm = weightingMethod
-    #for wm in methods:  # was formerly using a loop over all weighting methods, but this would require using also multiple w.m. in the Analyzer
-    #outputPredsdir = "%s/%s/outPreds_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
-    #outputBvsLdir = "%s/%s/outBvsL_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
-    
-    # new version doesn't store the w.m. in the filename
-    outputPredsdir = "outPreds_%s.npy"%(outNo)
-    outputCvsBdir = "outCvsB_%s.npy"%(outNo)
-    outputCvsLdir = "outCvsL_%s.npy"%(outNo)
-    outputBvsCdir = "outBvsC_%s.npy"%(outNo)
-    outputBvsLdir = "outBvsL_%s.npy"%(outNo)
+    # to check multiple epochs of a given weighting method at once (using always 3 epochs should make sense, as previous tests were done on raw/noise/FGSM = 3 different sets)
+    if weightingMethod.startswith('_multi_'):
+        letters = ['A','B','C']  # using the same three letters all the time means that the Analyzer code does not need to be updated for every possible epoch
+        if 'basic' in weightingMethod:
+            # basic training on raw inputs only
+            wmethods = ['basic_'+e for e in (weightingMethod.split('_basic_')[-1]).split(',')]
+        else:
+            # adversarial training
+            wmethods = ['adv_tr_eps0.01_'+e for e in (weightingMethod.split('_adv_tr_eps0.01_')[-1]).split(',')]
+        print('Will run with these weighting methods & epochs:', wmethods)
+        
+        for i,wm in enumerate(wmethods):
+            outputPredsdir = f"{letters[i]}_outPreds_%s.npy"%(outNo)
+            outputCvsBdir  = f"{letters[i]}_outCvsB_%s.npy"%(outNo)
+            outputCvsLdir  = f"{letters[i]}_outCvsL_%s.npy"%(outNo)
+            outputBvsCdir  = f"{letters[i]}_outBvsC_%s.npy"%(outNo)
+            outputBvsLdir  = f"{letters[i]}_outBvsL_%s.npy"%(outNo)
+            
+            predictions = predict(inputs, targets, scalers, wm)
+            
+            bvl = calcBvsL(predictions)
+            print('Raw bvl, bvc, cvb, cvl')
+            print(min(bvl), max(bvl))
+            np.save(outputBvsLdir, bvl)
+            del bvl
+            gc.collect()
 
-    noise_outputPredsdir = "noise_outPreds_%s.npy"%(outNo)
-    noise_outputCvsBdir = "noise_outCvsB_%s.npy"%(outNo)
-    noise_outputCvsLdir = "noise_outCvsL_%s.npy"%(outNo)
-    noise_outputBvsCdir = "noise_outBvsC_%s.npy"%(outNo)
-    noise_outputBvsLdir = "noise_outBvsL_%s.npy"%(outNo)
+            bvc = calcBvsC(predictions)
+            print(min(bvc), max(bvc))
+            np.save(outputBvsCdir, bvc)
+            del bvc
+            gc.collect()
 
-    fgsm_outputPredsdir = "fgsm_outPreds_%s.npy"%(outNo)
-    fgsm_outputCvsBdir = "fgsm_outCvsB_%s.npy"%(outNo)
-    fgsm_outputCvsLdir = "fgsm_outCvsL_%s.npy"%(outNo)
-    fgsm_outputBvsCdir = "fgsm_outBvsC_%s.npy"%(outNo)
-    fgsm_outputBvsLdir = "fgsm_outBvsL_%s.npy"%(outNo)
+            cvb = calcCvsB(predictions)
+            
+            print(min(cvb), max(cvb))
+            np.save(outputCvsBdir, cvb)
+            del cvb
+            gc.collect()
+            cvl = calcCvsL(predictions)
+            
+            print(min(cvl), max(cvl))
+            np.save(outputCvsLdir, cvl)
+            del cvl
+            gc.collect()
 
-    #print("Saving into %s/%s"%(condoroutdir,sampName))
+            predictions[:,0][predictions[:,0] > 0.99999] = 0.99999
+            predictions[:,1][predictions[:,1] > 0.99999] = 0.99999
+            predictions[:,2][predictions[:,2] > 0.99999] = 0.99999
+            predictions[:,3][predictions[:,3] > 0.99999] = 0.99999
+            predictions[:,0][predictions[:,0] < 0.000001] = 0.000001
+            predictions[:,1][predictions[:,1] < 0.000001] = 0.000001
+            predictions[:,2][predictions[:,2] < 0.000001] = 0.000001
+            predictions[:,3][predictions[:,3] < 0.000001] = 0.000001
+            print('Raw b, bb, c, l min and max (after cutting over-/underflow)')
+            print(min(predictions[:,0]), max(predictions[:,0]))
+            print(min(predictions[:,1]), max(predictions[:,1]))
+            print(min(predictions[:,2]), max(predictions[:,2]))
+            print(min(predictions[:,3]), max(predictions[:,3]))
+            np.save(outputPredsdir, predictions)
+            del predictions
+            gc.collect()
+            
+    # just one weighting method at a given epoch, but with Noise or FGSM attack applied to MC
+    else:
+
+        wm = weightingMethod
+        #for wm in methods:  # was formerly using a loop over all weighting methods, but this would require using also multiple w.m. in the Analyzer
+        #outputPredsdir = "%s/%s/outPreds_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
+        #outputBvsLdir = "%s/%s/outBvsL_%s%s.npy"%(condoroutdir,sampName,outNo,wm)
+
+        # new version doesn't store the w.m. in the filename
+        outputPredsdir = "outPreds_%s.npy"%(outNo)
+        outputCvsBdir = "outCvsB_%s.npy"%(outNo)
+        outputCvsLdir = "outCvsL_%s.npy"%(outNo)
+        outputBvsCdir = "outBvsC_%s.npy"%(outNo)
+        outputBvsLdir = "outBvsL_%s.npy"%(outNo)
+
+        noise_outputPredsdir = "noise_outPreds_%s.npy"%(outNo)
+        noise_outputCvsBdir = "noise_outCvsB_%s.npy"%(outNo)
+        noise_outputCvsLdir = "noise_outCvsL_%s.npy"%(outNo)
+        noise_outputBvsCdir = "noise_outBvsC_%s.npy"%(outNo)
+        noise_outputBvsLdir = "noise_outBvsL_%s.npy"%(outNo)
+
+        fgsm_outputPredsdir = "fgsm_outPreds_%s.npy"%(outNo)
+        fgsm_outputCvsBdir = "fgsm_outCvsB_%s.npy"%(outNo)
+        fgsm_outputCvsLdir = "fgsm_outCvsL_%s.npy"%(outNo)
+        fgsm_outputBvsCdir = "fgsm_outBvsC_%s.npy"%(outNo)
+        fgsm_outputBvsLdir = "fgsm_outBvsL_%s.npy"%(outNo)
+
+        #print("Saving into %s/%s"%(condoroutdir,sampName))
 
 
 
-    predictions = predict(inputs, targets, scalers, wm)
-    #print(predictions[:100,:])
-    #hist, bin_edges = np.histogram(predictions[:,0],bins=20)
-    #print('Flavour b predictions: bin_edges and histogram')
-    #print(bin_edges)
-    #print(hist)
-    #del hist
-    #del bin_edges
-    #gc.collect()
-    #hist, bin_edges = np.histogram(predictions[:,1],bins=20)
-    #print('Flavour bb predictions: bin_edges and histogram')
-    #print(bin_edges)
-    #print(hist)
-    #del hist
-    #del bin_edges
-    #gc.collect()
-    #hist, bin_edges = np.histogram(predictions[:,2],bins=20)
-    #print('Flavour c predictions: bin_edges and histogram')
-    #print(bin_edges)
-    #print(hist)
-    #del hist
-    #del bin_edges
-    #gc.collect()
-    #hist, bin_edges = np.histogram(predictions[:,3],bins=20)
-    #print('Flavour udsg predictions: bin_edges and histogram')
-    #print(bin_edges)
-    #print(hist)
-    #del hist
-    #del bin_edges
-    #gc.collect()
-    bvl = calcBvsL(predictions)
-    #hist, bin_edges = np.histogram(bvl)
-    #print('bvl: bin_edges and histogram')
-    #print(bin_edges)
-    #print(hist)
-    #del hist
-    #del bin_edges
-    #gc.collect()
-    #print(bvl[:100])
-    print('Raw bvl, bvc, cvb, cvl')
-    print(min(bvl), max(bvl))
-    np.save(outputBvsLdir, bvl)
-    del bvl
-    gc.collect()
-
-    bvc = calcBvsC(predictions)
-    print(min(bvc), max(bvc))
-    np.save(outputBvsCdir, bvc)
-    del bvc
-    gc.collect()
-
-    cvb = calcCvsB(predictions)
-    #hist, bin_edges = np.histogram(cvb)
-    #print('cvb: bin_edges and histogram before assigning -1')
-    #print(bin_edges)
-    #print(hist)
-    #
-    #
-    #
-    # NOTE:
-    #
-    # The -1 bins are now already assigned inside the functions for BvsL, CvsB and CvsL !!
-    #
-    # handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
-    #cvb[(predictions[:,0]+predictions[:,1]+predictions[:,2]) == 0] = -1
-    #cvb[(predictions[:,3]+predictions[:,2]) == 0] = -1
-    #hist, bin_edges = np.histogram(cvb,bins=20)
-    #print('cvb: bin_edges and histogram after assigning -1')
-    #print(bin_edges)
-    #print(hist)
-    #del hist
-    #del bin_edges
-    #gc.collect()
-    #print(bvl[:100])
-    print(min(cvb), max(cvb))
-    np.save(outputCvsBdir, cvb)
-    del cvb
-    gc.collect()
-    cvl = calcCvsL(predictions)
-    #hist, bin_edges = np.histogram(cvl)
-    #print('cvl: bin_edges and histogram before assigning -1')
-    #print(bin_edges)
-    #print(hist)
-    #cvl[(predictions[:,0]+predictions[:,1]+predictions[:,2]) == 0] = -1
-    #cvl[(predictions[:,3]+predictions[:,2]) == 0] = -1
-    #hist, bin_edges = np.histogram(cvl,bins=20)
-    #print('cvl: bin_edges and histogram after assigning -1')
-    #print(bin_edges)
-    #print(hist)
-    #del hist
-    #del bin_edges
-    #gc.collect()
-    #print(bvl[:100])
-    print(min(cvl), max(cvl))
-    np.save(outputCvsLdir, cvl)
-    del cvl
-    gc.collect()
-
-    
-    #print(min(predictions[:,0]), max(predictions[:,0]))
-    #print(min(predictions[:,1]), max(predictions[:,1]))
-    #print(min(predictions[:,2]), max(predictions[:,2]))
-    #print(min(predictions[:,3]), max(predictions[:,3]))
-    predictions[:,0][predictions[:,0] > 0.99999] = 0.99999
-    predictions[:,1][predictions[:,1] > 0.99999] = 0.99999
-    predictions[:,2][predictions[:,2] > 0.99999] = 0.99999
-    predictions[:,3][predictions[:,3] > 0.99999] = 0.99999
-    predictions[:,0][predictions[:,0] < 0.000001] = 0.000001
-    predictions[:,1][predictions[:,1] < 0.000001] = 0.000001
-    predictions[:,2][predictions[:,2] < 0.000001] = 0.000001
-    predictions[:,3][predictions[:,3] < 0.000001] = 0.000001
-    print('Raw b, bb, c, l min and max (after cutting over-/underflow)')
-    print(min(predictions[:,0]), max(predictions[:,0]))
-    print(min(predictions[:,1]), max(predictions[:,1]))
-    print(min(predictions[:,2]), max(predictions[:,2]))
-    print(min(predictions[:,3]), max(predictions[:,3]))
-    np.save(outputPredsdir, predictions)
-    del predictions
-    gc.collect()
-
-    if isMC == True:
-
-        noise_preds = predict(apply_noise(inputs, scalers, magn=1e-2,offset=[0]), targets, scalers, wm)
-        #hist, bin_edges = np.histogram(noise_preds[:,0],bins=20)
-        #print('Flavour b noise_preds: bin_edges and histogram')
+        predictions = predict(inputs, targets, scalers, wm)
+        #print(predictions[:100,:])
+        #hist, bin_edges = np.histogram(predictions[:,0],bins=20)
+        #print('Flavour b predictions: bin_edges and histogram')
         #print(bin_edges)
         #print(hist)
         #del hist
         #del bin_edges
         #gc.collect()
-        #hist, bin_edges = np.histogram(noise_preds[:,1],bins=20)
-        #print('Flavour bb noise_preds: bin_edges and histogram')
+        #hist, bin_edges = np.histogram(predictions[:,1],bins=20)
+        #print('Flavour bb predictions: bin_edges and histogram')
         #print(bin_edges)
         #print(hist)
         #del hist
         #del bin_edges
         #gc.collect()
-        #hist, bin_edges = np.histogram(noise_preds[:,2],bins=20)
-        #print('Flavour c noise_preds: bin_edges and histogram')
+        #hist, bin_edges = np.histogram(predictions[:,2],bins=20)
+        #print('Flavour c predictions: bin_edges and histogram')
         #print(bin_edges)
         #print(hist)
         #del hist
         #del bin_edges
         #gc.collect()
-        #hist, bin_edges = np.histogram(noise_preds[:,3],bins=20)
-        #print('Flavour udsg noise_preds: bin_edges and histogram')
+        #hist, bin_edges = np.histogram(predictions[:,3],bins=20)
+        #print('Flavour udsg predictions: bin_edges and histogram')
         #print(bin_edges)
         #print(hist)
         #del hist
         #del bin_edges
         #gc.collect()
-        noise_bvl = calcBvsL(noise_preds)
-        #print(bvl[:100])
-        print('Noise bvl, bvc, cvb, cvl')
-        print(min(noise_bvl), max(noise_bvl))
-        np.save(noise_outputBvsLdir, noise_bvl)
-        del noise_bvl
-        gc.collect()
-
-        noise_bvc = calcBvsC(noise_preds)
-        print(min(noise_bvc), max(noise_bvc))
-        np.save(noise_outputBvsCdir, noise_bvc)
-        del noise_bvc
-        gc.collect()
-
-        noise_cvb = calcCvsB(noise_preds)
-        #hist, bin_edges = np.histogram(noise_cvb)
-        #print('noise_cvb: bin_edges and histogram before assigning -1')
-        #print(bin_edges)
-        #print(hist)
-        ## handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
-        #noise_cvb[(noise_preds[:,0]+noise_preds[:,1]+noise_preds[:,2]) == 0] = -1
-        #noise_cvb[(noise_preds[:,3]+noise_preds[:,2]) == 0] = -1
-        #hist, bin_edges = np.histogram(noise_cvb,bins=20)
-        #print('noise_cvb: bin_edges and histogram after assigning -1')
+        bvl = calcBvsL(predictions)
+        #hist, bin_edges = np.histogram(bvl)
+        #print('bvl: bin_edges and histogram')
         #print(bin_edges)
         #print(hist)
         #del hist
         #del bin_edges
         #gc.collect()
         #print(bvl[:100])
-        print(min(noise_cvb), max(noise_cvb))
-        np.save(noise_outputCvsBdir, noise_cvb)
-        del noise_cvb
+        print('Raw bvl, bvc, cvb, cvl')
+        print(min(bvl), max(bvl))
+        np.save(outputBvsLdir, bvl)
+        del bvl
         gc.collect()
-        noise_cvl = calcCvsL(noise_preds)
-        #hist, bin_edges = np.histogram(noise_cvl)
-        #print('noise_cvl: bin_edges and histogram before assigning -1')
+
+        bvc = calcBvsC(predictions)
+        print(min(bvc), max(bvc))
+        np.save(outputBvsCdir, bvc)
+        del bvc
+        gc.collect()
+
+        cvb = calcCvsB(predictions)
+        #hist, bin_edges = np.histogram(cvb)
+        #print('cvb: bin_edges and histogram before assigning -1')
         #print(bin_edges)
         #print(hist)
-        #noise_cvl[(noise_preds[:,0]+noise_preds[:,1]+noise_preds[:,2]) == 0] = -1
-        #noise_cvl[(noise_preds[:,3]+noise_preds[:,2]) == 0] = -1
-        #hist, bin_edges = np.histogram(noise_cvl,bins=20)
-        #print('noise_cvl: bin_edges and histogram after assigning -1')
+        #
+        #
+        #
+        # NOTE:
+        #
+        # The -1 bins are now already assigned inside the functions for BvsL, CvsB and CvsL !!
+        #
+        # handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
+        #cvb[(predictions[:,0]+predictions[:,1]+predictions[:,2]) == 0] = -1
+        #cvb[(predictions[:,3]+predictions[:,2]) == 0] = -1
+        #hist, bin_edges = np.histogram(cvb,bins=20)
+        #print('cvb: bin_edges and histogram after assigning -1')
         #print(bin_edges)
         #print(hist)
         #del hist
         #del bin_edges
         #gc.collect()
         #print(bvl[:100])
-        print(min(noise_cvl), max(noise_cvl))
-        np.save(noise_outputCvsLdir, noise_cvl)
-        del noise_cvl
-        noise_preds[:,0][noise_preds[:,0] > 0.99999] = 0.99999
-        noise_preds[:,1][noise_preds[:,1] > 0.99999] = 0.99999
-        noise_preds[:,2][noise_preds[:,2] > 0.99999] = 0.99999
-        noise_preds[:,3][noise_preds[:,3] > 0.99999] = 0.99999
-        noise_preds[:,0][noise_preds[:,0] < 0.000001] = 0.000001
-        noise_preds[:,1][noise_preds[:,1] < 0.000001] = 0.000001
-        noise_preds[:,2][noise_preds[:,2] < 0.000001] = 0.000001
-        noise_preds[:,3][noise_preds[:,3] < 0.000001] = 0.000001
-        print('Noise b, bb, c, l min and max (after cutting over-/underflow)')
-        print(min(noise_preds[:,0]), max(noise_preds[:,0]))
-        print(min(noise_preds[:,1]), max(noise_preds[:,1]))
-        print(min(noise_preds[:,2]), max(noise_preds[:,2]))
-        print(min(noise_preds[:,3]), max(noise_preds[:,3]))
-        np.save(noise_outputPredsdir, noise_preds)
-        del noise_preds
+        print(min(cvb), max(cvb))
+        np.save(outputCvsBdir, cvb)
+        del cvb
         gc.collect()
-
-
-        fgsm_preds = predict(fgsm_attack(epsilon=1e-2,sample=inputs,targets=targets,reduced=True, scalers=scalers), targets, scalers, wm)
-        #hist, bin_edges = np.histogram(fgsm_preds[:,0],bins=20)
-        #print('Flavour b fgsm_preds: bin_edges and histogram')
+        cvl = calcCvsL(predictions)
+        #hist, bin_edges = np.histogram(cvl)
+        #print('cvl: bin_edges and histogram before assigning -1')
         #print(bin_edges)
         #print(hist)
-        #hist, bin_edges = np.histogram(fgsm_preds[:,1],bins=20)
-        #print('Flavour bb fgsm_preds: bin_edges and histogram')
-        #print(bin_edges)
-        #print(hist)
-        #hist, bin_edges = np.histogram(fgsm_preds[:,2],bins=20)
-        #print('Flavour c fgsm_preds: bin_edges and histogram')
-        #print(bin_edges)
-        #print(hist)
-        #hist, bin_edges = np.histogram(fgsm_preds[:,3],bins=20)
-        #print('Flavour udsg fgsm_preds: bin_edges and histogram')
-        #print(bin_edges)
-        #print(hist)
-        fgsm_bvl = calcBvsL(fgsm_preds)
-        #print(bvl[:100])
-        print('FGSM bvl, bvc, cvb, cvl')
-        print(min(fgsm_bvl), max(fgsm_bvl))
-        np.save(fgsm_outputBvsLdir, fgsm_bvl)
-        del fgsm_bvl
-        gc.collect()
-
-        fgsm_bvc = calcBvsC(fgsm_preds)
-        print(min(fgsm_bvc), max(fgsm_bvc))
-        np.save(fgsm_outputBvsCdir, fgsm_bvc)
-        del fgsm_bvc
-        gc.collect()
-
-        fgsm_cvb = calcCvsB(fgsm_preds)
-        #hist, bin_edges = np.histogram(fgsm_cvb)
-        #print('fgsm_cvb: bin_edges and histogram before assigning -1')
-        #print(bin_edges)
-        #print(hist)
-        ## handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
-        #fgsm_cvb[(fgsm_preds[:,0]+fgsm_preds[:,1]+fgsm_preds[:,2]) == 0] = -1
-        #fgsm_cvb[(fgsm_preds[:,3]+fgsm_preds[:,2]) == 0] = -1
-        #hist, bin_edges = np.histogram(fgsm_cvb,bins=20)
-        #print('fgsm_cvb: bin_edges and histogram after assigning -1')
+        #cvl[(predictions[:,0]+predictions[:,1]+predictions[:,2]) == 0] = -1
+        #cvl[(predictions[:,3]+predictions[:,2]) == 0] = -1
+        #hist, bin_edges = np.histogram(cvl,bins=20)
+        #print('cvl: bin_edges and histogram after assigning -1')
         #print(bin_edges)
         #print(hist)
         #del hist
         #del bin_edges
         #gc.collect()
         #print(bvl[:100])
-        print(min(fgsm_cvb), max(fgsm_cvb))
-        np.save(fgsm_outputCvsBdir, fgsm_cvb)
-        del fgsm_cvb
+        print(min(cvl), max(cvl))
+        np.save(outputCvsLdir, cvl)
+        del cvl
         gc.collect()
-        fgsm_cvl = calcCvsL(fgsm_preds)
-        #hist, bin_edges = np.histogram(fgsm_cvl)
-        #print('fgsm_cvl: bin_edges and histogram before assigning -1')
-        #print(bin_edges)
-        #print(hist)
-        #fgsm_cvl[(fgsm_preds[:,0]+fgsm_preds[:,1]+fgsm_preds[:,2]) == 0] = -1
-        #fgsm_cvl[(fgsm_preds[:,3]+fgsm_preds[:,2]) == 0] = -1
-        #hist, bin_edges = np.histogram(fgsm_cvl,bins=20)
-        #print('fgsm_cvl: bin_edges and histogram after assigning -1')
-        #print(bin_edges)
-        #print(hist)
-        #del hist
-        #del bin_edges
-        #gc.collect()
-        #print(bvl[:100])
-        print(min(fgsm_cvl), max(fgsm_cvl))
-        np.save(fgsm_outputCvsLdir, fgsm_cvl)
-        del fgsm_cvl
-        fgsm_preds[:,0][fgsm_preds[:,0] > 0.99999] = 0.99999
-        fgsm_preds[:,1][fgsm_preds[:,1] > 0.99999] = 0.99999
-        fgsm_preds[:,2][fgsm_preds[:,2] > 0.99999] = 0.99999
-        fgsm_preds[:,3][fgsm_preds[:,3] > 0.99999] = 0.99999
-        fgsm_preds[:,0][fgsm_preds[:,0] < 0.000001] = 0.000001
-        fgsm_preds[:,1][fgsm_preds[:,1] < 0.000001] = 0.000001
-        fgsm_preds[:,2][fgsm_preds[:,2] < 0.000001] = 0.000001
-        fgsm_preds[:,3][fgsm_preds[:,3] < 0.000001] = 0.000001
-        print('FGSM b, bb, c, l min and max (after cutting over-/underflow)')
-        print(min(fgsm_preds[:,0]), max(fgsm_preds[:,0]))
-        print(min(fgsm_preds[:,1]), max(fgsm_preds[:,1]))
-        print(min(fgsm_preds[:,2]), max(fgsm_preds[:,2]))
-        print(min(fgsm_preds[:,3]), max(fgsm_preds[:,3]))
-        np.save(fgsm_outputPredsdir, fgsm_preds)
-        del fgsm_preds
+
+
+        #print(min(predictions[:,0]), max(predictions[:,0]))
+        #print(min(predictions[:,1]), max(predictions[:,1]))
+        #print(min(predictions[:,2]), max(predictions[:,2]))
+        #print(min(predictions[:,3]), max(predictions[:,3]))
+        predictions[:,0][predictions[:,0] > 0.99999] = 0.99999
+        predictions[:,1][predictions[:,1] > 0.99999] = 0.99999
+        predictions[:,2][predictions[:,2] > 0.99999] = 0.99999
+        predictions[:,3][predictions[:,3] > 0.99999] = 0.99999
+        predictions[:,0][predictions[:,0] < 0.000001] = 0.000001
+        predictions[:,1][predictions[:,1] < 0.000001] = 0.000001
+        predictions[:,2][predictions[:,2] < 0.000001] = 0.000001
+        predictions[:,3][predictions[:,3] < 0.000001] = 0.000001
+        print('Raw b, bb, c, l min and max (after cutting over-/underflow)')
+        print(min(predictions[:,0]), max(predictions[:,0]))
+        print(min(predictions[:,1]), max(predictions[:,1]))
+        print(min(predictions[:,2]), max(predictions[:,2]))
+        print(min(predictions[:,3]), max(predictions[:,3]))
+        np.save(outputPredsdir, predictions)
+        del predictions
         gc.collect()
+
+        if isMC == True:
+
+            noise_preds = predict(apply_noise(inputs, scalers, magn=1e-2,offset=[0]), targets, scalers, wm)
+            #hist, bin_edges = np.histogram(noise_preds[:,0],bins=20)
+            #print('Flavour b noise_preds: bin_edges and histogram')
+            #print(bin_edges)
+            #print(hist)
+            #del hist
+            #del bin_edges
+            #gc.collect()
+            #hist, bin_edges = np.histogram(noise_preds[:,1],bins=20)
+            #print('Flavour bb noise_preds: bin_edges and histogram')
+            #print(bin_edges)
+            #print(hist)
+            #del hist
+            #del bin_edges
+            #gc.collect()
+            #hist, bin_edges = np.histogram(noise_preds[:,2],bins=20)
+            #print('Flavour c noise_preds: bin_edges and histogram')
+            #print(bin_edges)
+            #print(hist)
+            #del hist
+            #del bin_edges
+            #gc.collect()
+            #hist, bin_edges = np.histogram(noise_preds[:,3],bins=20)
+            #print('Flavour udsg noise_preds: bin_edges and histogram')
+            #print(bin_edges)
+            #print(hist)
+            #del hist
+            #del bin_edges
+            #gc.collect()
+            noise_bvl = calcBvsL(noise_preds)
+            #print(bvl[:100])
+            print('Noise bvl, bvc, cvb, cvl')
+            print(min(noise_bvl), max(noise_bvl))
+            np.save(noise_outputBvsLdir, noise_bvl)
+            del noise_bvl
+            gc.collect()
+
+            noise_bvc = calcBvsC(noise_preds)
+            print(min(noise_bvc), max(noise_bvc))
+            np.save(noise_outputBvsCdir, noise_bvc)
+            del noise_bvc
+            gc.collect()
+
+            noise_cvb = calcCvsB(noise_preds)
+            #hist, bin_edges = np.histogram(noise_cvb)
+            #print('noise_cvb: bin_edges and histogram before assigning -1')
+            #print(bin_edges)
+            #print(hist)
+            ## handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
+            #noise_cvb[(noise_preds[:,0]+noise_preds[:,1]+noise_preds[:,2]) == 0] = -1
+            #noise_cvb[(noise_preds[:,3]+noise_preds[:,2]) == 0] = -1
+            #hist, bin_edges = np.histogram(noise_cvb,bins=20)
+            #print('noise_cvb: bin_edges and histogram after assigning -1')
+            #print(bin_edges)
+            #print(hist)
+            #del hist
+            #del bin_edges
+            #gc.collect()
+            #print(bvl[:100])
+            print(min(noise_cvb), max(noise_cvb))
+            np.save(noise_outputCvsBdir, noise_cvb)
+            del noise_cvb
+            gc.collect()
+            noise_cvl = calcCvsL(noise_preds)
+            #hist, bin_edges = np.histogram(noise_cvl)
+            #print('noise_cvl: bin_edges and histogram before assigning -1')
+            #print(bin_edges)
+            #print(hist)
+            #noise_cvl[(noise_preds[:,0]+noise_preds[:,1]+noise_preds[:,2]) == 0] = -1
+            #noise_cvl[(noise_preds[:,3]+noise_preds[:,2]) == 0] = -1
+            #hist, bin_edges = np.histogram(noise_cvl,bins=20)
+            #print('noise_cvl: bin_edges and histogram after assigning -1')
+            #print(bin_edges)
+            #print(hist)
+            #del hist
+            #del bin_edges
+            #gc.collect()
+            #print(bvl[:100])
+            print(min(noise_cvl), max(noise_cvl))
+            np.save(noise_outputCvsLdir, noise_cvl)
+            del noise_cvl
+            noise_preds[:,0][noise_preds[:,0] > 0.99999] = 0.99999
+            noise_preds[:,1][noise_preds[:,1] > 0.99999] = 0.99999
+            noise_preds[:,2][noise_preds[:,2] > 0.99999] = 0.99999
+            noise_preds[:,3][noise_preds[:,3] > 0.99999] = 0.99999
+            noise_preds[:,0][noise_preds[:,0] < 0.000001] = 0.000001
+            noise_preds[:,1][noise_preds[:,1] < 0.000001] = 0.000001
+            noise_preds[:,2][noise_preds[:,2] < 0.000001] = 0.000001
+            noise_preds[:,3][noise_preds[:,3] < 0.000001] = 0.000001
+            print('Noise b, bb, c, l min and max (after cutting over-/underflow)')
+            print(min(noise_preds[:,0]), max(noise_preds[:,0]))
+            print(min(noise_preds[:,1]), max(noise_preds[:,1]))
+            print(min(noise_preds[:,2]), max(noise_preds[:,2]))
+            print(min(noise_preds[:,3]), max(noise_preds[:,3]))
+            np.save(noise_outputPredsdir, noise_preds)
+            del noise_preds
+            gc.collect()
+
+
+            fgsm_preds = predict(fgsm_attack(epsilon=1e-2,sample=inputs,targets=targets,reduced=True, scalers=scalers), targets, scalers, wm)
+            #hist, bin_edges = np.histogram(fgsm_preds[:,0],bins=20)
+            #print('Flavour b fgsm_preds: bin_edges and histogram')
+            #print(bin_edges)
+            #print(hist)
+            #hist, bin_edges = np.histogram(fgsm_preds[:,1],bins=20)
+            #print('Flavour bb fgsm_preds: bin_edges and histogram')
+            #print(bin_edges)
+            #print(hist)
+            #hist, bin_edges = np.histogram(fgsm_preds[:,2],bins=20)
+            #print('Flavour c fgsm_preds: bin_edges and histogram')
+            #print(bin_edges)
+            #print(hist)
+            #hist, bin_edges = np.histogram(fgsm_preds[:,3],bins=20)
+            #print('Flavour udsg fgsm_preds: bin_edges and histogram')
+            #print(bin_edges)
+            #print(hist)
+            fgsm_bvl = calcBvsL(fgsm_preds)
+            #print(bvl[:100])
+            print('FGSM bvl, bvc, cvb, cvl')
+            print(min(fgsm_bvl), max(fgsm_bvl))
+            np.save(fgsm_outputBvsLdir, fgsm_bvl)
+            del fgsm_bvl
+            gc.collect()
+
+            fgsm_bvc = calcBvsC(fgsm_preds)
+            print(min(fgsm_bvc), max(fgsm_bvc))
+            np.save(fgsm_outputBvsCdir, fgsm_bvc)
+            del fgsm_bvc
+            gc.collect()
+
+            fgsm_cvb = calcCvsB(fgsm_preds)
+            #hist, bin_edges = np.histogram(fgsm_cvb)
+            #print('fgsm_cvb: bin_edges and histogram before assigning -1')
+            #print(bin_edges)
+            #print(hist)
+            ## handle division by 0 and assign -1 (if either CvsB or CvsL would be undefined)
+            #fgsm_cvb[(fgsm_preds[:,0]+fgsm_preds[:,1]+fgsm_preds[:,2]) == 0] = -1
+            #fgsm_cvb[(fgsm_preds[:,3]+fgsm_preds[:,2]) == 0] = -1
+            #hist, bin_edges = np.histogram(fgsm_cvb,bins=20)
+            #print('fgsm_cvb: bin_edges and histogram after assigning -1')
+            #print(bin_edges)
+            #print(hist)
+            #del hist
+            #del bin_edges
+            #gc.collect()
+            #print(bvl[:100])
+            print(min(fgsm_cvb), max(fgsm_cvb))
+            np.save(fgsm_outputCvsBdir, fgsm_cvb)
+            del fgsm_cvb
+            gc.collect()
+            fgsm_cvl = calcCvsL(fgsm_preds)
+            #hist, bin_edges = np.histogram(fgsm_cvl)
+            #print('fgsm_cvl: bin_edges and histogram before assigning -1')
+            #print(bin_edges)
+            #print(hist)
+            #fgsm_cvl[(fgsm_preds[:,0]+fgsm_preds[:,1]+fgsm_preds[:,2]) == 0] = -1
+            #fgsm_cvl[(fgsm_preds[:,3]+fgsm_preds[:,2]) == 0] = -1
+            #hist, bin_edges = np.histogram(fgsm_cvl,bins=20)
+            #print('fgsm_cvl: bin_edges and histogram after assigning -1')
+            #print(bin_edges)
+            #print(hist)
+            #del hist
+            #del bin_edges
+            #gc.collect()
+            #print(bvl[:100])
+            print(min(fgsm_cvl), max(fgsm_cvl))
+            np.save(fgsm_outputCvsLdir, fgsm_cvl)
+            del fgsm_cvl
+            fgsm_preds[:,0][fgsm_preds[:,0] > 0.99999] = 0.99999
+            fgsm_preds[:,1][fgsm_preds[:,1] > 0.99999] = 0.99999
+            fgsm_preds[:,2][fgsm_preds[:,2] > 0.99999] = 0.99999
+            fgsm_preds[:,3][fgsm_preds[:,3] > 0.99999] = 0.99999
+            fgsm_preds[:,0][fgsm_preds[:,0] < 0.000001] = 0.000001
+            fgsm_preds[:,1][fgsm_preds[:,1] < 0.000001] = 0.000001
+            fgsm_preds[:,2][fgsm_preds[:,2] < 0.000001] = 0.000001
+            fgsm_preds[:,3][fgsm_preds[:,3] < 0.000001] = 0.000001
+            print('FGSM b, bb, c, l min and max (after cutting over-/underflow)')
+            print(min(fgsm_preds[:,0]), max(fgsm_preds[:,0]))
+            print(min(fgsm_preds[:,1]), max(fgsm_preds[:,1]))
+            print(min(fgsm_preds[:,2]), max(fgsm_preds[:,2]))
+            print(min(fgsm_preds[:,3]), max(fgsm_preds[:,3]))
+            np.save(fgsm_outputPredsdir, fgsm_preds)
+            del fgsm_preds
+            gc.collect()
