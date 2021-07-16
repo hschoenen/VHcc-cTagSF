@@ -22,13 +22,13 @@
     
     # adjust the weighting method, look up the definitions in customTaggerInference.py
 #    WM="_notflat_200_gamma25.0_alphaNone"  # example for single weighting method alone (using raw/Noise/FGSM inputs)
-    WM="_multi_adv_tr_eps0.01_1,50,150"  # example for three epochs of one weighting method
+    WM="_multi_adv_tr_eps0.01_5,10,100"  # example for three epochs of one weighting method
 
 
 #	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_$4_minimal/
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210708_2017_$4${WM}/
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210710_2017_$4${WM}/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210714_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1

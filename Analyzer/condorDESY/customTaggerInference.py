@@ -360,7 +360,8 @@ def predict(inputs, targets, scalers, method):
         #
         #                               NEW: as of July, 8th
         #
-
+        
+        # only epoch 200
         elif method == '_notflat_200_gamma25.0_alphaNone_adv_tr_eps0.01':
             # for focal loss: parameters
             alpha = None
@@ -368,6 +369,7 @@ def predict(inputs, targets, scalers, method):
             criterion = FocalLoss(alpha, gamma, reduction='none')
             modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/adv_tr/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_adv_tr_eps0.01_278_datasets_with_default_0.001_-1.pt'
             
+        # only epoch 200
         elif method == '_notflat_200_gamma25.0_alphaNone':
             # for focal loss: parameters
             alpha = None
