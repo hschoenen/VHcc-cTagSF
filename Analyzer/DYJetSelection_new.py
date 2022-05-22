@@ -31,6 +31,7 @@ isNano = False
 pref = ""
 parentDir = ""
 era = 2016
+isCustomDeepJet = True
 
 pnfspref = "/pnfs/desy.de/cms/tier2/"
 
@@ -343,28 +344,58 @@ if not os.path.isfile("A_outPreds_%s.npy"%(outNo)):
     jet_CustomProb_b        = std.vector('double')()  # new
     jet_CustomProb_bb       = std.vector('double')()  # new
     jet_CustomProb_c        = std.vector('double')()  # new
-    jet_CustomProb_l        = std.vector('double')()  # new
+    if isCustomDeepJet:
+        jet_CustomProb_lepb     = std.vector('double')()  # new
+        jet_CustomProb_uds      = std.vector('double')()  # new
+        jet_CustomProb_g        = std.vector('double')()  # new
+    else:
+        jet_CustomProb_l        = std.vector('double')()  # new
     jet_CustomNoiseProb_b   = std.vector('double')()  # new
     jet_CustomNoiseProb_bb  = std.vector('double')()  # new
     jet_CustomNoiseProb_c   = std.vector('double')()  # new
-    jet_CustomNoiseProb_l   = std.vector('double')()  # new
+    if isCustomDeepJet:
+        jet_CustomNoiseProb_lepb     = std.vector('double')()  # new
+        jet_CustomNoiseProb_uds      = std.vector('double')()  # new
+        jet_CustomNoiseProb_g        = std.vector('double')()  # new
+    else:
+        jet_CustomNoiseProb_l        = std.vector('double')()  # new
     jet_CustomFGSMProb_b    = std.vector('double')()  # new
     jet_CustomFGSMProb_bb   = std.vector('double')()  # new
     jet_CustomFGSMProb_c    = std.vector('double')()  # new
-    jet_CustomFGSMProb_l    = std.vector('double')()  # new
+    if isCustomDeepJet:
+        jet_CustomFGSMProb_lepb     = std.vector('double')()  # new
+        jet_CustomFGSMProb_uds      = std.vector('double')()  # new
+        jet_CustomFGSMProb_g        = std.vector('double')()  # new
+    else:
+        jet_CustomFGSMProb_l        = std.vector('double')()  # new
 else:    
     jet_Custom_A_Prob_b    = std.vector('double')()  # new
     jet_Custom_A_Prob_bb   = std.vector('double')()  # new
     jet_Custom_A_Prob_c    = std.vector('double')()  # new
-    jet_Custom_A_Prob_l    = std.vector('double')()  # new
+    if isCustomDeepJet:
+        jet_Custom_A_Prob_lepb     = std.vector('double')()  # new
+        jet_Custom_A_Prob_uds      = std.vector('double')()  # new
+        jet_Custom_A_Prob_g        = std.vector('double')()  # new
+    else:
+        jet_Custom_A_Prob_l        = std.vector('double')()  # new
     jet_Custom_B_Prob_b    = std.vector('double')()  # new
     jet_Custom_B_Prob_bb   = std.vector('double')()  # new
     jet_Custom_B_Prob_c    = std.vector('double')()  # new
-    jet_Custom_B_Prob_l    = std.vector('double')()  # new
+    if isCustomDeepJet:
+        jet_Custom_B_Prob_lepb     = std.vector('double')()  # new
+        jet_Custom_B_Prob_uds      = std.vector('double')()  # new
+        jet_Custom_B_Prob_g        = std.vector('double')()  # new
+    else:
+        jet_Custom_B_Prob_l        = std.vector('double')()  # new
     jet_Custom_C_Prob_b    = std.vector('double')()  # new
     jet_Custom_C_Prob_bb   = std.vector('double')()  # new
     jet_Custom_C_Prob_c    = std.vector('double')()  # new
-    jet_Custom_C_Prob_l    = std.vector('double')()  # new
+    if isCustomDeepJet:
+        jet_Custom_C_Prob_lepb     = std.vector('double')()  # new
+        jet_Custom_C_Prob_uds      = std.vector('double')()  # new
+        jet_Custom_C_Prob_g        = std.vector('double')()  # new
+    else:
+        jet_Custom_C_Prob_l        = std.vector('double')()  # new
     
 jet_btagDeepFlavB  = std.vector('double')()
 
@@ -651,28 +682,59 @@ if not os.path.isfile("A_outPreds_%s.npy"%(outNo)):
     outputTree.Branch('jet_CustomProb_b'        ,jet_CustomProb_b        )  # new 
     outputTree.Branch('jet_CustomProb_bb'       ,jet_CustomProb_bb       )  # new
     outputTree.Branch('jet_CustomProb_c'        ,jet_CustomProb_c        )  # new
-    outputTree.Branch('jet_CustomProb_l'        ,jet_CustomProb_l        )  # new
+    if isCustomDeepJet:
+        outputTree.Branch('jet_CustomProb_lepb' ,jet_CustomProb_lepb     )  # new
+        outputTree.Branch('jet_CustomProb_uds'  ,jet_CustomProb_uds      )  # new
+        outputTree.Branch('jet_CustomProb_g'    ,jet_CustomProb_g        )  # new
+    else:
+        outputTree.Branch('jet_CustomProb_l'    ,jet_CustomProb_l        )  # new
     outputTree.Branch('jet_CustomNoiseProb_b'   ,jet_CustomNoiseProb_b   )  # new 
     outputTree.Branch('jet_CustomNoiseProb_bb'  ,jet_CustomNoiseProb_bb  )  # new
     outputTree.Branch('jet_CustomNoiseProb_c'   ,jet_CustomNoiseProb_c   )  # new
-    outputTree.Branch('jet_CustomNoiseProb_l'   ,jet_CustomNoiseProb_l   )  # new
+    if isCustomDeepJet:
+        outputTree.Branch('jet_CustomNoiseProb_lepb' ,jet_CustomNoiseProb_lepb     )  # new
+        outputTree.Branch('jet_CustomNoiseProb_uds'  ,jet_CustomNoiseProb_uds      )  # new
+        outputTree.Branch('jet_CustomNoiseProb_g'    ,jet_CustomNoiseProb_g        )  # new
+    else:
+        outputTree.Branch('jet_CustomNoiseProb_l'    ,jet_CustomNoiseProb_l        )  # new
     outputTree.Branch('jet_CustomFGSMProb_b'    ,jet_CustomFGSMProb_b    )  # new 
     outputTree.Branch('jet_CustomFGSMProb_bb'   ,jet_CustomFGSMProb_bb   )  # new
     outputTree.Branch('jet_CustomFGSMProb_c'    ,jet_CustomFGSMProb_c    )  # new
-    outputTree.Branch('jet_CustomFGSMProb_l'    ,jet_CustomFGSMProb_l    )  # new
+    if isCustomDeepJet:
+        outputTree.Branch('jet_CustomFGSMProb_lepb' ,jet_CustomFGSMProb_lepb     )  # new
+        outputTree.Branch('jet_CustomFGSMProb_uds'  ,jet_CustomFGSMProb_uds      )  # new
+        outputTree.Branch('jet_CustomFGSMProb_g'    ,jet_CustomFGSMProb_g        )  # new
+    else:
+        outputTree.Branch('jet_CustomFGSMProb_l'    ,jet_CustomFGSMProb_l        )  # new
 else:
     outputTree.Branch('jet_Custom_A_Prob_b'   ,jet_Custom_A_Prob_b      )  # new 
     outputTree.Branch('jet_Custom_A_Prob_bb'  ,jet_Custom_A_Prob_bb     )  # new
     outputTree.Branch('jet_Custom_A_Prob_c'   ,jet_Custom_A_Prob_c      )  # new
     outputTree.Branch('jet_Custom_A_Prob_l'   ,jet_Custom_A_Prob_l      )  # new
+    if isCustomDeepJet:
+        outputTree.Branch('jet_Custom_A_Prob_lepb' ,jet_Custom_A_Prob_lepb     )  # new
+        outputTree.Branch('jet_Custom_A_Prob_uds'  ,jet_Custom_A_Prob_uds      )  # new
+        outputTree.Branch('jet_Custom_A_Prob_g'    ,jet_Custom_A_Prob_g        )  # new
+    else:
+        outputTree.Branch('jet_Custom_A_Prob_l'    ,jet_Custom_A_Prob_l        )  # new
     outputTree.Branch('jet_Custom_B_Prob_b'   ,jet_Custom_B_Prob_b      )  # new 
     outputTree.Branch('jet_Custom_B_Prob_bb'  ,jet_Custom_B_Prob_bb     )  # new
     outputTree.Branch('jet_Custom_B_Prob_c'   ,jet_Custom_B_Prob_c      )  # new
-    outputTree.Branch('jet_Custom_B_Prob_l'   ,jet_Custom_B_Prob_l      )  # new
+    if isCustomDeepJet:
+        outputTree.Branch('jet_Custom_B_Prob_lepb' ,jet_Custom_B_Prob_lepb     )  # new
+        outputTree.Branch('jet_Custom_B_Prob_uds'  ,jet_Custom_B_Prob_uds      )  # new
+        outputTree.Branch('jet_Custom_B_Prob_g'    ,jet_Custom_B_Prob_g        )  # new
+    else:
+        outputTree.Branch('jet_Custom_B_Prob_l'    ,jet_Custom_B_Prob_l        )  # new
     outputTree.Branch('jet_Custom_C_Prob_b'   ,jet_Custom_C_Prob_b      )  # new 
     outputTree.Branch('jet_Custom_C_Prob_bb'  ,jet_Custom_C_Prob_bb     )  # new
     outputTree.Branch('jet_Custom_C_Prob_c'   ,jet_Custom_C_Prob_c      )  # new
-    outputTree.Branch('jet_Custom_C_Prob_l'   ,jet_Custom_C_Prob_l      )  # new
+    if isCustomDeepJet:
+        outputTree.Branch('jet_Custom_C_Prob_lepb' ,jet_Custom_C_Prob_lepb     )  # new
+        outputTree.Branch('jet_Custom_C_Prob_uds'  ,jet_Custom_C_Prob_uds      )  # new
+        outputTree.Branch('jet_Custom_C_Prob_g'    ,jet_Custom_C_Prob_g        )  # new
+    else:
+        outputTree.Branch('jet_Custom_C_Prob_l'    ,jet_Custom_C_Prob_l        )  # new
     
 outputTree.Branch('jet_btagDeepFlavB'   ,jet_btagDeepFlavB      )
 outputTree.Branch('jet_btagCSVV2'   ,jet_btagCSVV2     )
@@ -1218,28 +1280,58 @@ for entry in inputTree:
         jet_CustomProb_b.clear()        # new
         jet_CustomProb_bb.clear()       # new
         jet_CustomProb_c.clear()        # new
-        jet_CustomProb_l.clear()        # new
+        if isCustomDeepJet:
+            jet_CustomProb_lepb.clear() # new
+            jet_CustomProb_uds.clear()  # new
+            jet_CustomProb_g.clear()    # new
+        else:
+            jet_CustomProb_l.clear()    # new
         jet_CustomNoiseProb_b.clear()   # new
         jet_CustomNoiseProb_bb.clear()  # new
         jet_CustomNoiseProb_c.clear()   # new
-        jet_CustomNoiseProb_l.clear()   # new
+        if isCustomDeepJet:
+            jet_CustomNoiseProb_lepb.clear() # new
+            jet_CustomNoiseProb_uds.clear()  # new
+            jet_CustomNoiseProb_g.clear()    # new
+        else:
+            jet_CustomNoiseProb_l.clear()    # new
         jet_CustomFGSMProb_b.clear()    # new
         jet_CustomFGSMProb_bb.clear()   # new
         jet_CustomFGSMProb_c.clear()    # new
-        jet_CustomFGSMProb_l.clear()    # new
+        if isCustomDeepJet:
+            jet_CustomFGSMProb_lepb.clear() # new
+            jet_CustomFGSMProb_uds.clear()  # new
+            jet_CustomFGSMProb_g.clear()    # new
+        else:
+            jet_CustomFGSMProb_l.clear()    # new
     else:
         jet_Custom_A_Prob_b.clear()     # new
         jet_Custom_A_Prob_bb.clear()    # new
         jet_Custom_A_Prob_c.clear()     # new
-        jet_Custom_A_Prob_l.clear()     # new
+        if isCustomDeepJet:
+            jet_Custom_A_Prob_lepb.clear() # new
+            jet_Custom_A_Prob_uds.clear()  # new
+            jet_Custom_A_Prob_g.clear()    # new
+        else:
+            jet_Custom_A_Prob_l.clear()    # new
         jet_Custom_B_Prob_b.clear()     # new
         jet_Custom_B_Prob_bb.clear()    # new
         jet_Custom_B_Prob_c.clear()     # new
-        jet_Custom_B_Prob_l.clear()     # new
+        if isCustomDeepJet:
+            jet_Custom_B_Prob_lepb.clear() # new
+            jet_Custom_B_Prob_uds.clear()  # new
+            jet_Custom_B_Prob_g.clear()    # new
+        else:
+            jet_Custom_B_Prob_l.clear()    # new
         jet_Custom_C_Prob_b.clear()     # new
         jet_Custom_C_Prob_bb.clear()    # new
         jet_Custom_C_Prob_c.clear()     # new
-        jet_Custom_C_Prob_l.clear()     # new
+        if isCustomDeepJet:
+            jet_Custom_C_Prob_lepb.clear() # new
+            jet_Custom_C_Prob_uds.clear()  # new
+            jet_Custom_C_Prob_g.clear()    # new
+        else:
+            jet_Custom_C_Prob_l.clear()    # new
         
     jet_btagCSVV2.clear()
     jet_btagDeepFlavB.clear()
@@ -1568,47 +1660,102 @@ for entry in inputTree:
         jet_btagDeepFlavB.push_back(entry.Jet_btagDeepFlavB[i])
 
         if not os.path.isfile("A_outPreds_%s.npy"%(outNo)):
-            jet_CustomProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
-            jet_CustomProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
-            jet_CustomProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
-            jet_CustomProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
-            if isMC:
-                jet_CustomNoiseProb_b.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][0])  # new
-                jet_CustomNoiseProb_bb.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][1])  # new
-                jet_CustomNoiseProb_c.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][2])  # new
-                jet_CustomNoiseProb_l.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][3])  # new
-                jet_CustomFGSMProb_b.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][0])  # new
-                jet_CustomFGSMProb_bb.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][1])  # new
-                jet_CustomFGSMProb_c.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][2])  # new
-                jet_CustomFGSMProb_l.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][3])  # new
+            if isCustomDeepJet:
+                jet_CustomProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                jet_CustomProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                jet_CustomProb_lepb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                jet_CustomProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+                jet_CustomProb_uds.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][4])  # new
+                jet_CustomProb_g.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][5])  # new
             else:
-                jet_CustomNoiseProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
-                jet_CustomNoiseProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
-                jet_CustomNoiseProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
-                jet_CustomNoiseProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
-                jet_CustomFGSMProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
-                jet_CustomFGSMProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
-                jet_CustomFGSMProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
-                jet_CustomFGSMProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+                jet_CustomProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                jet_CustomProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                jet_CustomProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                jet_CustomProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+            if isMC:
+                if isCustomDeepJet:
+                    jet_CustomNoiseProb_b.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][0])  # new
+                    jet_CustomNoiseProb_bb.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][1])  # new
+                    jet_CustomNoiseProb_lepb.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][2])  # new
+                    jet_CustomNoiseProb_c.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][3])  # new
+                    jet_CustomNoiseProb_uds.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][4])  # new
+                    jet_CustomNoiseProb_g.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][5])  # new
+                    
+                    jet_CustomFGSMProb_b.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][0])  # new
+                    jet_CustomFGSMProb_bb.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][1])  # new
+                    jet_CustomFGSMProb_lepb.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][2])  # new
+                    jet_CustomFGSMProb_c.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][3])  # new
+                    jet_CustomFGSMProb_uds.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][4])  # new
+                    jet_CustomFGSMProb_g.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][5])  # new
+                else:
+                    jet_CustomNoiseProb_b.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][0])  # new
+                    jet_CustomNoiseProb_bb.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][1])  # new
+                    jet_CustomNoiseProb_c.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][2])  # new
+                    jet_CustomNoiseProb_l.push_back(customTaggerNoiseProbs[prevSeenOrSkippedJets + i][3])  # new
+                    
+                    jet_CustomFGSMProb_b.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][0])  # new
+                    jet_CustomFGSMProb_bb.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][1])  # new
+                    jet_CustomFGSMProb_c.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][2])  # new
+                    jet_CustomFGSMProb_l.push_back(customTaggerFGSMProbs[prevSeenOrSkippedJets + i][3])  # new
+            else:
+                if isCustomDeepJet:
+                    jet_CustomNoiseProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                    jet_CustomNoiseProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                    jet_CustomNoiseProb_lepb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                    jet_CustomNoiseProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+                    jet_CustomNoiseProb_uds.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][4])  # new
+                    jet_CustomNoiseProb_g.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][5])  # new
+                    
+                    jet_CustomFGSMProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                    jet_CustomFGSMProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                    jet_CustomFGSMProb_lepb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                    jet_CustomFGSMProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+                    jet_CustomFGSMProb_uds.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][4])  # new
+                    jet_CustomFGSMProb_g.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][5])  # new
+                else:
+                    jet_CustomNoiseProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                    jet_CustomNoiseProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                    jet_CustomNoiseProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                    jet_CustomNoiseProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+                    
+                    jet_CustomFGSMProb_b.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                    jet_CustomFGSMProb_bb.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                    jet_CustomFGSMProb_c.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                    jet_CustomFGSMProb_l.push_back(customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
 
-            #else:  # as soon as I have data with Jet_DeepCSV variables, this can be removed and there will be custom tagger outputs
-                #jet_CustomProb_b.push_back(entry.Jet_btagDeepB_b[i])  # new
-                #jet_CustomProb_bb.push_back(entry.Jet_btagDeepB_bb[i])  # new
-                #jet_CustomProb_c.push_back(entry.Jet_btagDeepC[i])  # new
-                #jet_CustomProb_l.push_back(entry.Jet_btagDeepL[i])  # new
         else:
-            jet_Custom_A_Prob_b.push_back( A_customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
-            jet_Custom_A_Prob_bb.push_back(A_customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
-            jet_Custom_A_Prob_c.push_back( A_customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
-            jet_Custom_A_Prob_l.push_back( A_customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
-            jet_Custom_B_Prob_b.push_back( B_customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
-            jet_Custom_B_Prob_bb.push_back(B_customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
-            jet_Custom_B_Prob_c.push_back( B_customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
-            jet_Custom_B_Prob_l.push_back( B_customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
-            jet_Custom_C_Prob_b.push_back( C_customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
-            jet_Custom_C_Prob_bb.push_back(C_customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
-            jet_Custom_C_Prob_c.push_back( C_customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
-            jet_Custom_C_Prob_l.push_back( C_customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+            if isCustomDeepJet:
+                jet_Custom_A_Prob_b.push_back(  A_customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                jet_Custom_A_Prob_bb.push_back( A_customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                jet_Custom_A_Prob_lep.push_back(A_customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                jet_Custom_A_Prob_c.push_back(  A_customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+                jet_Custom_A_Prob_uds.push_back(A_customTaggerProbs[prevSeenOrSkippedJets + i][4])  # new
+                jet_Custom_A_Prob_g.push_back(  A_customTaggerProbs[prevSeenOrSkippedJets + i][5])  # new
+                jet_Custom_B_Prob_b.push_back(  B_customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                jet_Custom_B_Prob_bb.push_back( B_customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                jet_Custom_B_Prob_lep.push_back(B_customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                jet_Custom_B_Prob_c.push_back(  B_customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+                jet_Custom_B_Prob_uds.push_back(B_customTaggerProbs[prevSeenOrSkippedJets + i][4])  # new
+                jet_Custom_B_Prob_g.push_back(  B_customTaggerProbs[prevSeenOrSkippedJets + i][5])  # new
+                jet_Custom_C_Prob_b.push_back(  C_customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                jet_Custom_C_Prob_bb.push_back( C_customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                jet_Custom_C_Prob_lep.push_back(C_customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                jet_Custom_C_Prob_c.push_back(  C_customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+                jet_Custom_C_Prob_uds.push_back(C_customTaggerProbs[prevSeenOrSkippedJets + i][4])  # new
+                jet_Custom_C_Prob_g.push_back(  C_customTaggerProbs[prevSeenOrSkippedJets + i][5])  # new
+            else:
+                jet_Custom_A_Prob_b.push_back( A_customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                jet_Custom_A_Prob_bb.push_back(A_customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                jet_Custom_A_Prob_c.push_back( A_customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                jet_Custom_A_Prob_l.push_back( A_customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+                jet_Custom_B_Prob_b.push_back( B_customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                jet_Custom_B_Prob_bb.push_back(B_customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                jet_Custom_B_Prob_c.push_back( B_customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                jet_Custom_B_Prob_l.push_back( B_customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
+                jet_Custom_C_Prob_b.push_back( C_customTaggerProbs[prevSeenOrSkippedJets + i][0])  # new
+                jet_Custom_C_Prob_bb.push_back(C_customTaggerProbs[prevSeenOrSkippedJets + i][1])  # new
+                jet_Custom_C_Prob_c.push_back( C_customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
+                jet_Custom_C_Prob_l.push_back( C_customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
         
         if isMC:
             j_hadronFlv_List.append(entry.Jet_hadronFlavour[i])
