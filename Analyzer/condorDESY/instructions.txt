@@ -1,0 +1,20 @@
+# Make the conda environment accessible (and usable) from inside a condor job that will later on source various CMS software:
+
+conda create -n deepjet-env -c conda-forge python=3.6.9 awkward uproot mplhep
+conda activate deepjet-env
+pip3 install pytorch==1.10.2
+conda install -c conda-forge conda-pack
+# Docs: https://conda.github.io/conda-pack/
+conda pack -p /nfs/dust/cms/user/anstein/conda_envs/deepjet-env -o /nfs/dust/cms/user/anstein/deepjet-env.tar.gz
+# This can be used inside the jobscript now.
+
+
+
+# Get models from lxplus to naf-cms:
+scp /eos/user/a/anstein/DeepJet/Train_DF_Run2/nominal/checkpoint_best_loss.pth anstein@naf-cms14.desy.de:/nfs/dust/cms/user/anstein/DeepJet/Train_DF_Run2/nominal/checkpoint_best_loss.pth
+scp /eos/user/a/anstein/DeepJet/Train_DF_Run2/adversarial_eps0p005/checkpoint_best_loss.pth anstein@naf-cms14.desy.de:/nfs/dust/cms/user/anstein/DeepJet/Train_DF_Run2/adversarial_eps0p005/checkpoint_best_loss.pth
+scp /eos/user/a/anstein/DeepJet/Train_DF_Run2/adversarial_eps0p01/checkpoint_best_loss.pth anstein@naf-cms14.desy.de:/nfs/dust/cms/user/anstein/DeepJet/Train_DF_Run2/adversarial_eps0p01/checkpoint_best_loss.pth
+
+
+# Very basic dummy test:
+python customDeepJetTaggerInference.py ~/private/pfnano_dev/CMSSW_10_6_20/src/PhysicsTools/PFNano/test/nano106Xv8_on_mini106X_2017_mc_NANO_py_NANO_AddDeepJet.root DeepJet_Run2_nominal dummy.dummy

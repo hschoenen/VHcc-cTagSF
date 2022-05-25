@@ -123,7 +123,8 @@
         echo "    which python3"
         which python3
         #eval `scram unsetenv -sh`
-        ENVNAME=my-env
+        #ENVNAME=my-env
+        ENVNAME=deepjet-env
         ENVDIR=$ENVNAME
 
         export PATH
@@ -133,7 +134,7 @@
         echo "setup conda"
         tar -xzf /nfs/dust/cms/user/anstein/${ENVNAME}.tar.gz -C ${ENVDIR}
         #./${ENVDIR}/bin/activate
-        source my-env/bin/activate
+        source ${ENVNAME}/bin/activate
         echo "    which python3"
         which python3
         conda-unpack
@@ -141,7 +142,8 @@
         echo "    echo PATH:"
         echo $PATH
         echo "start with custom tagger"
-        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
+        #python3 customTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
+        python3 customDeepJetTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
         
         
         

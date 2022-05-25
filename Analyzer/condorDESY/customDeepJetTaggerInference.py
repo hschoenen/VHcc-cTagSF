@@ -1,18 +1,22 @@
 import sys
 import os
-# ToDo: use up-to-date versions
-import uproot4 as uproot
+# Done: use up-to-date versions
+#import uproot4 as uproot
+import uproot
 import numpy as np
-import awkward1 as ak
+#import awkward1 as ak
+import awkward as ak
 
 import gc
-# ToDo: New version of torch!
+# Done: New version of torch!
 import torch
 import torch.nn as nn
 # Done: import the relevant models (from lxplus)
 from pytorch_deepjet import DeepJet
 from pytorch_deepjet_run2 import DeepJet_Run2
 from pytorch_deepjet_transformer import DeepJetTransformer
+
+from definitions import *
 
 #from sklearn import metrics
 #from sklearn.utils.class_weight import compute_class_weight
@@ -150,7 +154,7 @@ def cleandataset(f, defaults_per_variable, isMC):
     
     return dataset
 '''
-def pfnano_to_array(rootfile, isMC)
+def pfnano_to_array(rootfile, isMC):
     print('Doing cleaning, isMC = ',isMC)
     #feature_names = [k for k in f['Events'].keys() if  (('Jet_eta' == k) or ('Jet_pt' == k) or ('Jet_DeepJet' in k))]
     # Global
@@ -230,7 +234,7 @@ def pfnano_to_array(rootfile, isMC)
         
     
     # go through a specified number of events, and get the information (awkward-arrays) for the keys specified above
-    for data in f['Events'].iterate(feature_names, step_size=f['Events'].num_entries, library='ak'):
+    for data in rootfile['Events'].iterate(feature_names, step_size=rootfile['Events'].num_entries, library='ak'):
         break
     
     # creating an array to store all the columns with their entries per jet, flatten per-event -> per-jet
@@ -281,15 +285,28 @@ def preprocess(rootfile_path, isMC):
     # split first 4 times (n_features_in_group * n_candidates_per_group) for each group
     # then reshape each tensor into rectangular format (n_cands * n_features), glob has one dimension less
     
+    slice_glob = cands_per_variable['glob'] * vars_per_candidate['glob']
+    slice_cpf = cands_per_variable['cpf'] * vars_per_candidate['cpf']
+    slice_npf = cands_per_variable['npf'] * vars_per_candidate['npf']
+    slice_vtx = cands_per_variable['vtx'] * vars_per_candidate['vtx']
+    
+    glob, cpf, npf, vtx = inputs[:,0:slice_glob], inputs[:,slice_glob:slice_glob+slice_cpf], inputs[:,slice_glob+slice_cpf:slice_glob+slice_cpf+slice_npf], inputs[:,slice_glob+slice_cpf+slice_npf:slice_glob+slice_cpf+slice_npf+slice_vtx]
     # targets only make sense for MC,
     # but nothing 'breaks' when calling it on Data (the last column is different though, it's all Zeros, see definition above)
     targets = torch.Tensor(dataset_input_target[:,-1]).long()
 
+    print(glob.shape)
+    print(cpf.shape)
+    print(npf.shape)
+    print(vtx.shape)
     # OLD: return inputs, targets, scalers
+    cpf = cpf.reshape((-1,cands_per_variable['cpf'],vars_per_candidate['cpf']))
+    npf = npf.reshape((-1,cands_per_variable['npf'],vars_per_candidate['npf']))
+    vtx = vtx.reshape((-1,cands_per_variable['vtx'],vars_per_candidate['vtx']))
     return glob,cpf,npf,vtx, targets
 
 # ToDo: modify paths, import correct model
-def predict(inputs, model_name):
+def predict(glob,cpf,npf,vtx, model_name):
     with torch.no_grad():
         device = torch.device("cpu")
         
@@ -305,19 +322,22 @@ def predict(inputs, model_name):
             model = DeepJet(num_classes = 6)
         
         if 'nominal' in model_name:
-            modelpath = f'/nfs/dust/cms/user/anstein/SOMEPATH/ToDo/DeepJet/Train_{tagger}/nominal/checkpoint_best_loss.pth'
+            modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/nominal/checkpoint_best_loss.pth'
         elif 'adversarial_eps0p01' in model_name:
-            modelpath = f'/nfs/dust/cms/user/anstein/SOMEPATH/ToDo/DeepJet/Train_{tagger}/adversarial_eps0p01/checkpoint_best_loss.pth'
+            modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p01/checkpoint_best_loss.pth'
         
 
-        checkpoint = torch.load(modelPath, map_location=torch.device(device))
-        model.load_state_dict(checkpoint["model_state_dict"])
+        checkpoint = torch.load(modelpath, map_location=torch.device(device))
+        #model.load_state_dict(checkpoint["model_state_dict"])
+        model.load_state_dict(checkpoint["state_dict"])
 
         model.to(device)
 
         #evaluate network on inputs
         model.eval()
-        return model(inputs).detach().numpy()
+        print('successfully loaded model and checkpoint')
+        #sys.exit()
+        return model(glob,cpf,npf,vtx).detach().numpy()
 
 
 # ToDo: revisit calculation, use DeepJet output nodes (6! not 4)
@@ -408,7 +428,8 @@ def calcCvsL_legacy(predictions):  # P(c)/(P(udsg)+P(c))
 #       * add more nodes (6 instead of 4)
 if __name__ == "__main__":
     fullName, model_name, condoroutdir = sys.argv[1], sys.argv[2], sys.argv[3]
-    
+    #predict('dummy',model_name)
+    #sys.exit()
     '''
     JECNameList = ["nom","jesTotalUp","jesTotalDown","jerUp","jerDown"]
     fileName = str(sys.argv[1])
@@ -489,6 +510,8 @@ if __name__ == "__main__":
     #inputTree = iFile.Get("Events")
     #inputTree.SetBranchStatus("*",1)
     '''
+    # Commented out while using local files
+    '''
     sampName=fullName.split(parentDir)[1].split('/')[0]
     channel=sampName
     sampNo=fullName.split(parentDir)[1].split('/')[1].split('_')[-1]
@@ -503,14 +526,17 @@ if __name__ == "__main__":
     else:
         isMC = False
     print("Using channel =",channel, "; isMC:", isMC, "; era: %d"%era)
-    
+    '''
     # ToDo: pass this as an argument instead of using global variable
     #global n_jets
     
     #inputs, targets, scalers = preprocess(fullName, isMC)
     # ToDo: get inputs, targets but no scalers necessary
     # OLD: inputs, targets, scalers = preprocess('infile.root', isMC)
-    glob,cpf,npf,vtx, targets = preprocess('infile.root', isMC)
+    # NEW: glob,cpf,npf,vtx, targets = preprocess('infile.root', isMC)
+    # WIP tests
+    glob,cpf,npf,vtx, targets = preprocess('~/private/pfnano_dev/CMSSW_10_6_20/src/PhysicsTools/PFNano/test/nano106Xv8_on_mini106X_2017_mc_NANO_py_NANO_AddDeepJet.root', True)
+    # sys.exit()
     n_jets = len(targets)
     
     #if weightingMethod == "_both":
@@ -595,6 +621,7 @@ if __name__ == "__main__":
     else:        
         # Can stay
         # new version doesn't store the w.m. in the filename
+        '''
         outputPredsdir = "outPreds_%s.npy"%(outNo)
         outputCvsBdir = "outCvsB_%s.npy"%(outNo)
         outputCvsLdir = "outCvsL_%s.npy"%(outNo)
@@ -614,12 +641,12 @@ if __name__ == "__main__":
         fgsm_outputBvsLdir = "fgsm_outBvsL_%s.npy"%(outNo)
 
         #print("Saving into %s/%s"%(condoroutdir,sampName))
-
+        '''
 
         # Done: independent of scalers!
         # OLD: predictions = predict(inputs, targets, scalers, wm)
-        predictions = predict((glob,cpf,npf,vtx), model_name)
-        
+        predictions = predict(glob,cpf,npf,vtx, model_name)
+        sys.exit()
         bvl = calcBvsL(predictions)
         print('Raw bvl, bvc, cvb, cvl')
         print(min(bvl), max(bvl))
