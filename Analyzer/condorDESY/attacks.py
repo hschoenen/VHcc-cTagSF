@@ -18,7 +18,7 @@ def apply_noise(sample, magn=1e-2,offset=[0], dev=torch.device("cpu"), restrict_
 
         if var_group == 'glob':
             for i in range(vars_per_candidate['glob']):
-                if i in integer_per_variable[var_group]:
+                if i in integer_variables_by_candidate[var_group]:
                     xadv[:,i] = sample[:,i]
                 else: # non integer, but might have defaults that should be excluded from shift
                     defaults = sample[:,i].cpu() == defaults_per_variable[var_group][i]

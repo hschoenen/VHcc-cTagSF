@@ -50,7 +50,7 @@ else:
         fileName = "/" + '/'.join(fullName.split('/')[fullName.split('/').index("store"):])
 print "Will open file %s."%(pref+fileName)
 
-parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/","/106X_v2_17/","/106X_v2_17rsb2/","/106X_v2_17rsb3/"]
+parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/","/106X_v2_17/","/106X_v2_17rsb2/","/106X_v2_17rsb3/","/nanotest_add_DeepJet/"]
 for iParent in parentDirList:
     if iParent in fullName: parentDir = iParent
 if parentDir == "": fullName.split('/')[8]+"/"
@@ -74,7 +74,7 @@ outNo= "%s_%s_%s"%(sampNo,dirNo,flNo)
 
 if "_" in channel: channel=channel.split("_")[0]
 # channel="Generic"
-if not 'Single' in channel and not 'Double' in channel and not 'EGamma' in channel:
+if not 'Single' in channel and not 'Double' in channel and not 'EGamma' in channel and not 'MET' in channel:
     isMC = True
 else:
     isMC = False

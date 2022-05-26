@@ -18,3 +18,4 @@ scp /eos/user/a/anstein/DeepJet/Train_DF_Run2/adversarial_eps0p01/checkpoint_bes
 
 # Very basic dummy test:
 python customDeepJetTaggerInference.py ~/private/pfnano_dev/CMSSW_10_6_20/src/PhysicsTools/PFNano/test/nano106Xv8_on_mini106X_2017_mc_NANO_py_NANO_AddDeepJet.root DeepJet_Run2_nominal dummy.dummy
+python customDeepJetTaggerInference.py /store/user/anstein/nanotest_add_DeepJet/QCD_Pt_1400to1800_TuneCP5_13TeV_pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/211128_005103/0000/nano106Xv8_on_mini106X_2017_mc_NANO_py_NANO_1.root DeepJet_Run2_nominal dummy.dummy
