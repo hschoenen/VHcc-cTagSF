@@ -33,6 +33,11 @@ def cross_entropy(input, target):
 
 print("Torch version =",torch.__version__)
 
+# empty for usage in job (will be put into scratch-dir)
+#save_to = ''
+# not empty for testing purposes, don't clutter working dir
+save_to = '/nfs/dust/cms/user/anstein/DeepJet/test_outputs_for_BTV_meeting_adversarial/'
+save_to = '/nfs/dust/cms/user/anstein/DeepJet/test_outputs_for_BTV_meeting_nominal/'
 
 def pfnano_to_array(rootfile, isMC):
     print('Doing cleaning, isMC = ',isMC)
@@ -332,6 +337,10 @@ if __name__ == "__main__":
     # sys.exit()
     n_jets = len(targets)
     
+    
+    outputTargetsdir  = "outTargets_%s.npy"%(outNo)
+    np.save(save_to+outputTargetsdir, targets)
+    
     # to check multiple epochs of a given weighting method at once (using always 3 epochs should make sense, as previous tests were done on raw/noise/FGSM = 3 different sets)
     if model_name.startswith('_multi_'):
         letters = ['A','B','C']  # using the same three letters all the time means that the Analyzer code does not need to be updated for every possible epoch
@@ -357,26 +366,26 @@ if __name__ == "__main__":
             bvl = calcBvsL(predictions)
             print('Raw bvl, bvc, cvb, cvl')
             print(min(bvl), max(bvl))
-            #np.save(outputBvsLdir, bvl)
+            np.save(save_to+outputBvsLdir, bvl)
             del bvl
             gc.collect()
 
             bvc = calcBvsC(predictions)
             print(min(bvc), max(bvc))
-            #np.save(outputBvsCdir, bvc)
+            np.save(save_to+outputBvsCdir, bvc)
             del bvc
             gc.collect()
 
             cvb = calcCvsB(predictions)
             
             print(min(cvb), max(cvb))
-            #np.save(outputCvsBdir, cvb)
+            np.save(save_to+outputCvsBdir, cvb)
             del cvb
             gc.collect()
             cvl = calcCvsL(predictions)
             
             print(min(cvl), max(cvl))
-            #np.save(outputCvsLdir, cvl)
+            np.save(save_to+outputCvsLdir, cvl)
             del cvl
             gc.collect()
             
@@ -400,7 +409,7 @@ if __name__ == "__main__":
             print(min(predictions[:,3]), max(predictions[:,3]))
             print(min(predictions[:,4]), max(predictions[:,4]))
             print(min(predictions[:,5]), max(predictions[:,5]))
-            #np.save(outputPredsdir, predictions)
+            np.save(save_to+outputPredsdir, predictions)
             del predictions
             gc.collect()
             
@@ -433,7 +442,7 @@ if __name__ == "__main__":
         bvl = calcBvsL(predictions)
         print('Raw bvl, bvc, cvb, cvl')
         print(min(bvl), max(bvl))
-        #np.save(outputBvsLdir, bvl)
+        np.save(save_to+outputBvsLdir, bvl)
         hist, bin_edges = np.histogram(bvl, bins=20)
         print(hist, bin_edges)
         del bvl
@@ -441,19 +450,19 @@ if __name__ == "__main__":
         
         bvc = calcBvsC(predictions)
         print(min(bvc), max(bvc))
-        #np.save(outputBvsCdir, bvc)
+        np.save(save_to+outputBvsCdir, bvc)
         del bvc
         gc.collect()
         
         cvb = calcCvsB(predictions)
         print(min(cvb), max(cvb))
-        #np.save(outputCvsBdir, cvb)
+        np.save(save_to+outputCvsBdir, cvb)
         del cvb
         gc.collect()
 
         cvl = calcCvsL(predictions)
         print(min(cvl), max(cvl))
-        #np.save(outputCvsLdir, cvl)
+        np.save(save_to+outputCvsLdir, cvl)
         del cvl
         gc.collect()
 
@@ -477,7 +486,7 @@ if __name__ == "__main__":
         print(min(predictions[:,3]), max(predictions[:,3]))
         print(min(predictions[:,4]), max(predictions[:,4]))
         print(min(predictions[:,5]), max(predictions[:,5]))
-        #np.save(outputPredsdir, predictions)
+        np.save(save_to+outputPredsdir, predictions)
         del predictions
         gc.collect()
 
@@ -491,25 +500,25 @@ if __name__ == "__main__":
             noise_bvl = calcBvsL(noise_preds)
             print('Noise bvl, bvc, cvb, cvl')
             print(min(noise_bvl), max(noise_bvl))
-            #np.save(noise_outputBvsLdir, noise_bvl)
+            np.save(save_to+noise_outputBvsLdir, noise_bvl)
             del noise_bvl
             gc.collect()
 
             noise_bvc = calcBvsC(noise_preds)
             print(min(noise_bvc), max(noise_bvc))
-            #np.save(noise_outputBvsCdir, noise_bvc)
+            np.save(save_to+noise_outputBvsCdir, noise_bvc)
             del noise_bvc
             gc.collect()
 
             noise_cvb = calcCvsB(noise_preds)
             print(min(noise_cvb), max(noise_cvb))
-            #np.save(noise_outputCvsBdir, noise_cvb)
+            np.save(save_to+noise_outputCvsBdir, noise_cvb)
             del noise_cvb
             gc.collect()
             
             noise_cvl = calcCvsL(noise_preds)
             print(min(noise_cvl), max(noise_cvl))
-            #np.save(noise_outputCvsLdir, noise_cvl)
+            np.save(save_to+noise_outputCvsLdir, noise_cvl)
             del noise_cvl
             gc.collect()
             
@@ -533,7 +542,7 @@ if __name__ == "__main__":
             print(min(noise_preds[:,3]), max(noise_preds[:,3]))
             print(min(noise_preds[:,4]), max(noise_preds[:,4]))
             print(min(noise_preds[:,5]), max(noise_preds[:,5]))
-            #np.save(noise_outputPredsdir, noise_preds)
+            np.save(save_to+noise_outputPredsdir, noise_preds)
             del noise_preds
             gc.collect()
 
@@ -549,7 +558,7 @@ if __name__ == "__main__":
             fgsm_bvl = calcBvsL(fgsm_preds)
             print('FGSM bvl, bvc, cvb, cvl')
             print(min(fgsm_bvl), max(fgsm_bvl))
-            #np.save(fgsm_outputBvsLdir, fgsm_bvl)
+            np.save(save_to+fgsm_outputBvsLdir, fgsm_bvl)
             hist, bin_edges = np.histogram(fgsm_bvl, bins=20)
             print(hist, bin_edges)
             del fgsm_bvl
@@ -557,19 +566,19 @@ if __name__ == "__main__":
 
             fgsm_bvc = calcBvsC(fgsm_preds)
             print(min(fgsm_bvc), max(fgsm_bvc))
-            #np.save(fgsm_outputBvsCdir, fgsm_bvc)
+            np.save(save_to+fgsm_outputBvsCdir, fgsm_bvc)
             del fgsm_bvc
             gc.collect()
 
             fgsm_cvb = calcCvsB(fgsm_preds)
             print(min(fgsm_cvb), max(fgsm_cvb))
-            #np.save(fgsm_outputCvsBdir, fgsm_cvb)
+            np.save(save_to+fgsm_outputCvsBdir, fgsm_cvb)
             del fgsm_cvb
             gc.collect()
             
             fgsm_cvl = calcCvsL(fgsm_preds)
             print(min(fgsm_cvl), max(fgsm_cvl))
-            #np.save(fgsm_outputCvsLdir, fgsm_cvl)
+            np.save(save_to+fgsm_outputCvsLdir, fgsm_cvl)
             del fgsm_cvl
             gc.collect()
             
@@ -593,6 +602,6 @@ if __name__ == "__main__":
             print(min(fgsm_preds[:,3]), max(fgsm_preds[:,3]))
             print(min(fgsm_preds[:,4]), max(fgsm_preds[:,4]))
             print(min(fgsm_preds[:,5]), max(fgsm_preds[:,5]))
-            #np.save(fgsm_outputPredsdir, fgsm_preds)
+            np.save(save_to+fgsm_outputPredsdir, fgsm_preds)
             del fgsm_preds
             gc.collect()
