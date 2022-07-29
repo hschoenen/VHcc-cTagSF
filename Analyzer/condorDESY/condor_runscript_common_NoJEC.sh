@@ -23,10 +23,10 @@
     # OLD! Custom ~DeepCSV
     # adjust the weighting method, look up the definitions in customTaggerInference.py
 #    WM="_notflat_200_gamma25.0_alphaNone"  # example for single weighting method alone (using raw/Noise/FGSM inputs)
-#    WM="_multi_adv_tr_eps0.01_5,10,100"  # example for three epochs of one weighting method
+    WM="_multi_basic_5,10,100"  # example for three epochs of one weighting method
 
     # NEW! Custom ~DeepJet
-    WM="_nominal_best"
+ #   WM="_nominal_best"
 #    WM="_multi_nominal_5,15,30"
 
     # OLD!
@@ -36,7 +36,7 @@
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210714_2017_$4${WM}/
 
     # NEW!
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/2022_June_2017_$4${WM}/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/220729_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
@@ -123,8 +123,8 @@
         echo "    which python3"
         which python3
         #eval `scram unsetenv -sh`
-        #ENVNAME=my-env
-        ENVNAME=deepjet-env
+        ENVNAME=my-env
+ #       ENVNAME=deepjet-env
         ENVDIR=$ENVNAME
 
         export PATH
@@ -142,8 +142,8 @@
         echo "    echo PATH:"
         echo $PATH
         echo "start with custom tagger"
-        #python3 customTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
-        python3 customDeepJetTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
+        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
+ #       python3 customDeepJetTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
         
         
         
