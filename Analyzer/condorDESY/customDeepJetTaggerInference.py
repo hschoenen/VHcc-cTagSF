@@ -34,10 +34,10 @@ def cross_entropy(input, target):
 print("Torch version =",torch.__version__)
 
 # empty for usage in job (will be put into scratch-dir)
-#save_to = ''
+save_to = ''
 # not empty for testing purposes, don't clutter working dir
-save_to = '/nfs/dust/cms/user/anstein/DeepJet/test_outputs_for_BTV_meeting_adversarial/'
-save_to = '/nfs/dust/cms/user/anstein/DeepJet/test_outputs_for_BTV_meeting_nominal/'
+#save_to = '/nfs/dust/cms/user/anstein/DeepJet/test_outputs_for_BTV_meeting_adversarial/'
+#save_to = '/nfs/dust/cms/user/anstein/DeepJet/test_outputs_for_BTV_meeting_nominal/'
 
 def pfnano_to_array(rootfile, isMC):
     print('Doing cleaning, isMC = ',isMC)
@@ -54,7 +54,9 @@ def pfnano_to_array(rootfile, isMC):
                     'Jet_DeepCSV_trackSip3dValAboveCharm',
                     'Jet_DeepCSV_trackSip3dSigAboveCharm',
                     'Jet_DeepCSV_jetNSelectedTracks',
-                    'Jet_DeepCSV_jetNTracksEtaRel']
+                    'Jet_DeepCSV_jetNTracksEtaRel'
+                    ]
+    
     # CPF
     cpf = [[f'Jet_DeepJet_Cpfcan_BtagPf_trackEtaRel_{i}',
             f'Jet_DeepJet_Cpfcan_BtagPf_trackPtRel_{i}',
@@ -100,23 +102,9 @@ def pfnano_to_array(rootfile, isMC):
     
     if isMC == True:
         # flavour definition for PFNano based on: https://indico.cern.ch/event/739204/#3-deepjet-overview
-        # ToDo: find out how to read the angular distance between nu from b/c hadron and jet (< 0.4 to be lepb)
-        feature_names.extend(('Jet_nBHadrons', 'Jet_hadronFlavour', 'Jet_partonFlavour'))
-        # probably need to do something like here:
-        # https://github.com/hqucms/DNNTuples/blob/93024f14ac05480dbc6ae9c9453678e8a5b66d25/BTagHelpers/src/FlavorDefinition.cc#L5-L90
-        # or https://github.com/CMSDeepFlavour/DeepNTuples/blob/master/DeepNtuplizer/src/helpers.cc#L24-L134
-        # need to go through genparticles, find all neutrinos from b or c decay
-        # in a given event, cross these neutrinos with jets via DeltaR function (a.k.a metric_table)
-        # if neutrino is contained in AK4 jet (and hadronFlavour==5 & nBhadrons==1) --> lepb
-        # tbf this might be better suited for PFNano itself
+        feature_names.extend(['Jet_FlavSplit'])
         
-        # In PFNano: collection is called GenPart
-        ## GenPart_genPartIdxMother to check decay chain (necessary to find leptonic nu)
-        ## GenPart_pdgId to check what particle it is
-        ## comes with GenPart_eta and GenPart_phi --> good, can calculate DeltaR
-        
-        # feature_names.extend('nu_b_c_jet_deltaR')
-        
+    print('Events:', rootfile['Events'].num_entries)
     
     # go through a specified number of events, and get the information (awkward-arrays) for the keys specified above
     for data in rootfile['Events'].iterate(feature_names, step_size=rootfile['Events'].num_entries, library='ak'):
@@ -132,21 +120,22 @@ def pfnano_to_array(rootfile, isMC):
         datacolumns[featureindex] = ak.to_numpy(a)
 
     if isMC == True:
-        nbhad = ak.to_numpy(ak.flatten(data['Jet_nBHadrons'], axis=1))
-        hadflav = ak.to_numpy(ak.flatten(data['Jet_hadronFlavour'], axis=1))
-        partonflav = ak.to_numpy(ak.flatten(data['Jet_partonFlavour'], axis=1))
-
-        target_class = np.full_like(hadflav, 3)                                                                                                    # c
-        target_class = np.where(np.bitwise_and(hadflav == 5, nbhad > 1), 1, target_class)                                                          # bb
-        # ToDo!!!
-        #target_class = np.where(np.bitwise_and(hadflav == 5, nbhad == 1, nu_b_c_jet_deltaR < 0.4), 2, target_class)                                # lepb
-        #target_class = np.where(np.bitwise_and(hadflav == 5, nbhad == 1, nu_b_c_jet_deltaR >= 0.4), 0, target_class)                               # b
-        target_class = np.where(np.bitwise_and(hadflav == 0, partonflav == 21), 5, target_class)                                                   # g
-        target_class = np.where(np.bitwise_and(hadflav == 0, np.bitwise_or(partonflav == 1, partonflav == 2, partonflav == 3)), 4, target_class)   # uds
+        flavsplit = ak.to_numpy(ak.flatten(data['Jet_FlavSplit'], axis=1))
+        # if the list specified below was exhaustive, the -1 would get overwritten all the time
+        #target_class = np.full_like(flavsplit, -1)                                                         # initialize
+        # but it isn't the case, there are undefined jet flavors, therefore set to something that could be used later (light)
+        target_class = np.full_like(flavsplit, 1)                                                         # initialize
+        target_class = np.where(flavsplit == 500, 0, target_class)                                                       # b
+        target_class = np.where(np.bitwise_or(flavsplit == 510, flavsplit == 511), 1, target_class)                      # bb
+        target_class = np.where(np.bitwise_or(flavsplit == 520, flavsplit == 521), 2, target_class)                      # leptonicb
+        target_class = np.where(np.bitwise_or(flavsplit == 400, flavsplit == 410, flavsplit == 411), 3, target_class)    # c
+        target_class = np.where(np.bitwise_or(flavsplit == 1, flavsplit == 2), 4, target_class)                          # uds
+        target_class = np.where(flavsplit == 0, 5, target_class)                                                         # g
 
         datacolumns[number_of_features] = target_class
         
     datavectors = datacolumns.transpose()
+    print('Jets:', len(datavectors))    
     # shape of datavectors: number of jets, number of features  +    1
     #                                             inputs           target
     #                                       (both data and MC)   (MC only)
@@ -302,7 +291,7 @@ if __name__ == "__main__":
     # ToDo: modify once I have my private samples ready
     #parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/"]
     #parentDirList = ["/106X_v2_17/","/106X_v2_17rsb2/","/106X_v2_17rsb3/"]
-    parentDirList = ["/nanotest_add_DeepJet/"]
+    parentDirList = ["/nanotest_add_DeepJet/","/PFNano/"]
     for iParent in parentDirList:
         if iParent in fullName: parentDir = iParent
     if parentDir == "": fullName.split('/')[8]+"/"
@@ -313,7 +302,11 @@ if __name__ == "__main__":
     
     sampName=fullName.split(parentDir)[1].split('/')[0]
     channel=sampName
-    sampNo=fullName.split(parentDir)[1].split('/')[1].split('_')[-1]
+    print('sampName:', sampName)
+#    sampNo=fullName.split(parentDir)[1].split('/')[1].split('_')[-1]
+# new version to prevent overwriting of files for PFNano filenames
+# splitting here at the underscore would destroy uniqueness (example: Data for DY, DoubleMuon)
+    sampNo=fullName.split(parentDir)[1].split('/')[1]
     dirNo=fullName.split(parentDir)[1].split('/')[3][-1]
     flNo=fullName.split(parentDir)[1].split('/')[-1].rstrip('.root').split('_')[-1]
     outNo= "%s_%s_%s"%(sampNo,dirNo,flNo)
@@ -330,11 +323,13 @@ if __name__ == "__main__":
     # OLD: inputs, targets, scalers = preprocess(fullName, isMC)
     # OLD: inputs, targets, scalers = preprocess('infile.root', isMC)
     # Wanted, once I can start using the runscript:
-    # NEW: glob,cpf,npf,vtx, targets = preprocess('infile.root', isMC)
+    # NEW:
+    glob,cpf,npf,vtx, targets = preprocess('infile.root', isMC)
     # WIP tests
     #glob,cpf,npf,vtx, targets = preprocess('~/private/pfnano_dev/CMSSW_10_6_20/src/PhysicsTools/PFNano/test/nano106Xv8_on_mini106X_2017_mc_NANO_py_NANO_AddDeepJet.root', True)
-    glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/nanotest_add_DeepJet/QCD_Pt_1400to1800_TuneCP5_13TeV_pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/211128_005103/0000/nano106Xv8_on_mini106X_2017_mc_NANO_py_NANO_1.root', isMC)
-    # sys.exit()
+    #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DoubleMuon/Run2017B-09Aug2019_UL2017-v1_PFtestNano/220806_223005/0000/nano_data2017_1.root', isMC)
+    #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220807_184642/0000/nano_mc2017_1-1.root', isMC)
+    #sys.exit()
     n_jets = len(targets)
     
     
@@ -360,8 +355,20 @@ if __name__ == "__main__":
             outputBvsCdir  = f"{letters[i]}_outBvsC_%s.npy"%(outNo)
             outputBvsLdir  = f"{letters[i]}_outBvsL_%s.npy"%(outNo)
             
-            
-            predictions, _ = predict(glob,cpf,npf,vtx, model_i)
+            # probably need to use chunks due to memory constraints here
+            n_chunks = len(range(0,n_jets,15000))
+            #print(n_chunks)
+            for i,k in enumerate(range(0,n_jets,15000)):
+                print(i,k)
+                if i == 0:
+                    predictions, _ = predict(glob[k:k+15000],cpf[k:k+15000],npf[k:k+15000],vtx[k:k+15000], model_i)
+                elif i == n_chunks-1:
+                    current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_i)
+                    np.concatenate((predictions,current_predictions))
+                else:
+                    current_predictions, _ = predict(glob[k:k+15000],cpf[k:k+15000],npf[k:k+15000],vtx[k:k+15000], model_i)
+                    np.concatenate((predictions,current_predictions))
+            #print(n_jets, 'matches', len(predictions))
             
             bvl = calcBvsL(predictions)
             print('Raw bvl, bvc, cvb, cvl')
@@ -437,7 +444,22 @@ if __name__ == "__main__":
         print("Saving into %s/%s"%(condoroutdir,sampName))
         
 
-        predictions, thismodel = predict(glob,cpf,npf,vtx, model_name)
+        #predictions, thismodel = predict(glob,cpf,npf,vtx, model_name)
+        # probably need to use chunks due to memory constraints here
+        n_chunks = len(range(0,n_jets,15000))
+        #print(n_chunks)
+        for i,k in enumerate(range(0,n_jets,15000)):
+            #print(i,k)
+            if i == 0:
+                predictions, thismodel = predict(glob[k:k+15000],cpf[k:k+15000],npf[k:k+15000],vtx[k:k+15000], model_name)
+            elif i == n_chunks-1:
+                current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_name)
+                predictions = np.concatenate((predictions,current_predictions))
+            else:
+                current_predictions, _ = predict(glob[k:k+15000],cpf[k:k+15000],npf[k:k+15000],vtx[k:k+15000], model_name)
+                predictions = np.concatenate((predictions,current_predictions))
+        #print(n_jets, 'matches', len(predictions))
+        
         #sys.exit()
         bvl = calcBvsL(predictions)
         print('Raw bvl, bvc, cvb, cvl')
@@ -491,12 +513,33 @@ if __name__ == "__main__":
         gc.collect()
 
         if isMC == True:
-            noise_preds, _ = predict(apply_noise(glob,magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
-                                  apply_noise(cpf, magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
-                                  apply_noise(npf, magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
-                                  apply_noise(vtx, magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
-                                  model_name)
             
+            n_chunks = len(range(0,n_jets,8000))
+            #print(n_chunks)
+            for i,k in enumerate(range(0,n_jets,8000)):
+                #print(i,k)
+                if i == 0:
+                    noise_preds, _ = predict(apply_noise(glob[k:k+8000],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
+                                                     apply_noise(cpf[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
+                                                     apply_noise(npf[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
+                                                     apply_noise(vtx[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
+                                                     model_name)
+                elif i == n_chunks-1:
+                    current_noise_preds, _ = predict(apply_noise(glob[k:n_jets],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
+                                                     apply_noise(cpf[k:n_jets], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
+                                                     apply_noise(npf[k:n_jets], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
+                                                     apply_noise(vtx[k:n_jets], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
+                                                     model_name)
+                    noise_preds = np.concatenate((noise_preds,current_noise_preds))
+                else:
+                    current_noise_preds, _ = predict(apply_noise(glob[k:k+8000],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
+                                                     apply_noise(cpf[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
+                                                     apply_noise(npf[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
+                                                     apply_noise(vtx[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
+                                                     model_name)
+                    noise_preds = np.concatenate((noise_preds,current_noise_preds))
+                
+                
             noise_bvl = calcBvsL(noise_preds)
             print('Noise bvl, bvc, cvb, cvl')
             print(min(noise_bvl), max(noise_bvl))
@@ -546,14 +589,41 @@ if __name__ == "__main__":
             del noise_preds
             gc.collect()
 
-            glob, cpf, npf, vtx = fgsm_attack(epsilon=1e-2,sample=(glob,cpf,npf,vtx),targets=targets,
-                                             thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
-            fgsm_preds, _ = predict(glob, cpf, npf, vtx, model_name)
-            del glob
-            del cpf
-            del npf
-            del vtx
-            gc.collect()
+            
+            n_chunks = len(range(0,n_jets,8000))
+            #print(n_chunks)
+            for i,k in enumerate(range(0,n_jets,8000)):
+                #print(i,k)
+                if i == 0:
+                    glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+8000],cpf[k:k+8000],npf[k:k+8000],vtx[k:k+8000]),
+                                                                          targets=targets[k:k+8000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
+                    fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
+                    del glob_fgsm
+                    del cpf_fgsm
+                    del npf_fgsm
+                    del vtx_fgsm
+                    gc.collect()
+                elif i == n_chunks-1:
+                    glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets]),
+                                                                          targets=targets[k:n_jets],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
+                    current_fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
+                    del glob_fgsm
+                    del cpf_fgsm
+                    del npf_fgsm
+                    del vtx_fgsm
+                    gc.collect()
+                    fgsm_preds = np.concatenate((fgsm_preds,current_fgsm_preds))
+                else:
+                    glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+8000],cpf[k:k+8000],npf[k:k+8000],vtx[k:k+8000]),
+                                                                          targets=targets[k:k+8000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
+                    current_fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
+                    del glob_fgsm
+                    del cpf_fgsm
+                    del npf_fgsm
+                    del vtx_fgsm
+                    gc.collect()
+                    fgsm_preds = np.concatenate((fgsm_preds,current_fgsm_preds))
+                    
             
             fgsm_bvl = calcBvsL(fgsm_preds)
             print('FGSM bvl, bvc, cvb, cvl')

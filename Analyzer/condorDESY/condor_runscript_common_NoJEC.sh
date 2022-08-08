@@ -23,10 +23,10 @@
     # OLD! Custom ~DeepCSV
     # adjust the weighting method, look up the definitions in customTaggerInference.py
 #    WM="_notflat_200_gamma25.0_alphaNone"  # example for single weighting method alone (using raw/Noise/FGSM inputs)
-    WM="_multi_basic_5,10,100"  # example for three epochs of one weighting method
+#    WM="_multi_basic_5,10,100"  # example for three epochs of one weighting method
 
     # NEW! Custom ~DeepJet
- #   WM="_nominal_best"
+    WM="_DeepJet_Run2_adversarial_eps0p01"
 #    WM="_multi_nominal_5,15,30"
 
     # OLD!
@@ -36,7 +36,7 @@
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210714_2017_$4${WM}/
 
     # NEW!
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/220729_2017_$4${WM}/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/220808_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
@@ -72,7 +72,7 @@
         #cp -r ../${PYFILE} customTaggerInference.py ../nuSolutions.py ../scalefactors* $tmp_dir
         echo "copy scripts to scratch"
         # Note: for new tagger, the inference will run on already preprocessed samples
-        cp -r /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/${PYFILE} /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customTaggerInference.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customDeepJetTaggerInference.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/focal_loss.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nuSolutions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/scalefactors* $_CONDOR_SCRATCH_DIR
+        cp -r /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/${PYFILE} /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customTaggerInference.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customDeepJetTaggerInference.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/attacks.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/definitions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/focal_loss.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_transformer.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_run2.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nuSolutions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/scalefactors* $_CONDOR_SCRATCH_DIR
         #echo "changing to tempdir (first time)"
         #cd $tmp_dir
                 
@@ -123,8 +123,8 @@
         echo "    which python3"
         which python3
         #eval `scram unsetenv -sh`
-        ENVNAME=my-env
- #       ENVNAME=deepjet-env
+#        ENVNAME=my-env
+        ENVNAME=deepjet-env
         ENVDIR=$ENVNAME
 
         export PATH
@@ -142,8 +142,8 @@
         echo "    echo PATH:"
         echo $PATH
         echo "start with custom tagger"
-        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
- #       python3 customDeepJetTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
+#        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
+        python3 customDeepJetTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
         
         
         

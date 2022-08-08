@@ -4,4 +4,4 @@ voms-proxy-init --voms cms:/cms/dcms --valid 168:00
 cp /tmp/x509up_u38320 ~/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY
 
 # modify held jobs that took too much memory, note: release them afterwards
-condor_qedit --constraint 'JobStatus==5' 'RequestMemory=3000'
+condor_qedit --constraint 'JobStatus==5' 'RequestMemory=6000'

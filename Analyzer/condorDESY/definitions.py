@@ -24,7 +24,7 @@ defaults_per_variable = {
 }
 integer_variables_by_candidate = {
     'glob' : [2,3,4,5,8,13,14],
-    'cpf' : [12,13,15],
+    'cpf' : [12,13,14,15], # in principle also 14 because apparently, chi2 is stored as Uint 
 #    'npf' : [4],
     'npf' : [2],
 #    'vtx' : [5],
