@@ -356,18 +356,22 @@ if __name__ == "__main__":
             outputBvsLdir  = f"{letters[i]}_outBvsL_%s.npy"%(outNo)
             
             # probably need to use chunks due to memory constraints here
-            n_chunks = len(range(0,n_jets,15000))
+            n_chunks = len(range(0,n_jets,2000))
             #print(n_chunks)
-            for i,k in enumerate(range(0,n_jets,15000)):
+            for i,k in enumerate(range(0,n_jets,2000)):
                 print(i,k)
                 if i == 0:
-                    predictions, _ = predict(glob[k:k+15000],cpf[k:k+15000],npf[k:k+15000],vtx[k:k+15000], model_i)
+                    predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i)
                 elif i == n_chunks-1:
                     current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_i)
                     np.concatenate((predictions,current_predictions))
+                    del current_predictions
+                    gc.collect()
                 else:
-                    current_predictions, _ = predict(glob[k:k+15000],cpf[k:k+15000],npf[k:k+15000],vtx[k:k+15000], model_i)
+                    current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i)
                     np.concatenate((predictions,current_predictions))
+                    del current_predictions
+                    gc.collect()
             #print(n_jets, 'matches', len(predictions))
             
             bvl = calcBvsL(predictions)
@@ -446,18 +450,22 @@ if __name__ == "__main__":
 
         #predictions, thismodel = predict(glob,cpf,npf,vtx, model_name)
         # probably need to use chunks due to memory constraints here
-        n_chunks = len(range(0,n_jets,15000))
+        n_chunks = len(range(0,n_jets,2000))
         #print(n_chunks)
-        for i,k in enumerate(range(0,n_jets,15000)):
+        for i,k in enumerate(range(0,n_jets,2000)):
             #print(i,k)
             if i == 0:
-                predictions, thismodel = predict(glob[k:k+15000],cpf[k:k+15000],npf[k:k+15000],vtx[k:k+15000], model_name)
+                predictions, thismodel = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_name)
             elif i == n_chunks-1:
                 current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_name)
                 predictions = np.concatenate((predictions,current_predictions))
+                del current_predictions
+                gc.collect()
             else:
-                current_predictions, _ = predict(glob[k:k+15000],cpf[k:k+15000],npf[k:k+15000],vtx[k:k+15000], model_name)
+                current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_name)
                 predictions = np.concatenate((predictions,current_predictions))
+                del current_predictions
+                gc.collect()
         #print(n_jets, 'matches', len(predictions))
         
         #sys.exit()
@@ -514,15 +522,15 @@ if __name__ == "__main__":
 
         if isMC == True:
             
-            n_chunks = len(range(0,n_jets,8000))
+            n_chunks = len(range(0,n_jets,1000))
             #print(n_chunks)
-            for i,k in enumerate(range(0,n_jets,8000)):
+            for i,k in enumerate(range(0,n_jets,1000)):
                 #print(i,k)
                 if i == 0:
-                    noise_preds, _ = predict(apply_noise(glob[k:k+8000],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
-                                                     apply_noise(cpf[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
-                                                     apply_noise(npf[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
-                                                     apply_noise(vtx[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
+                    noise_preds, _ = predict(apply_noise(glob[k:k+1000],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
+                                                     apply_noise(cpf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
+                                                     apply_noise(npf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
+                                                     apply_noise(vtx[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
                                                      model_name)
                 elif i == n_chunks-1:
                     current_noise_preds, _ = predict(apply_noise(glob[k:n_jets],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
@@ -531,13 +539,17 @@ if __name__ == "__main__":
                                                      apply_noise(vtx[k:n_jets], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
                                                      model_name)
                     noise_preds = np.concatenate((noise_preds,current_noise_preds))
+                    del current_noise_preds
+                    gc.collect()
                 else:
-                    current_noise_preds, _ = predict(apply_noise(glob[k:k+8000],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
-                                                     apply_noise(cpf[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
-                                                     apply_noise(npf[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
-                                                     apply_noise(vtx[k:k+8000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
+                    current_noise_preds, _ = predict(apply_noise(glob[k:k+1000],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
+                                                     apply_noise(cpf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
+                                                     apply_noise(npf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
+                                                     apply_noise(vtx[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
                                                      model_name)
                     noise_preds = np.concatenate((noise_preds,current_noise_preds))
+                    del current_noise_preds
+                    gc.collect()
                 
                 
             noise_bvl = calcBvsL(noise_preds)
@@ -589,14 +601,15 @@ if __name__ == "__main__":
             del noise_preds
             gc.collect()
 
+            #sys.exit()
             
-            n_chunks = len(range(0,n_jets,8000))
+            n_chunks = len(range(0,n_jets,1000))
             #print(n_chunks)
-            for i,k in enumerate(range(0,n_jets,8000)):
+            for i,k in enumerate(range(0,n_jets,1000)):
                 #print(i,k)
                 if i == 0:
-                    glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+8000],cpf[k:k+8000],npf[k:k+8000],vtx[k:k+8000]),
-                                                                          targets=targets[k:k+8000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
+                    glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+1000],cpf[k:k+1000],npf[k:k+1000],vtx[k:k+1000]),
+                                                                          targets=targets[k:k+1000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
                     fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
                     del glob_fgsm
                     del cpf_fgsm
@@ -613,9 +626,11 @@ if __name__ == "__main__":
                     del vtx_fgsm
                     gc.collect()
                     fgsm_preds = np.concatenate((fgsm_preds,current_fgsm_preds))
+                    del current_fgsm_preds
+                    gc.collect()
                 else:
-                    glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+8000],cpf[k:k+8000],npf[k:k+8000],vtx[k:k+8000]),
-                                                                          targets=targets[k:k+8000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
+                    glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+1000],cpf[k:k+1000],npf[k:k+1000],vtx[k:k+1000]),
+                                                                          targets=targets[k:k+1000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
                     current_fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
                     del glob_fgsm
                     del cpf_fgsm
@@ -623,6 +638,8 @@ if __name__ == "__main__":
                     del vtx_fgsm
                     gc.collect()
                     fgsm_preds = np.concatenate((fgsm_preds,current_fgsm_preds))
+                    del current_fgsm_preds
+                    gc.collect()
                     
             
             fgsm_bvl = calcBvsL(fgsm_preds)

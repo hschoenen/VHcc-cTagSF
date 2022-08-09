@@ -43,7 +43,7 @@ isNano = False
 pref = ""
 parentDir = ""
 era = 2016
-isCustomDeepJet = False
+isCustomDeepJet = True
 
 pnfspref = "/pnfs/desy.de/cms/tier2/"
 
