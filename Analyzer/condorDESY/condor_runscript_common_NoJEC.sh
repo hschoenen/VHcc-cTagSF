@@ -26,7 +26,8 @@
 #    WM="_multi_basic_5,10,100"  # example for three epochs of one weighting method
 
     # NEW! Custom ~DeepJet
-    WM="_DeepJet_Run2_adversarial_eps0p01"
+ #   WM="_DeepJet_Run2_adversarial_eps0p01"
+    WM="_DeepJet_Run2_nominal"
 #    WM="_multi_nominal_5,15,30"
 
     # OLD!
@@ -36,7 +37,7 @@
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210714_2017_$4${WM}/
 
     # NEW!
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/220808_2017_$4${WM}/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/220810_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
