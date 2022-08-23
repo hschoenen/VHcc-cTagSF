@@ -41,9 +41,11 @@ for fl in [i for i in os.listdir(inputdir) if os.path.isfile(os.path.join(inputd
         if 'Wc' in sel and ('DY' in fl or 'TT' in fl or 'ST' in fl) and '2018' in inputdir:
             if random() > 1: continue
         if "Single" in line or "Double" in line or "EGamma" in line or "MuonEG" in line:
-            fDATA.write(sel+" "+line.split("root://grid-cms-xrootd.physik.rwth-aachen.de:1094/")[1])
+            #fDATA.write(sel+" "+line.split("root://grid-cms-xrootd.physik.rwth-aachen.de:1094/")[1])
+            fDATA.write(sel+" "+line.split(".de:1094/")[1])
         else:    
-            f2.write(sel+" "+line.split("root://grid-cms-xrootd.physik.rwth-aachen.de:1094/")[1])
+            #f2.write(sel+" "+line.split("root://grid-cms-xrootd.physik.rwth-aachen.de:1094/")[1])
+            f2.write(sel+" "+line.split(".de:1094/")[1])
     f3.close()
     #f2.write('\n')
 f2.close()

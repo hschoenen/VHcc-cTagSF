@@ -26,8 +26,8 @@
 #    WM="_multi_basic_5,10,100"  # example for three epochs of one weighting method
 
     # NEW! Custom ~DeepJet
- #   WM="_DeepJet_Run2_adversarial_eps0p01"
-    WM="_DeepJet_Run2_nominal"
+    WM="_DeepJet_Run2_adversarial_eps0p01"
+ #   WM="_DeepJet_Run2_nominal"
 #    WM="_multi_nominal_5,15,30"
 
     # OLD!
@@ -37,7 +37,7 @@
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210714_2017_$4${WM}/
 
     # NEW!
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/220810_2017_$4${WM}/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/220823_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
@@ -104,9 +104,23 @@
         #echo "test if copy with proxy works"
         #xrdcp -d 1 -f root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root /dev/null
         INPPREFIX="root://grid-cms-xrootd.physik.rwth-aachen.de:1094/"
+        INPPREFIX2="root://dcache-cms-xrootd.desy.de:1094/"
         #INPPREFIX=""
         echo "copy actual input file"
         xrdcp ${INPPREFIX}${INPFILE} ./infile.root
+        ## Did we found IP address? Use exit status of the grep command ##
+        if [ $? -eq 0 ]
+        then
+          echo "Success: copied file from Aachen T2."
+        #  exit 0
+        else
+          echo "Failure: could not find file on Aachen T2. Use DESY T2 instead."
+          INPPREFIX=${INPPREFIX2}
+          xrdcp ${INPPREFIX}${INPFILE} ./infile.root
+          echo "Success: copied file from DESY T2."
+        #  exit 0
+        fi
+        
         
         echo "    echo PATH:"
         echo $PATH
