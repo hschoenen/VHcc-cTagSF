@@ -21,7 +21,7 @@ gErrorIgnoreLevel = 4001
 # ================== Set parameters =====================
 plotProgress = False
 firstbinidx = 11
-learningrate = 0.002		#0.002 for DeepCSV 2017, 0.005 for DeepJet 2017
+learningrate = 0.005		#0.002 for DeepCSV 2017, 0.005 for DeepJet 2017
 maxrelerr = 0.01
 maxbinstocombine = 5
 minbinstocombine = 1

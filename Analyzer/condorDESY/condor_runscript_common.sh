@@ -65,7 +65,7 @@
 	      	echo "done running, now copying output to DUST"
 
 	        echo "copying output"
-		SAMPNAME=$(bash dirName.sh)
+                SAMPNAME=$(bash dirName.sh)
                 FLNAME=$(bash flName.sh)
 	        mkdir -p ${OUTPUTDIR}${SAMPNAME}
 		until scp ${OUTPUTNAME} ${OUTPUTDIR}${SAMPNAME}"/outTree_"${FLNAME}".root"; do

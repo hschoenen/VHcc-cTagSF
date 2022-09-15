@@ -91,4 +91,3 @@ samplesDict2017 = {
 #                ["QCD_HT2000toInf_TuneCP5_13TeV-madgraph-pythia8/",                                     20.23,  	0.06244	]
 #              ]
 }
-

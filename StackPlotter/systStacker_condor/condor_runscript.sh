@@ -1,4 +1,4 @@
-	OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/systPlots_220811_2017_best_nominal_/Plots_220811_best_nominal_minimal_Custom/
+	OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/systPlots_220915_2017_best_nominal_/Plots_220915_best_nominal_minimal_Custom_OLD/
 	OUTPUTNAME=output_2017_PFNano
 
 	CONDOR_CLUSTER_ID=$1
@@ -23,7 +23,9 @@
         klist -f
         echo "creating tempdir and copy"
         tmp_dir=$(mktemp -d)
-        cp -r ../Stacker.py cmdList.txt ../Deep*.root ../samplesDict.py $tmp_dir
+# [AS: 13.09.2022]        cp -r ../Stacker_old.py cmdList.txt ../Deep*.root ../samplesDict.py $tmp_dir
+# [AS: 13.09.2022]        cp -r ../Stacker.py cmdList.txt ../Deep*.root ../samplesDict.py $tmp_dir
+        cp -r ../Stacker.py cmdList_for_testing_NEW_STYLE.txt ../Deep*.root ../samplesDict.py $tmp_dir
 
         echo "setting up the environment"
         cd /cvmfs/cms.cern.ch/slc7_amd64_gcc820/cms/cmssw/CMSSW_11_1_0_p3_ROOT618/src/
@@ -39,7 +41,7 @@
         ls
 	
     	echo "running python script"
-        python -c $'import Stacker; f=open("cmdList.txt","r"); ln=f.readlines(); thisline=ln['$2$'];\nfor cmd in thisline.split("NEWLINE"): exec(cmd)'
+        python -c $'import Stacker; f=open("cmdList_for_testing_NEW_STYLE.txt","r"); ln=f.readlines(); thisline=ln['$2$'];\nfor cmd in thisline.split("NEWLINE"): exec(cmd)'
        	rc=$?
         if [[ $rc != 0 ]]
         then

@@ -25,11 +25,14 @@
 #    WM="_notflat_200_gamma25.0_alphaNone"  # example for single weighting method alone (using raw/Noise/FGSM inputs)
 #    WM="_multi_basic_5,10,100"  # example for three epochs of one weighting method
 
-    # NEW! Custom ~DeepJet
-    WM="_DeepJet_Run2_adversarial_eps0p01"
+    # NEW! Custom ~DeepJet    
+    WM="_DeepJet_Run2_COMPARE" # does nominal and adversarial in one go
+ #   WM="_DeepJet_Run2_adversarial_eps0p01"
  #   WM="_DeepJet_Run2_nominal"
 #    WM="_multi_nominal_5,15,30"
 
+    # if only checking with nominal samples, targets are not required (will not apply FGSM attack, i.e. don't need truth)
+    TARGETSNECESSARY="no"
     # OLD!
 #	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_$4_minimal/
@@ -37,7 +40,7 @@
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210714_2017_$4${WM}/
 
     # NEW!
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/220823_2017_$4${WM}/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/220824_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
@@ -158,7 +161,7 @@
         echo $PATH
         echo "start with custom tagger"
 #        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
-        python3 customDeepJetTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
+        python3 customDeepJetTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR} ${TARGETSNECESSARY}
         
         
         

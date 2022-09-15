@@ -119,7 +119,7 @@ def pfnano_to_array(rootfile, isMC):
         a = ak.flatten(data[feature_names[featureindex]], axis=1) # flatten along first inside to get jets
         datacolumns[featureindex] = ak.to_numpy(a)
 
-    if isMC == True:
+    if isMC == True and targets_necessary:
         flavsplit = ak.to_numpy(ak.flatten(data['Jet_FlavSplit'], axis=1))
         # if the list specified below was exhaustive, the -1 would get overwritten all the time
         #target_class = np.full_like(flavsplit, -1)                                                         # initialize
@@ -230,7 +230,9 @@ def calcBvsL(matching_predictions):
     
     custom_BvL[(custom_BvL < 0.000001) & (custom_BvL > -0.000001)] = 0.000001
     custom_BvL[(np.isnan(custom_BvL)) & (np.isinf(custom_BvL))] = -1.0
-    custom_BvL[custom_BvL > 0.99999] = 0.99999
+    print('Number of BvL values below 0:',sum(custom_BvL[custom_BvL < 0.]))
+    # not limiting the discriminator here, as this should be done in Stacker
+    #custom_BvL[custom_BvL > 0.99999] = 0.99999
     
     return custom_BvL
 
@@ -244,7 +246,8 @@ def calcBvsC(matching_predictions):
     
     custom_BvC[(custom_BvC < 0.000001) & (custom_BvC > -0.000001)] = 0.000001
     custom_BvC[(np.isnan(custom_BvC)) & (np.isinf(custom_BvC))] = -1.0
-    custom_BvC[custom_BvC > 0.99999] = 0.99999
+    # not limiting the discriminator here, as this should be done in Stacker
+    #custom_BvC[custom_BvC > 0.99999] = 0.99999
     
     return custom_BvC
     
@@ -258,7 +261,8 @@ def calcCvsB(matching_predictions):
     
     custom_CvB[(custom_CvB < 0.000001) & (custom_CvB > -0.000001)] = 0.000001
     custom_CvB[(np.isnan(custom_CvB)) & (np.isinf(custom_CvB))] = -1.0
-    custom_CvB[custom_CvB > 0.99999] = 0.99999
+    # not limiting the discriminator here, as this should be done in Stacker
+    #custom_CvB[custom_CvB > 0.99999] = 0.99999
     
     return custom_CvB
     
@@ -273,13 +277,14 @@ def calcCvsL(matching_predictions):
     
     custom_CvL[(custom_CvL < 0.000001) & (custom_CvL > -0.000001)] = 0.000001
     custom_CvL[(np.isnan(custom_CvL)) & (np.isinf(custom_CvL))] = -1.0
-    custom_CvL[custom_CvL > 0.99999] = 0.99999
+    # not limiting the discriminator here, as this should be done in Stacker
+    #custom_CvL[custom_CvL > 0.99999] = 0.99999
     
     return custom_CvL
 
 
 if __name__ == "__main__":
-    fullName, model_name, condoroutdir = sys.argv[1], sys.argv[2], sys.argv[3]
+    fullName, model_name, condoroutdir, targets_necessary = sys.argv[1], sys.argv[2], sys.argv[3], True if sys.argv[4]=="yes" else False
     
     parentDir = ""
     # default era, will be overwritten
@@ -324,6 +329,7 @@ if __name__ == "__main__":
     # OLD: inputs, targets, scalers = preprocess('infile.root', isMC)
     # Wanted, once I can start using the runscript:
     # NEW:
+    # if targets are not necessary, targets will default to placeholder value for all jets
     glob,cpf,npf,vtx, targets = preprocess('infile.root', isMC)
     # WIP tests
     #glob,cpf,npf,vtx, targets = preprocess('~/private/pfnano_dev/CMSSW_10_6_20/src/PhysicsTools/PFNano/test/nano106Xv8_on_mini106X_2017_mc_NANO_py_NANO_AddDeepJet.root', True)
@@ -332,9 +338,9 @@ if __name__ == "__main__":
     #sys.exit()
     n_jets = len(targets)
     
-    
-    outputTargetsdir  = "outTargets_%s.npy"%(outNo)
-    np.save(save_to+outputTargetsdir, targets)
+    if targets_necessary:
+        outputTargetsdir  = "outTargets_%s.npy"%(outNo)
+        np.save(save_to+outputTargetsdir, targets)
     
     # to check multiple epochs of a given weighting method at once (using always 3 epochs should make sense, as previous tests were done on raw/noise/FGSM = 3 different sets)
     if model_name.startswith('_multi_'):
@@ -423,7 +429,87 @@ if __name__ == "__main__":
             np.save(save_to+outputPredsdir, predictions)
             del predictions
             gc.collect()
+    elif 'COMPARE' in model_name:
+        models = ['_DeepJet_Run2_nominal','_DeepJet_Run2_adversarial_eps0p01']
+        short_names = ['','ADV_']
+        print('Will run with these models:', models)
+        
+        for i,model_i in enumerate(models):
+            outputPredsdir = f"{short_names[i]}outPreds_%s.npy"%(outNo)
+            outputCvsBdir  = f"{short_names[i]}outCvsB_%s.npy"%(outNo)
+            outputCvsLdir  = f"{short_names[i]}outCvsL_%s.npy"%(outNo)
+            outputBvsCdir  = f"{short_names[i]}outBvsC_%s.npy"%(outNo)
+            outputBvsLdir  = f"{short_names[i]}outBvsL_%s.npy"%(outNo)
             
+            # probably need to use chunks due to memory constraints here
+            n_chunks = len(range(0,n_jets,2000))
+            #print(n_chunks)
+            for i,k in enumerate(range(0,n_jets,2000)):
+                print(i,k)
+                if i == 0:
+                    predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i)
+                elif i == n_chunks-1:
+                    current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_i)
+                    np.concatenate((predictions,current_predictions))
+                    del current_predictions
+                    gc.collect()
+                else:
+                    current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i)
+                    np.concatenate((predictions,current_predictions))
+                    del current_predictions
+                    gc.collect()
+            #print(n_jets, 'matches', len(predictions))
+            
+            bvl = calcBvsL(predictions)
+            print('Raw bvl, bvc, cvb, cvl')
+            print(min(bvl), max(bvl))
+            np.save(save_to+outputBvsLdir, bvl)
+            del bvl
+            gc.collect()
+
+            bvc = calcBvsC(predictions)
+            print(min(bvc), max(bvc))
+            np.save(save_to+outputBvsCdir, bvc)
+            del bvc
+            gc.collect()
+
+            cvb = calcCvsB(predictions)
+            
+            print(min(cvb), max(cvb))
+            np.save(save_to+outputCvsBdir, cvb)
+            del cvb
+            gc.collect()
+            cvl = calcCvsL(predictions)
+            
+            print(min(cvl), max(cvl))
+            np.save(save_to+outputCvsLdir, cvl)
+            del cvl
+            gc.collect()
+            
+            # constraining predictions is fine, they are not touched by Stacker
+            # but we expect (want) them to be probabilities
+            predictions[:,0][predictions[:,0] > 0.999999] = 0.999999
+            predictions[:,1][predictions[:,1] > 0.999999] = 0.999999
+            predictions[:,2][predictions[:,2] > 0.999999] = 0.999999
+            predictions[:,3][predictions[:,3] > 0.999999] = 0.999999
+            predictions[:,4][predictions[:,4] > 0.999999] = 0.999999
+            predictions[:,5][predictions[:,5] > 0.999999] = 0.999999
+            predictions[:,0][predictions[:,0] < 0.000001] = 0.000001
+            predictions[:,1][predictions[:,1] < 0.000001] = 0.000001
+            predictions[:,2][predictions[:,2] < 0.000001] = 0.000001
+            predictions[:,3][predictions[:,3] < 0.000001] = 0.000001
+            predictions[:,4][predictions[:,4] < 0.000001] = 0.000001
+            predictions[:,5][predictions[:,5] < 0.000001] = 0.000001
+            print('Raw b, bb, lepb, c, uds, g min and max (after cutting over-/underflow)')
+            print(min(predictions[:,0]), max(predictions[:,0]))
+            print(min(predictions[:,1]), max(predictions[:,1]))
+            print(min(predictions[:,2]), max(predictions[:,2]))
+            print(min(predictions[:,3]), max(predictions[:,3]))
+            print(min(predictions[:,4]), max(predictions[:,4]))
+            print(min(predictions[:,5]), max(predictions[:,5]))
+            np.save(save_to+outputPredsdir, predictions)
+            del predictions
+            gc.collect()        
     # just one training at a given epoch, but with Noise or FGSM attack applied to MC
     else:        
         # Can stay
