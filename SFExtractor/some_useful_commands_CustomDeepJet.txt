@@ -1,0 +1,14 @@
+source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.22.00/x86_64-centos7-gcc48-opt/bin/thisroot.sh
+parallel python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_220809_2017_best_adversarial_eps0p01_/Plots_220809_best_adversarial_eps0p01_minimal_Custom/output_2017_PFNano_central --force --doCustom --doDeepJet -r :::: rangelist.txt
+python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_220809_2017_best_adversarial_eps0p01_/Plots_220809_best_adversarial_eps0p01_minimal_Custom/output_2017_PFNano_central -r comb --force --doCustom --doDeepJet
+
+parallel python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_220811_2017_best_nominal_/Plots_220811_best_nominal_minimal_Custom/output_2017_PFNano_central --force --doCustom --doDeepJet -r :::: rangelist.txt
+python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_220811_2017_best_nominal_/Plots_220811_best_nominal_minimal_Custom/output_2017_PFNano_central -r comb --force --doCustom --doDeepJet
+
+
+
+
+parallel python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_210708_2017_notflat_200_gamma25.0_alphaNone_adv_tr_eps0.01/Plots_210708_notflat_200_gamma25.0_alphaNone_adv_tr_eps0.01_minimal_CustomNoise/output_2017_PFNano_central  --force --doCustomNoise --doDeepJet -r :::: rangelist.txt
+python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_210708_2017_notflat_200_gamma25.0_alphaNone_adv_tr_eps0.01/Plots_210708_notflat_200_gamma25.0_alphaNone_adv_tr_eps0.01_minimal_CustomNoise/output_2017_PFNano_central -r comb --force --doCustomNoise --doDeepJet
+parallel python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_210708_2017_notflat_200_gamma25.0_alphaNone_adv_tr_eps0.01/Plots_210708_notflat_200_gamma25.0_alphaNone_adv_tr_eps0.01_minimal_CustomFGSM/output_2017_PFNano_central  --force --doCustomFGSM --doDeepJet -r :::: rangelist.txt
+python2 AdaptiveFit.py -i /nfs/dust/cms/user/anstein/ctag_condor/systPlots_210708_2017_notflat_200_gamma25.0_alphaNone_adv_tr_eps0.01/Plots_210708_notflat_200_gamma25.0_alphaNone_adv_tr_eps0.01_minimal_CustomFGSM/output_2017_PFNano_central -r comb --force --doCustomFGSM --doDeepJet

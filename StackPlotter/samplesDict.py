@@ -32,53 +32,67 @@ samplesDict2016 = {
 samplesDict2017 = {
 #    Name       FileName                                                                                XSec        XSecUnc
     "WJets" : [
+                # OLD ["WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/",                                       61526.7,    2312    ],
                 ["WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/",                                       61526.7,    2312    ],
-                ["W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/",                                      9625,       31.57   ],
-                ["W2JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/",                                      3161,       11.22   ],
-                ["W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/",                                      1468,       3.36    ],
-                ["W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/",                                      494,        1.85    ]
+                # NOT USED ["W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/",                                      9625,       31.57   ],
+                # NOT USED ["W2JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/",                                      3161,       11.22   ],
+                # NOT USED ["W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/",                                      1468,       3.36    ],
+                # NOT USED ["W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/",                                      494,        1.85    ]
               ],
     "DYJets": [
-                ["DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/",                                  6225.42,    124.5   ],
+                ["DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/",                                  6077.22,    6077.22*0.02   ],
+                # probably wrong, but the closest I could find on xsdb
+        
+                # OLD (SF framework) ["DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/",                                  6225.42,    124.5   ],
                 
                 #["DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/",                                 6225.42,    124.5   ],
                 
-                ["DYJetsToLL_M-50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8/",                      147.4*1.23, 0.09*1.23],
-                ["DYJetsToLL_M-50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8/",                      40.99*1.23, 0.04*1.23],
-                ["DYJetsToLL_M-50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8/",                      5.678*1.23, 0.005*1.23],
-                ["DYJetsToLL_M-50_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8/",                      1.367*1.23, 0.0     ],
-                ["DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8/",                     0.6304*1.23,0.0     ],
-                ["DYJetsToLL_M-50_HT-1200to2500_TuneCP5_13TeV-madgraphMLM-pythia8/",                    0.1514*1.23,0.0     ],
-                ["DYJetsToLL_M-50_HT-2500toInf_TuneCP5_13TeV-madgraphMLM-pythia8/",                     0.003565*1.23,0.0   ],
-                
-                ["DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8/",                   204.0*1.23, 0.5852*1.23],
-                ["DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8/",                   54.39*1.23, 0.1579*1.23],
-                ["DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8/",                   5.697*1.23, 0.01672*1.23],
-                ["DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8/",                   1.85*1.23,  0.005466*1.23],
-                
-                ["DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/",                              18610,      0       ]
+            # NOT USED    ["DYJetsToLL_M-50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8/",                      147.4*1.23, 0.09*1.23],
+            # NOT USED    ["DYJetsToLL_M-50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8/",                      40.99*1.23, 0.04*1.23],
+            # NOT USED    ["DYJetsToLL_M-50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8/",                      5.678*1.23, 0.005*1.23],
+            # NOT USED    ["DYJetsToLL_M-50_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8/",                      1.367*1.23, 0.0     ],
+            # NOT USED    ["DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8/",                     0.6304*1.23,0.0     ],
+            # NOT USED    ["DYJetsToLL_M-50_HT-1200to2500_TuneCP5_13TeV-madgraphMLM-pythia8/",                    0.1514*1.23,0.0     ],
+            # NOT USED    ["DYJetsToLL_M-50_HT-2500toInf_TuneCP5_13TeV-madgraphMLM-pythia8/",                     0.003565*1.23,0.0   ],
+            # NOT USED    
+            # NOT USED    ["DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8/",                   204.0*1.23, 0.5852*1.23],
+            # NOT USED    ["DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8/",                   54.39*1.23, 0.1579*1.23],
+            # NOT USED    ["DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8/",                   5.697*1.23, 0.01672*1.23],
+            # NOT USED    ["DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8/",                   1.85*1.23,  0.005466*1.23],
+            # NOT USED    
+            # NOT USED    ["DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/",                              18610,      0       ]
               ],
     "ttbar" : [
                 #["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/",                                   88.29,      4.82   ],
                 #["TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8/",                                377.96,      20.647   ],
+        
                 ["TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/",                                             88.29,      4.82   ],
                 ["TTToHadronic_TuneCP5_13TeV-powheg-pythia8/",                                          377.96,      20.647   ],
                 ["TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/",                                      365.34,      19.95   ]
+               # OLD ["TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/",                                             88.29,      4.82   ],
+               # OLD ["TTToHadronic_TuneCP5_13TeV-powheg-pythia8/",                                          377.96,      20.647   ],
+               # OLD ["TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/",                                      365.34,      19.95   ]
               ],
     "ST" :    [
-                #["ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8",               3.74,       0.003591],
-                ["ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8",                         3.74,       0.003591],
-                ["ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8",      67.91,      0.3487  ],
-                ["ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8",          113.3,      0.6404  ],
+                ["ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8",                         3.549,       0.002988],
+                ["ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8",      69.09,      0.4613  ],
+                ["ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8",          115.3,      0.9153  ],
+        # don't ask why nowadays the Inclusive is written with capital I
                 ["ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8",                       34.97,      0.02827 ],
-                #["ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8",                 34.91,      0.02817 ],
-                ["ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8",                           34.91,      0.02817 ]
+                ["ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8",                           34.91,      0.02817 ],
+             # OLD  #["ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8",               3.74,       0.003591],
+             # OLD  ["ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8",                         3.74,       0.003591],
+             # OLD  ["ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8",      67.91,      0.3487  ],
+             # OLD  ["ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8",          113.3,      0.6404  ],
+             # OLD  ["ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8",                       34.97,      0.02827 ],
+             # OLD  #["ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8",                 34.91,      0.02817 ],
+             # OLD  ["ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8",                           34.91,      0.02817 ]
               ],
-    "VV" :    [
-                ["WW_TuneCP5_13TeV-pythia8",                                                            75.8,       0.1123	],
-                ["WZ_TuneCP5_13TeV-pythia8",                                                            27.6,       0.04    ],
-                ["ZZ_TuneCP5_13TeV-pythia8",                                                            12.14,      0.01964 ]
-              ]
+# NOT USED    "VV" :    [
+# NOT USED                ["WW_TuneCP5_13TeV-pythia8",                                                            75.8,       0.1123	],
+# NOT USED                ["WZ_TuneCP5_13TeV-pythia8",                                                            27.6,       0.04    ],
+# NOT USED                ["ZZ_TuneCP5_13TeV-pythia8",                                                            12.14,      0.01964 ]
+# NOT USED              ]
               #,
 #    "QCD" :   [
 #                ["QCD_HT100to200_TuneCP5_13TeV-madgraph-pythia8/",                                      23700000,   68560   ],
@@ -91,3 +105,4 @@ samplesDict2017 = {
 #                ["QCD_HT2000toInf_TuneCP5_13TeV-madgraph-pythia8/",                                     20.23,  	0.06244	]
 #              ]
 }
+

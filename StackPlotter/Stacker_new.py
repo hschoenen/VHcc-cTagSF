@@ -379,7 +379,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
         print "Neither PNG nor ROOT output was asked for. Exiting."
         sys.exit(1)
     else:
-        print "makePNG", makePNG
+        print "makePNG:", makePNG
     filePre += filePre2
     global lumi
     if '_2018_' in rootPath:

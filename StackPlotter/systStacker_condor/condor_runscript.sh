@@ -1,4 +1,4 @@
-	OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/systPlots_220915_2017_best_nominal_/Plots_220915_best_nominal_minimal_Custom_OLD/
+	OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/systPlots_220915_2017_best_adversarial_eps0p01_/Plots_220915_best_adversarial_eps0p01_minimal_Custom_30bins/
 	OUTPUTNAME=output_2017_PFNano
 
 	CONDOR_CLUSTER_ID=$1

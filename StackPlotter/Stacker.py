@@ -378,6 +378,8 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
     if not makePNG and not makeROOT:
         print "Neither PNG nor ROOT output was asked for. Exiting."
         sys.exit(1)
+    else:
+        print "makePNG:", makePNG
     filePre += filePre2
     global lumi
     if '_2018_' in rootPath:
@@ -532,7 +534,8 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
 
     colours=[]
     colourNames = [ROOT.kCyan,ROOT.kYellow,ROOT.kMagenta,ROOT.kBlue,ROOT.kGreen,ROOT.kRed,ROOT.kGray]
-    samplesToProc = ["WJets","DYJets","ttbar","ST","VV"]
+    #samplesToProc = ["WJets","DYJets","ttbar","ST","VV"]
+    samplesToProc = ["WJets","DYJets","ttbar","ST"]
     if "QCD" in samplesDict:
         if samplesDict["QCD"][0][0].rstrip('/') in samplesInDir:
             samplesToProc.append("QCD")
@@ -746,12 +749,15 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
     legend = ROOT.TLegend(0.15, 0.7, 0.89, legTopMargin,"") #,"brNDC"
     legend.SetFillStyle(0)
 
-    legend.SetTextSize(0.02)
-    legend.SetNColumns(4)
+    legend.SetTextSize(0.03) # was 0.02
+    legend.SetNColumns(3) # was 4
 
     for ind, iName in enumerate(sampleNamesSet):
+        legend_name = (iName.split('(')[0].strip('Jets') if 'Jets' in iName else iName.split('(')[0]) + ' + ' + ((iName.split('(')[1]).split(')')[0] if 'uds' not in iName else 'udsg') + ' jets'
         finalHists[iName].SetFillColor(colours[ind])
-        legend.AddEntry(finalHists[iName],iName,"f")
+        # trying out not writing lep to legend, but keeping it everywhere else
+        if 'lep' not in iName:
+            legend.AddEntry(finalHists[iName],legend_name,"f")
         print iName,":", finalHists[iName].Integral()
 
     # ================= Make stack histogram ===================
@@ -942,10 +948,18 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
     else:
         upperCanvas.cd()
         texTL.DrawLatexNDC(0.13,0.91, "CMS #it{#bf{Preliminary}}")
-        texTR.DrawLatexNDC(0.89,0.95, "#bf{"+str(lumi/1000.)+" fb^{-1} (13 TeV)}")
+        texTR.DrawLatexNDC(0.89,0.91, "#mu"+" #bf{channel}")
+        if lumi == 41540:
+            lumi_for_text = 41.5 # seen it on public plots like that, one sig. digit less
+        else:
+            lumi_for_text = lumi/1000.
+        texTR.DrawLatexNDC(0.89,0.95, "#bf{"+str(lumi_for_text)+" fb^{-1} (13 TeV)}")
     # ----------------------------------------------------------
 
-    if makePNG: c.SaveAs(outDir+saveName+".png")
+    if makePNG:
+        c.SaveAs(outDir+saveName+".png")
+        print "Making pdf as well because we can :)"
+        c.SaveAs(outDir+saveName+".pdf")
 
     if makeROOT:
         rootName = outDir+saveName+".root"
