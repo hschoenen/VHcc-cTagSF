@@ -39,6 +39,9 @@ makeBinWtTxt = False
 CvLTxtBinning = [-1.,0,.2,.4,.6,.8,1.]
 CvBTxtBinning = [-1.,0,.2,.4,.6,.8,1.]
 
+# To comply with original and run AdaptiveFit exactly as before: set this to False
+mergeLepWithLight = False
+n_flavCats = 3 if mergeLepWithLight else 4
 
 gInpFunc = '''int getBJetIdx(ROOT::VecOps::RVec<double> DiscCvsB, int muJetIdx) {
     auto vec = DiscCvsB;
@@ -223,13 +226,24 @@ def makeHisto(dir,treeName,brName,brLabel,nbins,start,end,weightName="",selectio
             jetind = brName.split('[')[1].split(']')[0]
         else:
             jetind = "max(0.,muJet_idx)"
-        for flav, hadflav in [('c',4),('b',5),('uds',0),('lep',0)]:
+            
+        categoryTuples = [('c',4),('b',5),('uds',0)] if mergeLepWithLight else [('c',4),('b',5),('uds',0),('lep',0)]
+        
+      #  for flav, hadflav in [('c',4),('b',5),('uds',0),('lep',0)]:
+       # for flav, hadflav in [('c',4),('b',5),('uds',0)]:
+        for flav, hadflav in categoryTuples:
             flavSel = " && jet_hadronFlv[%s] == %d"%(jetind,hadflav)
-            if flav == 'uds':
-                flavSel += " && jet_isHardLep[%s] == 0"%jetind
-            elif flav == 'lep':
-                flavSel += " && jet_isHardLep[%s] == 1"%jetind
-                
+            # --> [AS: 16.09.22] don't split uds and lep
+            # if flav == 'uds':
+            #     flavSel += " && jet_isHardLep[%s] == 0"%jetind
+            # elif flav == 'lep':
+            #     flavSel += " && jet_isHardLep[%s] == 1"%jetind
+            # <-- [AS: 16.09.22]   
+            if not mergeLepWithLight:
+                if flav == 'uds':
+                    flavSel += " && jet_isHardLep[%s] == 0"%jetind
+                elif flav == 'lep':
+                    flavSel += " && jet_isHardLep[%s] == 1"%jetind
             #flavSel = " && ( (muJet_idx < 0 && jet_hadronFlv[0] == %d) || (muJet_idx >= 0 && jet_hadronFlv[muJet_idx] == %d))"%(hadflav,hadflav)
             #if flav == 'uds':
                 #flavSel += " && ( (muJet_idx < 0 && jet_isHardLep[0] == 0) || (muJet_idx >= 0 && jet_isHardLep[muJet_idx] == 0) )"
@@ -545,7 +559,10 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
         for samplist in samplesDict[sName]:
             if samplist[0].rstrip('/') not in samplesInDir: continue
             sampleUsed = True
-            sampleNames += [sName+"(c)",sName+"(b)",sName+"(uds)",sName+"(lep)"]
+            if mergeLepWithLight:
+                sampleNames += [sName+"(c)",sName+"(b)",sName+"(uds)"]
+            else:
+                sampleNames += [sName+"(c)",sName+"(b)",sName+"(uds)",sName+"(lep)"]
 
             AllSamplePaths.append(rootPath+samplist[0].rstrip('/'))
             XSecNom = samplist[1]
@@ -555,7 +572,10 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
                 elif direction == "down": XSecNom -= samplist[2]
                 else:                     raise ValueError
 
-            for i in range(4):
+            
+           # for i in range(4):
+           # for i in range(3):
+            for i in range(n_flavCats):
                 XSecNomTemp = XSecNom
                 if sName == modprocName and i == modflavnum:
                     modfrac = modXSecFracs[(modprocName,modflav)]
@@ -569,7 +589,8 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
             colours.append(col)
             colours.append(col-9)
             colours.append(col+2)
-            colours.append(col-10)
+            if not mergeLepWithLight:
+                colours.append(col-5) # was -10
 
     AllSamplePaths = [i.rstrip('/')+pathSuff for i in AllSamplePaths]
 
@@ -663,7 +684,8 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
             flName = dir.split('/')[-1]
             print "Starting with "+dir
             histo, nTot = makeHisto(dir,"Events",brName,brLabel,nbins,start,end,weightName=MCWeightName,divideByFlav=True,selections=selections,brName2D=brName2D,nbins2=nbins2,start2=start2,end2=end2,varBin1=array('d',varBin1),varBin2=array('d',varBin2),getSFUnc=getSFUnc)
-            for idx in range(4):
+            #for idx in range(4):
+            for idx in range(n_flavCats):
                 allHists.append(histo[idx].Clone())
                 integrals.append(nTot)
                 histsToFlMap.append(flName)
@@ -746,18 +768,20 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
 
     # Colour and legend
     legTopMargin = 0.90 - int(dataset=="" or noRatio)*0.04
-    legend = ROOT.TLegend(0.15, 0.7, 0.89, legTopMargin,"") #,"brNDC"
+    legend = ROOT.TLegend(0.15, 0.72, 0.89, legTopMargin,"") #,"brNDC"
+    # was 0.15, 0.7, 0.89, legTopMargin before (changed y1 only)
     legend.SetFillStyle(0)
 
-    legend.SetTextSize(0.03) # was 0.02
-    legend.SetNColumns(3) # was 4
+    textSize = 0.025 if mergeLepWithLight else 0.02
+    legend.SetTextSize(textSize) # was 0.02
+    legend.SetNColumns(n_flavCats) # was 4
 
     for ind, iName in enumerate(sampleNamesSet):
         legend_name = (iName.split('(')[0].strip('Jets') if 'Jets' in iName else iName.split('(')[0]) + ' + ' + ((iName.split('(')[1]).split(')')[0] if 'uds' not in iName else 'udsg') + ' jets'
         finalHists[iName].SetFillColor(colours[ind])
-        # trying out not writing lep to legend, but keeping it everywhere else
-        if 'lep' not in iName:
-            legend.AddEntry(finalHists[iName],legend_name,"f")
+        ## trying out not writing lep to legend, but keeping it everywhere else
+        # if 'lep' not in iName:
+        legend.AddEntry(finalHists[iName],legend_name,"f")
         print iName,":", finalHists[iName].Integral()
 
     # ================= Make stack histogram ===================
@@ -916,8 +940,8 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
             histoRatio.SetTitle("")
 
             histoRatio.Draw("P e")
-            histoRatio.SetMaximum(1.49)
-            histoRatio.SetMinimum(0.51)
+            histoRatio.SetMaximum(1.45) # was 1.49
+            histoRatio.SetMinimum(0.55) # was 0.51
 
             hLine = ROOT.TLine(start,1,end,1)
             hLine.SetLineColor(ROOT.kRed)
@@ -967,7 +991,8 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
         cHist = ""
         bHist = ""
         lHist = ""
-        lepHist = ""
+        if not mergeLepWithLight:
+            lepHist = ""
         for ind, iName in enumerate(sampleNamesSet):
             outHName = iName.replace('+','plus')
             outHName = outHName.replace('->','to')
@@ -983,7 +1008,7 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
             elif iName.endswith("(uds)"):
                 if lHist == "": lHist = finalHists[iName].Clone()
                 else: lHist.Add(finalHists[iName])
-            elif iName.endswith("(lep)"):
+            elif iName.endswith("(lep)") and not mergeLepWithLight:
                 if lepHist == "": lepHist = finalHists[iName].Clone()
                 else: lepHist.Add(finalHists[iName])
         cHist.SetNameTitle("c",getbrText(brName))
@@ -992,8 +1017,9 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
         bHist.Write()
         lHist.SetNameTitle("uds",getbrText(brName))
         lHist.Write()
-        lepHist.SetNameTitle("lep",getbrText(brName))
-        lepHist.Write()
+        if not mergeLepWithLight:
+            lepHist.SetNameTitle("lep",getbrText(brName))
+            lepHist.Write()
             
         histoMC.SetNameTitle("MCSum",getbrText(brName))
         histoMC.Write()
