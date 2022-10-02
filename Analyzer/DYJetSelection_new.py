@@ -123,11 +123,11 @@ if not os.path.isfile("A_outPreds_%s.npy"%(outNo)):
         customTaggerCvsB  = np.load("outCvsB_%s.npy"%(outNo))  
         customTaggerCvsL  = np.load("outCvsL_%s.npy"%(outNo))  
         
-        customADVTaggerProbs = np.load("ADV_outPreds_%s.npy"%(outNo)) 
-        customADVTaggerBvsL  = np.load("ADV_outBvsL_%s.npy"%(outNo))  
-        customADVTaggerBvsC  = np.load("ADV_outBvsC_%s.npy"%(outNo))  
-        customADVTaggerCvsB  = np.load("ADV_outCvsB_%s.npy"%(outNo))  
-        customADVTaggerCvsL  = np.load("ADV_outCvsL_%s.npy"%(outNo))
+        customTaggerADVProbs = np.load("ADV_outPreds_%s.npy"%(outNo)) 
+        customTaggerADVBvsL  = np.load("ADV_outBvsL_%s.npy"%(outNo))  
+        customTaggerADVBvsC  = np.load("ADV_outBvsC_%s.npy"%(outNo))  
+        customTaggerADVCvsB  = np.load("ADV_outCvsB_%s.npy"%(outNo))  
+        customTaggerADVCvsL  = np.load("ADV_outCvsL_%s.npy"%(outNo))
         
     else:
         customTaggerProbs = np.load("outPreds_%s.npy"%(outNo))  # same for all weighting methods, one has to keep track of the w.m. in the runscript and the output directory there
@@ -163,6 +163,28 @@ else:
     C_customTaggerBvsC  = np.load("C_outBvsC_%s.npy"%(outNo))
     C_customTaggerCvsB  = np.load("C_outCvsB_%s.npy"%(outNo))
     C_customTaggerCvsL  = np.load("C_outCvsL_%s.npy"%(outNo))
+    
+if os.path.isfile("inputsCENTRAL_%s.npy"%(outNo)):
+    inputsCENTRAL = np.load("inputsCENTRAL_%s.npy"%(outNo))
+    interesting_inputs = [
+        'Jet_pt', 'Jet_eta',
+       # 'Jet_DeepJet_nCpfcand','Jet_DeepJet_nNpfcand', 'Jet_DeepJet_nsv','Jet_DeepCSV_trackSip2dSigAboveCharm', 'Jet_DeepCSV_trackSip3dSigAboveCharm',
+        'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_0',
+        #'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_5','Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_10','Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_24',
+        'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_0',
+        #'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_5','Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_10','Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_24',
+        'Jet_DeepJet_Npfcan_ptrel_0',
+        #'Jet_DeepJet_Npfcan_ptrel_5','Jet_DeepJet_Npfcan_ptrel_10','Jet_DeepJet_Npfcan_ptrel_24',
+        'Jet_DeepJet_Npfcan_deltaR_0',
+        #'Jet_DeepJet_Npfcan_deltaR_5','Jet_DeepJet_Npfcan_deltaR_10','Jet_DeepJet_Npfcan_deltaR_24',
+       # 'Jet_DeepJet_sv_dxy_0','Jet_DeepJet_sv_dxy_1','Jet_DeepJet_sv_dxy_2','Jet_DeepJet_sv_dxy_3',
+        'Jet_DeepJet_sv_mass_0',
+        #'Jet_DeepJet_sv_mass_1','Jet_DeepJet_sv_mass_2','Jet_DeepJet_sv_mass_3',
+        'Jet_DeepJet_sv_dxysig_0',
+        #'Jet_DeepJet_sv_dxysig_1','Jet_DeepJet_sv_dxysig_2','Jet_DeepJet_sv_dxysig_3',
+       # 'Jet_DeepJet_sv_d3d_0','Jet_DeepJet_sv_d3d_1','Jet_DeepJet_sv_d3d_2','Jet_DeepJet_sv_d3d_3',
+       # 'Jet_DeepJet_sv_d3dsig_0','Jet_DeepJet_sv_d3dsig_1','Jet_DeepJet_sv_d3dsig_2','Jet_DeepJet_sv_d3dsig_3',
+        ]
 # ==============================================================================
 
 # =============================== SF files =====================================
@@ -356,7 +378,11 @@ else:
     jet_Custom_C_BvsC     = std.vector('double')()  # new
     jet_Custom_C_CvsB     = std.vector('double')()  # new
     jet_Custom_C_CvsL     = std.vector('double')()  # new
-    
+
+if os.path.isfile("inputsCENTRAL_%s.npy"%(outNo)):    
+    for inp in interesting_inputs:
+        exec("{}_CENTRAL = std.vector('double')()".format(inp))
+
 jet_DeepFlavCvsL   = std.vector('double')()
 jet_DeepFlavCvsB   = std.vector('double')()
 jet_qgl            = std.vector('double')()
@@ -829,7 +855,11 @@ else:
         outputTree.Branch('jet_Custom_C_Prob_g'    ,jet_Custom_C_Prob_g        )  # new
     else:
         outputTree.Branch('jet_Custom_C_Prob_l'    ,jet_Custom_C_Prob_l        )  # new
-    
+
+if os.path.isfile("inputsCENTRAL_%s.npy"%(outNo)):    
+    for inp in interesting_inputs:
+        exec("outputTree.Branch('{}_CENTRAL', {}_CENTRAL )".format(inp, inp))
+        
 outputTree.Branch('jet_btagDeepFlavB'   ,jet_btagDeepFlavB      )
 outputTree.Branch('jet_btagCSVV2'   ,jet_btagCSVV2     )
 
@@ -1496,7 +1526,11 @@ for entry in inputTree:
             jet_Custom_C_Prob_g.clear()    # new
         else:
             jet_Custom_C_Prob_l.clear()    # new
-        
+    
+    if os.path.isfile("inputsCENTRAL_%s.npy"%(outNo)):    
+        for inp in interesting_inputs:
+            exec("{}_CENTRAL.clear()".format(inp))    
+            
     jet_btagCSVV2.clear()
     jet_btagDeepFlavB.clear()
 
@@ -1971,6 +2005,9 @@ for entry in inputTree:
                 jet_Custom_C_Prob_c.push_back( C_customTaggerProbs[prevSeenOrSkippedJets + i][2])  # new
                 jet_Custom_C_Prob_l.push_back( C_customTaggerProbs[prevSeenOrSkippedJets + i][3])  # new
         
+        if os.path.isfile("inputsCENTRAL_%s.npy"%(outNo)):    
+            for k,inp in enumerate(interesting_inputs):
+                exec("{}_CENTRAL.push_back(inputsCENTRAL[k][prevSeenOrSkippedJets + i])".format(inp)) 
         if isMC:
             j_hadronFlv_List.append(entry.Jet_hadronFlavour[i])
             

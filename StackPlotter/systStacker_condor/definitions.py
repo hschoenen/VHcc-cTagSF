@@ -186,29 +186,29 @@ def get_group_index_from_name(name):
         main_name = main_name[:-1]
         can_index = int(name.split('_')[-1])
         return vtx_main_names.index(main_name), can_index
-    
+
 def get_range_from_name(name):
     if name in global_names:
-        ranges = np.load('auxiliary/global_ranges.npy')[global_names.index(name)]
+        ranges = np.load('/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/global_ranges.npy')[global_names.index(name)]
     elif name in cpf_flat:
         main_name = ''
         for item in name.split('_')[:-1]:
             main_name += item + '_'
         main_name = main_name[:-1]
         can_index = int(name.split('_')[-1])
-        ranges = np.load('auxiliary/cpf_ranges.npy')[cpf_main_names.index(main_name)][can_index]
+        ranges = np.load('/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/cpf_ranges.npy')[cpf_main_names.index(main_name)][can_index]
     elif name in npf_flat:
         main_name = ''
         for item in name.split('_')[:-1]:
             main_name += item + '_'
         main_name = main_name[:-1]
         can_index = int(name.split('_')[-1])
-        ranges = np.load('auxiliary/npf_ranges.npy')[npf_main_names.index(main_name)][can_index]
+        ranges = np.load('/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/npf_ranges.npy')[npf_main_names.index(main_name)][can_index]
     elif name in vtx_flat:
         main_name = ''
         for item in name.split('_')[:-1]:
             main_name += item + '_'
         main_name = main_name[:-1]
         can_index = int(name.split('_')[-1])
-        ranges = np.load('auxiliary/vtx_ranges.npy')[vtx_main_names.index(main_name)][can_index]
+        ranges = np.load('/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/vtx_ranges.npy')[vtx_main_names.index(main_name)][can_index]
     return ranges

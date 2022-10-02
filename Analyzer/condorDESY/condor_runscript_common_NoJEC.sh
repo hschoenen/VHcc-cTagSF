@@ -33,6 +33,7 @@
 
     # if only checking with nominal samples, targets are not required (will not apply FGSM attack, i.e. don't need truth)
     TARGETSNECESSARY="no"
+    STOREINTERESTINGINPUTS="yes"
     # OLD!
 #	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_$4_minimal/
@@ -40,7 +41,7 @@
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210714_2017_$4${WM}/
 
     # NEW!
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/220824_2017_$4${WM}/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/221002_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
@@ -161,7 +162,7 @@
         echo $PATH
         echo "start with custom tagger"
 #        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
-        python3 customDeepJetTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR} ${TARGETSNECESSARY}
+        python3 customDeepJetTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR} ${TARGETSNECESSARY} ${STOREINTERESTINGINPUTS}
         
         
         

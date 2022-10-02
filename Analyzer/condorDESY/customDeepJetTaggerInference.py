@@ -39,6 +39,7 @@ save_to = ''
 #save_to = '/nfs/dust/cms/user/anstein/DeepJet/test_outputs_for_BTV_meeting_adversarial/'
 #save_to = '/nfs/dust/cms/user/anstein/DeepJet/test_outputs_for_BTV_meeting_nominal/'
 
+
 def pfnano_to_array(rootfile, isMC):
     print('Doing cleaning, isMC = ',isMC)
     
@@ -100,7 +101,7 @@ def pfnano_to_array(rootfile, isMC):
     
     number_of_features = len(feature_names)
     
-    if isMC == True:
+    if isMC == True and targets_necessary:
         # flavour definition for PFNano based on: https://indico.cern.ch/event/739204/#3-deepjet-overview
         feature_names.extend(['Jet_FlavSplit'])
         
@@ -284,7 +285,9 @@ def calcCvsL(matching_predictions):
 
 
 if __name__ == "__main__":
-    fullName, model_name, condoroutdir, targets_necessary = sys.argv[1], sys.argv[2], sys.argv[3], True if sys.argv[4]=="yes" else False
+    fullName, model_name, condoroutdir, targets_necessary, store_interesting_inputs = sys.argv[1], sys.argv[2], sys.argv[3], True if (sys.argv[4]=="yes") else False, True if (sys.argv[5]=="yes") else False
+    
+    print(targets_necessary, store_interesting_inputs)
     
     parentDir = ""
     # default era, will be overwritten
@@ -341,7 +344,26 @@ if __name__ == "__main__":
     if targets_necessary:
         outputTargetsdir  = "outTargets_%s.npy"%(outNo)
         np.save(save_to+outputTargetsdir, targets)
-    
+    if store_interesting_inputs:
+        inputsdir  = "inputsCENTRAL_%s.npy"%(outNo)
+        interesting_arrays = np.zeros((len(interesting_inputs), n_jets))
+        for i,name in enumerate(interesting_inputs):
+            var_group = get_group(name)
+            feature_index, cand_ind = get_group_index_from_name(name)
+            if var_group == 'glob':
+                this_column = glob[:,feature_index].detach().numpy()
+            elif var_group == 'cpf':
+                this_column = cpf[:,cand_ind, feature_index].detach().numpy()
+            elif var_group == 'npf':
+                this_column = npf[:,cand_ind, feature_index].detach().numpy()
+            elif var_group == 'vtx':
+                this_column = vtx[:,cand_ind, feature_index].detach().numpy()
+            interesting_arrays[i] = this_column
+            del this_column
+        np.save(save_to+inputsdir, interesting_arrays)
+        del interesting_arrays
+        gc.collect()
+        
     # to check multiple epochs of a given weighting method at once (using always 3 epochs should make sense, as previous tests were done on raw/noise/FGSM = 3 different sets)
     if model_name.startswith('_multi_'):
         letters = ['A','B','C']  # using the same three letters all the time means that the Analyzer code does not need to be updated for every possible epoch
@@ -450,12 +472,12 @@ if __name__ == "__main__":
                     predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i)
                 elif i == n_chunks-1:
                     current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_i)
-                    np.concatenate((predictions,current_predictions))
+                    predictions = np.concatenate((predictions,current_predictions))
                     del current_predictions
                     gc.collect()
                 else:
                     current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i)
-                    np.concatenate((predictions,current_predictions))
+                    predictions = np.concatenate((predictions,current_predictions))
                     del current_predictions
                     gc.collect()
             #print(n_jets, 'matches', len(predictions))
