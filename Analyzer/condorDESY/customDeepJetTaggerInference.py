@@ -103,8 +103,11 @@ def pfnano_to_array(rootfile, isMC):
     
     if isMC == True and targets_necessary:
         # flavour definition for PFNano based on: https://indico.cern.ch/event/739204/#3-deepjet-overview
-        feature_names.extend(['Jet_FlavSplit'])
-        
+        if 'Jet_FlavSplit' in rootfile['Events'].keys():
+            feature_names.extend(['Jet_FlavSplit'])
+        else:
+            feature_names.extend(['Jet_hadronFlavour','Jet_partonFlavour','Jet_nBHadrons'])
+     
     print('Events:', rootfile['Events'].num_entries)
     
     # go through a specified number of events, and get the information (awkward-arrays) for the keys specified above
@@ -121,18 +124,35 @@ def pfnano_to_array(rootfile, isMC):
         datacolumns[featureindex] = ak.to_numpy(a)
 
     if isMC == True and targets_necessary:
-        flavsplit = ak.to_numpy(ak.flatten(data['Jet_FlavSplit'], axis=1))
-        # if the list specified below was exhaustive, the -1 would get overwritten all the time
-        #target_class = np.full_like(flavsplit, -1)                                                         # initialize
-        # but it isn't the case, there are undefined jet flavors, therefore set to something that could be used later (light)
-        target_class = np.full_like(flavsplit, 1)                                                         # initialize
-        target_class = np.where(flavsplit == 500, 0, target_class)                                                       # b
-        target_class = np.where(np.bitwise_or(flavsplit == 510, flavsplit == 511), 1, target_class)                      # bb
-        target_class = np.where(np.bitwise_or(flavsplit == 520, flavsplit == 521), 2, target_class)                      # leptonicb
-        target_class = np.where(np.bitwise_or(flavsplit == 400, flavsplit == 410, flavsplit == 411), 3, target_class)    # c
-        target_class = np.where(np.bitwise_or(flavsplit == 1, flavsplit == 2), 4, target_class)                          # uds
-        target_class = np.where(flavsplit == 0, 5, target_class)                                                         # g
-
+        if 'Jet_FlavSplit' in rootfile['Events'].keys():
+            flavsplit = ak.to_numpy(ak.flatten(data['Jet_FlavSplit'], axis=1))
+            # if the list specified below was exhaustive, the -1 would get overwritten all the time
+            #target_class = np.full_like(flavsplit, -1)                                                         # initialize
+            # but it isn't the case, there are undefined jet flavors, therefore set to something that could be used later
+            target_class = np.full_like(flavsplit, 1)                                                         # initialize
+            target_class = np.where(flavsplit == 500, 0, target_class)                                                       # b
+            target_class = np.where(np.bitwise_or(flavsplit == 510, flavsplit == 511), 1, target_class)                      # bb
+            target_class = np.where(np.bitwise_or(flavsplit == 520, flavsplit == 521), 2, target_class)                      # leptonicb
+            target_class = np.where(np.bitwise_or(flavsplit == 400, flavsplit == 410, flavsplit == 411), 3, target_class)    # c
+            target_class = np.where(np.bitwise_or(flavsplit == 1, flavsplit == 2), 4, target_class)                          # uds
+            target_class = np.where(flavsplit == 0, 5, target_class)                                                         # g
+            del flavsplit
+            gc.collect()
+        else: # backup case for samples that don't have fine grained target definition available
+            hadronFlav = ak.to_numpy(ak.flatten(data['Jet_hadronFlavour'], axis=1))
+            partonFlav = ak.to_numpy(ak.flatten(data['Jet_partonFlavour'], axis=1))
+            nBHadrons = ak.to_numpy(ak.flatten(data['Jet_nBHadrons'], axis=1))
+            target_class = np.full_like(hadronFlav, 2)                                                         # initialize
+            target_class = np.where(np.bitwise_and(hadronFlav == 5, nBHadrons == 1), 0, target_class)                        # b
+            target_class = np.where(np.bitwise_and(hadronFlav == 5, nBHadrons > 1.5), 1, target_class)                       # bb
+            #target_class = np.where(np.bitwise_or(flavsplit == 520, flavsplit == 521), 2, target_class)                     # leptonicb
+            target_class = np.where(hadronFlav == 4, 3, target_class)                                                        # c
+            target_class = np.where(np.bitwise_and(hadronFlav != 5, hadronFlav != 4), 4, target_class)                       # uds
+            target_class = np.where(np.bitwise_and(hadronFlav != 5, hadronFlav != 4, partonFlav == 21), 5, target_class)     # g
+            del hadronFlav
+            del partonFlav
+            del nBHadrons
+            gc.collect()
         datacolumns[number_of_features] = target_class
         
     datavectors = datacolumns.transpose()
@@ -185,34 +205,61 @@ def preprocess(rootfile_path, isMC):
     vtx = vtx.reshape((-1,cands_per_variable['vtx'],vars_per_candidate['vtx']))
     return glob,cpf,npf,vtx, targets
 
+def get_model(model_name, device):
+    # Done: use the DF model from external module
+    
+    if 'DeepJet_Run2' in model_name:
+        tagger = 'DF_Run2'
+        model = DeepJet_Run2(num_classes = 6)
+    elif 'DeepJetTransformer' in model_name:
+        tagger = 'DF_Transformer'
+        model = DeepJetTransformer(num_classes = 4)
+    elif 'DeepJet' in model_name:
+        tagger = 'DF'
+        model = DeepJet(num_classes = 6)
 
-def predict(glob,cpf,npf,vtx, model_name):
+    if 'nominal' in model_name:
+        modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/nominal/checkpoint_best_loss.pth'
+    elif 'adversarial_eps0p01' in model_name:
+        modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p01/checkpoint_best_loss.pth'
+    elif 'adversarial_eps0p005' in model_name:
+        modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p005/checkpoint_best_loss.pth'
+
+    checkpoint = torch.load(modelpath, map_location=torch.device(device))
+    model.load_state_dict(checkpoint["state_dict"])
+
+    model.to(device)
+    return model
+    
+def predict(glob,cpf,npf,vtx, model_name, device):
     with torch.no_grad():
-        device = torch.device("cpu")
+     #  device = torch.device("cpu")
+     #  
+     #  # Done: use the DF model from external module
+     #  if 'DeepJet_Run2' in model_name:
+     #      tagger = 'DF_Run2'
+     #      model = DeepJet_Run2(num_classes = 6)
+     #  elif 'DeepJetTransformer' in model_name:
+     #      tagger = 'DF_Transformer'
+     #      model = DeepJetTransformer(num_classes = 4)
+     #  elif 'DeepJet' in model_name:
+     #      tagger = 'DF'
+     #      model = DeepJet(num_classes = 6)
+     #  
+     #  if 'nominal' in model_name:
+     #      modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/nominal/checkpoint_best_loss.pth'
+     #  elif 'adversarial_eps0p01' in model_name:
+     #      modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p01/checkpoint_best_loss.pth'
+     #  elif 'adversarial_eps0p005' in model_name:
+     #      modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p005/checkpoint_best_loss.pth'
+
+     #  checkpoint = torch.load(modelpath, map_location=torch.device(device))
+     #  model.load_state_dict(checkpoint["state_dict"])
+
+     #  model.to(device)
         
-        # Done: use the DF model from external module
-        if 'DeepJet_Run2' in model_name:
-            tagger = 'DF_Run2'
-            model = DeepJet_Run2(num_classes = 6)
-        elif 'DeepJetTransformer' in model_name:
-            tagger = 'DF_Transformer'
-            model = DeepJetTransformer(num_classes = 4)
-        elif 'DeepJet' in model_name:
-            tagger = 'DF'
-            model = DeepJet(num_classes = 6)
+        model = get_model(model_name, device)
         
-        if 'nominal' in model_name:
-            modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/nominal/checkpoint_best_loss.pth'
-        elif 'adversarial_eps0p01' in model_name:
-            modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p01/checkpoint_best_loss.pth'
-        elif 'adversarial_eps0p005' in model_name:
-            modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p005/checkpoint_best_loss.pth'
-
-        checkpoint = torch.load(modelpath, map_location=torch.device(device))
-        model.load_state_dict(checkpoint["state_dict"])
-
-        model.to(device)
-
         #evaluate network on inputs
         model.eval()
         print('successfully loaded model and checkpoint')
@@ -327,6 +374,7 @@ if __name__ == "__main__":
         isMC = False
     print("Using channel =",channel, "; isMC:", isMC, "; era: %d"%era)
     
+    device = torch.device("cpu")
     
     # OLD: inputs, targets, scalers = preprocess(fullName, isMC)
     # OLD: inputs, targets, scalers = preprocess('infile.root', isMC)
@@ -335,6 +383,8 @@ if __name__ == "__main__":
     # if targets are not necessary, targets will default to placeholder value for all jets
     glob,cpf,npf,vtx, targets = preprocess('infile.root', isMC)
     # WIP tests
+    #glob,cpf,npf,vtx, targets = preprocess('root://dcache-cms-xrootd.desy.de:1094//store/user/anstein/PFNano/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220819_222508/0000/nano_mc_2017_UL_forWcMinimal_NANO_1.root', True)
+    #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220807_184642/0000/nano_mc2017_1-1.root', True)
     #glob,cpf,npf,vtx, targets = preprocess('~/private/pfnano_dev/CMSSW_10_6_20/src/PhysicsTools/PFNano/test/nano106Xv8_on_mini106X_2017_mc_NANO_py_NANO_AddDeepJet.root', True)
     #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DoubleMuon/Run2017B-09Aug2019_UL2017-v1_PFtestNano/220806_223005/0000/nano_data2017_1.root', isMC)
     #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220807_184642/0000/nano_mc2017_1-1.root', isMC)
@@ -346,6 +396,8 @@ if __name__ == "__main__":
         np.save(save_to+outputTargetsdir, targets)
     if store_interesting_inputs:
         inputsdir  = "inputsCENTRAL_%s.npy"%(outNo)
+        inputsdirADVADV  = "inputsADV_ADV_%s.npy"%(outNo)
+        inputsdirADVNOM  = "inputsADV_NOM_%s.npy"%(outNo)
         interesting_arrays = np.zeros((len(interesting_inputs), n_jets))
         for i,name in enumerate(interesting_inputs):
             var_group = get_group(name)
@@ -361,6 +413,10 @@ if __name__ == "__main__":
             interesting_arrays[i] = this_column
             del this_column
         np.save(save_to+inputsdir, interesting_arrays)
+        if not isMC:
+            np.save(save_to+inputsdirADVADV, interesting_arrays)
+            np.save(save_to+inputsdirADVNOM, interesting_arrays)
+            
         del interesting_arrays
         gc.collect()
         
@@ -389,14 +445,14 @@ if __name__ == "__main__":
             for i,k in enumerate(range(0,n_jets,2000)):
                 print(i,k)
                 if i == 0:
-                    predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i)
+                    predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i, device)
                 elif i == n_chunks-1:
-                    current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_i)
+                    current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_i, device)
                     np.concatenate((predictions,current_predictions))
                     del current_predictions
                     gc.collect()
                 else:
-                    current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i)
+                    current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i, device)
                     np.concatenate((predictions,current_predictions))
                     del current_predictions
                     gc.collect()
@@ -469,14 +525,14 @@ if __name__ == "__main__":
             for i,k in enumerate(range(0,n_jets,2000)):
                 print(i,k)
                 if i == 0:
-                    predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i)
+                    predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i, device)
                 elif i == n_chunks-1:
-                    current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_i)
+                    current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_i, device)
                     predictions = np.concatenate((predictions,current_predictions))
                     del current_predictions
                     gc.collect()
                 else:
-                    current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i)
+                    current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i, device)
                     predictions = np.concatenate((predictions,current_predictions))
                     del current_predictions
                     gc.collect()
@@ -532,6 +588,116 @@ if __name__ == "__main__":
             np.save(save_to+outputPredsdir, predictions)
             del predictions
             gc.collect()        
+            
+            
+            
+            
+            epsilon_factors = {
+                'glob' : torch.Tensor(np.load(epsilons_per_feature['glob']).transpose()).to(device),
+                'cpf' : torch.Tensor(np.load(epsilons_per_feature['cpf']).transpose()).to(device),
+                'npf' : torch.Tensor(np.load(epsilons_per_feature['npf']).transpose()).to(device),
+                'vtx' : torch.Tensor(np.load(epsilons_per_feature['vtx']).transpose()).to(device),
+            }
+            
+            
+            
+        # Also do attack with both models, mainly to store attacked samples
+        if store_interesting_inputs and isMC:
+
+            interesting_ADV_ADV_arrays = np.zeros((len(interesting_inputs), n_jets))
+            interesting_ADV_NOM_arrays = np.zeros((len(interesting_inputs), n_jets))       
+            # Code to get distorted inputs, two different models
+            n_chunks = len(range(0,n_jets,1000))
+            #print(n_chunks)
+            for m,model_m in enumerate(models):
+                thismodel = get_model(model_m, device)
+                for i,k in enumerate(range(0,n_jets,1000)):
+                    #print(i,k)
+                    if i == 0:
+                        glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+1000],cpf[k:k+1000],npf[k:k+1000],vtx[k:k+1000]),
+                                                                                  targets=targets[k:k+1000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=-1, epsilon_factors=epsilon_factors)
+                        for i,name in enumerate(interesting_inputs):
+                            var_group = get_group(name)
+                            feature_index, cand_ind = get_group_index_from_name(name)
+                            if var_group == 'glob':
+                                this_column = glob_fgsm[:,feature_index].detach().numpy()
+                            elif var_group == 'cpf':
+                                this_column = cpf_fgsm[:,cand_ind, feature_index].detach().numpy()
+                            elif var_group == 'npf':
+                                this_column = npf_fgsm[:,cand_ind, feature_index].detach().numpy()
+                            elif var_group == 'vtx':
+                                this_column = vtx_fgsm[:,cand_ind, feature_index].detach().numpy()
+                            if 'adv' in model_m:
+                                interesting_ADV_ADV_arrays[i,k:k+1000] = this_column
+                            else:
+                                interesting_ADV_NOM_arrays[i,k:k+1000] = this_column
+                            del this_column
+                            gc.collect()
+                          #  fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
+                        del glob_fgsm
+                        del cpf_fgsm
+                        del npf_fgsm
+                        del vtx_fgsm
+                        gc.collect()
+                    elif i == n_chunks-1:
+                        glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets]),
+                                                                              targets=targets[k:n_jets],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=-1, epsilon_factors=epsilon_factors)
+                        for i,name in enumerate(interesting_inputs):
+                            var_group = get_group(name)
+                            feature_index, cand_ind = get_group_index_from_name(name)
+                            if var_group == 'glob':
+                                this_column = glob_fgsm[:,feature_index].detach().numpy()
+                            elif var_group == 'cpf':
+                                this_column = cpf_fgsm[:,cand_ind, feature_index].detach().numpy()
+                            elif var_group == 'npf':
+                                this_column = npf_fgsm[:,cand_ind, feature_index].detach().numpy()
+                            elif var_group == 'vtx':
+                                this_column = vtx_fgsm[:,cand_ind, feature_index].detach().numpy()
+                            if 'adv' in model_m:
+                                interesting_ADV_ADV_arrays[i,k:n_jets] = this_column
+                            else:
+                                interesting_ADV_NOM_arrays[i,k:n_jets] = this_column
+                            del this_column
+                            gc.collect()
+                          #  fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
+                        del glob_fgsm
+                        del cpf_fgsm
+                        del npf_fgsm
+                        del vtx_fgsm
+                        gc.collect()
+                    else:
+                        glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+1000],cpf[k:k+1000],npf[k:k+1000],vtx[k:k+1000]),
+                                                                              targets=targets[k:k+1000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=-1, epsilon_factors=epsilon_factors)
+                        for i,name in enumerate(interesting_inputs):
+                            var_group = get_group(name)
+                            feature_index, cand_ind = get_group_index_from_name(name)
+                            if var_group == 'glob':
+                                this_column = glob_fgsm[:,feature_index].detach().numpy()
+                            elif var_group == 'cpf':
+                                this_column = cpf_fgsm[:,cand_ind, feature_index].detach().numpy()
+                            elif var_group == 'npf':
+                                this_column = npf_fgsm[:,cand_ind, feature_index].detach().numpy()
+                            elif var_group == 'vtx':
+                                this_column = vtx_fgsm[:,cand_ind, feature_index].detach().numpy()
+                            if 'adv' in model_m:
+                                interesting_ADV_ADV_arrays[i,k:k+1000] = this_column
+                            else:
+                                interesting_ADV_NOM_arrays[i,k:k+1000] = this_column
+                            del this_column
+                            gc.collect()
+                          #  fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
+                        del glob_fgsm
+                        del cpf_fgsm
+                        del npf_fgsm
+                        del vtx_fgsm
+                        gc.collect()
+
+                if 'adv' in model_m:
+                    np.save(save_to+inputsdirADVADV, interesting_ADV_ADV_arrays)
+                else:
+                    np.save(save_to+inputsdirADVNOM, interesting_ADV_NOM_arrays)
+            
+            
     # just one training at a given epoch, but with Noise or FGSM attack applied to MC
     else:        
         # Can stay
@@ -563,14 +729,14 @@ if __name__ == "__main__":
         for i,k in enumerate(range(0,n_jets,2000)):
             #print(i,k)
             if i == 0:
-                predictions, thismodel = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_name)
+                predictions, thismodel = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_name, device)
             elif i == n_chunks-1:
-                current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_name)
+                current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_name, device)
                 predictions = np.concatenate((predictions,current_predictions))
                 del current_predictions
                 gc.collect()
             else:
-                current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_name)
+                current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_name, device)
                 predictions = np.concatenate((predictions,current_predictions))
                 del current_predictions
                 gc.collect()
@@ -639,13 +805,13 @@ if __name__ == "__main__":
                                                      apply_noise(cpf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
                                                      apply_noise(npf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
                                                      apply_noise(vtx[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
-                                                     model_name)
+                                                     model_name, device)
                 elif i == n_chunks-1:
                     current_noise_preds, _ = predict(apply_noise(glob[k:n_jets],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
                                                      apply_noise(cpf[k:n_jets], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
                                                      apply_noise(npf[k:n_jets], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
                                                      apply_noise(vtx[k:n_jets], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
-                                                     model_name)
+                                                     model_name, device)
                     noise_preds = np.concatenate((noise_preds,current_noise_preds))
                     del current_noise_preds
                     gc.collect()
@@ -654,7 +820,7 @@ if __name__ == "__main__":
                                                      apply_noise(cpf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
                                                      apply_noise(npf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
                                                      apply_noise(vtx[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
-                                                     model_name)
+                                                     model_name, device)
                     noise_preds = np.concatenate((noise_preds,current_noise_preds))
                     del current_noise_preds
                     gc.collect()
@@ -718,7 +884,7 @@ if __name__ == "__main__":
                 if i == 0:
                     glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+1000],cpf[k:k+1000],npf[k:k+1000],vtx[k:k+1000]),
                                                                           targets=targets[k:k+1000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
-                    fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
+                    fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name, device)
                     del glob_fgsm
                     del cpf_fgsm
                     del npf_fgsm
@@ -727,7 +893,7 @@ if __name__ == "__main__":
                 elif i == n_chunks-1:
                     glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets]),
                                                                           targets=targets[k:n_jets],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
-                    current_fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
+                    current_fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name, device)
                     del glob_fgsm
                     del cpf_fgsm
                     del npf_fgsm
@@ -739,7 +905,7 @@ if __name__ == "__main__":
                 else:
                     glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+1000],cpf[k:k+1000],npf[k:k+1000],vtx[k:k+1000]),
                                                                           targets=targets[k:k+1000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
-                    current_fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
+                    current_fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name, device)
                     del glob_fgsm
                     del cpf_fgsm
                     del npf_fgsm

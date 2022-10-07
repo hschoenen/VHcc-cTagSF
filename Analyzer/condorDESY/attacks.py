@@ -53,7 +53,7 @@ def apply_noise(sample, magn=1e-2,offset=[0], dev=torch.device("cpu"), restrict_
 
         return xadv
 
-def fgsm_attack(epsilon=1e-2,sample=None,targets=None,thismodel=None,thiscriterion=None,reduced=True, dev=torch.device("cpu"), restrict_impact=-1):
+def fgsm_attack(epsilon=1e-2,sample=None,targets=None,thismodel=None,thiscriterion=None,reduced=True, dev=torch.device("cpu"), restrict_impact=-1, epsilon_factors=None):
     if epsilon == 0:
         return sample
 
@@ -80,11 +80,24 @@ def fgsm_attack(epsilon=1e-2,sample=None,targets=None,thismodel=None,thiscriteri
         dx_cpf = torch.sign(xadv_cpf.grad.detach())
         dx_npf = torch.sign(xadv_npf.grad.detach())
         dx_vtx = torch.sign(xadv_vtx.grad.detach())
+        
+        customGlobFactors = epsilon_factors['glob']
+        # because it's a falling spectrum, has long tail but we mostly plot (and care) about some reasonably "small" values
+        # the peak is towards ~30
+        customGlobFactors[0] = 125.
+        customCpfFactors = epsilon_factors['cpf']
+        customNpfFactors = epsilon_factors['npf']
+        customVtxFactors = epsilon_factors['vtx']
+        customVtxFactors[2] = customVtxFactors[2] / 2.
+        customVtxFactors[6] = customVtxFactors[6] / 2.
+        customVtxFactors[7] = customVtxFactors[7] / 2.
+        customVtxFactors[8] = customVtxFactors[8] / 2.
+        customVtxFactors[9] = customVtxFactors[9] / 2.
 
-        xadv_glob += epsilon * dx_glob
-        xadv_cpf += epsilon * dx_cpf
-        xadv_npf += epsilon * dx_npf
-        xadv_vtx += epsilon * dx_vtx
+        xadv_glob += epsilon * customGlobFactors * dx_glob
+        xadv_cpf += epsilon * customCpfFactors * dx_cpf
+        xadv_npf += epsilon * customNpfFactors * dx_npf
+        xadv_vtx += epsilon * customVtxFactors * dx_vtx
 
         if reduced:
             for i in range(vars_per_candidate['glob']):

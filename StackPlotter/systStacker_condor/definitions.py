@@ -33,7 +33,13 @@ integer_variables_by_candidate = {
     'vtx' : [3],
     #'pxl' : ,
 }
-
+epsilons_per_feature = {
+    'glob' : '/nfs/dust/cms/user/anstein/ctag_condor/Train_DF_Run2/auxiliary/global_epsilons.npy',
+    'cpf' : '/nfs/dust/cms/user/anstein/ctag_condor/Train_DF_Run2/auxiliary/cpf_epsilons.npy',
+    'npf' : '/nfs/dust/cms/user/anstein/ctag_condor/Train_DF_Run2/auxiliary/npf_epsilons.npy',
+    'vtx' : '/nfs/dust/cms/user/anstein/ctag_condor/Train_DF_Run2/auxiliary/vtx_epsilons.npy',
+    #'pxl' : ,
+}
 # Global
 global_names = ['Jet_pt', 'Jet_eta',
                 'Jet_DeepJet_nCpfcand','Jet_DeepJet_nNpfcand',
@@ -127,7 +133,8 @@ vtx_main_names = ['Jet_DeepJet_sv_pt',
 
 interesting_inputs = [
     'Jet_pt', 'Jet_eta',
-   # 'Jet_DeepJet_nCpfcand','Jet_DeepJet_nNpfcand', 'Jet_DeepJet_nsv','Jet_DeepCSV_trackSip2dSigAboveCharm', 'Jet_DeepCSV_trackSip3dSigAboveCharm',
+   # 'Jet_DeepJet_nCpfcand','Jet_DeepJet_nNpfcand', 'Jet_DeepJet_nsv',
+    'Jet_DeepCSV_trackSip2dSigAboveCharm', 'Jet_DeepCSV_trackSip3dSigAboveCharm',
     'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_0',
     #'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_5','Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_10','Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_24',
     'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_0',

@@ -168,7 +168,8 @@ if os.path.isfile("inputsCENTRAL_%s.npy"%(outNo)):
     inputsCENTRAL = np.load("inputsCENTRAL_%s.npy"%(outNo))
     interesting_inputs = [
         'Jet_pt', 'Jet_eta',
-       # 'Jet_DeepJet_nCpfcand','Jet_DeepJet_nNpfcand', 'Jet_DeepJet_nsv','Jet_DeepCSV_trackSip2dSigAboveCharm', 'Jet_DeepCSV_trackSip3dSigAboveCharm',
+       # 'Jet_DeepJet_nCpfcand','Jet_DeepJet_nNpfcand', 'Jet_DeepJet_nsv',
+        'Jet_DeepCSV_trackSip2dSigAboveCharm', 'Jet_DeepCSV_trackSip3dSigAboveCharm',
         'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_0',
         #'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_5','Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_10','Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_24',
         'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_0',
@@ -185,6 +186,9 @@ if os.path.isfile("inputsCENTRAL_%s.npy"%(outNo)):
        # 'Jet_DeepJet_sv_d3d_0','Jet_DeepJet_sv_d3d_1','Jet_DeepJet_sv_d3d_2','Jet_DeepJet_sv_d3d_3',
        # 'Jet_DeepJet_sv_d3dsig_0','Jet_DeepJet_sv_d3dsig_1','Jet_DeepJet_sv_d3dsig_2','Jet_DeepJet_sv_d3dsig_3',
         ]
+if os.path.isfile("inputsADV_NOM_%s.npy"%(outNo)):
+    inputsADVNOM = np.load("inputsADV_NOM_%s.npy"%(outNo))
+    inputsADVADV = np.load("inputsADV_ADV_%s.npy"%(outNo))
 # ==============================================================================
 
 # =============================== SF files =====================================
@@ -382,6 +386,10 @@ else:
 if os.path.isfile("inputsCENTRAL_%s.npy"%(outNo)):    
     for inp in interesting_inputs:
         exec("{}_CENTRAL = std.vector('double')()".format(inp))
+if os.path.isfile("inputsADV_NOM_%s.npy"%(outNo)):
+    for inp in interesting_inputs:
+        exec("{}_ADV_NOM = std.vector('double')()".format(inp))
+        exec("{}_ADV_ADV = std.vector('double')()".format(inp))
 
 jet_DeepFlavCvsL   = std.vector('double')()
 jet_DeepFlavCvsB   = std.vector('double')()
@@ -859,6 +867,10 @@ else:
 if os.path.isfile("inputsCENTRAL_%s.npy"%(outNo)):    
     for inp in interesting_inputs:
         exec("outputTree.Branch('{}_CENTRAL', {}_CENTRAL )".format(inp, inp))
+if os.path.isfile("inputsADV_NOM_%s.npy"%(outNo)):
+    for inp in interesting_inputs:
+        exec("outputTree.Branch('{}_ADV_NOM', {}_ADV_NOM )".format(inp, inp))
+        exec("outputTree.Branch('{}_ADV_ADV', {}_ADV_ADV )".format(inp, inp))
         
 outputTree.Branch('jet_btagDeepFlavB'   ,jet_btagDeepFlavB      )
 outputTree.Branch('jet_btagCSVV2'   ,jet_btagCSVV2     )
@@ -1530,6 +1542,10 @@ for entry in inputTree:
     if os.path.isfile("inputsCENTRAL_%s.npy"%(outNo)):    
         for inp in interesting_inputs:
             exec("{}_CENTRAL.clear()".format(inp))    
+    if os.path.isfile("inputsADV_NOM_%s.npy"%(outNo)):
+        for inp in interesting_inputs:
+            exec("{}_ADV_NOM.clear()".format(inp))    
+            exec("{}_ADV_ADV.clear()".format(inp))    
             
     jet_btagCSVV2.clear()
     jet_btagDeepFlavB.clear()
@@ -2008,6 +2024,10 @@ for entry in inputTree:
         if os.path.isfile("inputsCENTRAL_%s.npy"%(outNo)):    
             for k,inp in enumerate(interesting_inputs):
                 exec("{}_CENTRAL.push_back(inputsCENTRAL[k][prevSeenOrSkippedJets + i])".format(inp)) 
+        if os.path.isfile("inputsADV_NOM_%s.npy"%(outNo)):
+            for k,inp in enumerate(interesting_inputs):
+                exec("{}_ADV_NOM.push_back(inputsADVNOM[k][prevSeenOrSkippedJets + i])".format(inp)) 
+                exec("{}_ADV_ADV.push_back(inputsADVADV[k][prevSeenOrSkippedJets + i])".format(inp)) 
         if isMC:
             j_hadronFlv_List.append(entry.Jet_hadronFlavour[i])
             

@@ -10,9 +10,9 @@ outDir = "output_2017_PFNano" #"190928_2017"
 # WcPath = "/nfs/dust/cms/user/spmondal/ctag_condor/200109_all_2018_Wc/"
 
 # 2017
-DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/220808_2017_DY_DeepJet_Run2_adversarial_eps0p01/"
+#DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/220808_2017_DY_DeepJet_Run2_adversarial_eps0p01/"
 #DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/220810_2017_DY_DeepJet_Run2_nominal/"
-
+DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/221005_2017_DY_DeepJet_Run2_COMPARE/"
 #TTPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190924_final_2017_TT/"
 #WcPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190924_final_2017_Wc/"
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_Wc_minimal/"
@@ -20,7 +20,8 @@ DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/220808_2017_DY_DeepJet_Run2_adv
 
 # now preliminary stuff available:
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/220824_2017_Wc_DeepJet_Run2_nominal/"
-WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/220823_2017_Wc_DeepJet_Run2_adversarial_eps0p01/"
+#WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/220823_2017_Wc_DeepJet_Run2_adversarial_eps0p01/"
+WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/221005_2017_Wc_DeepJet_Run2_COMPARE/"
 
 # 2016
 #DYPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190621_2016_DY/"
@@ -55,7 +56,7 @@ SFhistSuff = [""] #"_ValuesSystOnlyUp","_ValuesSystOnlyDown"]   # "" for nominal
 
 plotExtra = False
 plotsysts = False
-plotBinSlices = True  # needed if one wants to derive SFs later
+plotBinSlices = False #True  # needed if one wants to derive SFs later
 validateSFs = False
 addsel = '' #'&& jet_CvsL[max(0.,muJet_idx)] > 0.8 && jet_CvsB[max(0.,muJet_idx)] > 0.1'
  #'&& jet_Pt[max(0.,muJet_idx)] > 80 && jet_Pt[max(0.,muJet_idx)] < 10000'
@@ -78,8 +79,19 @@ plot2D = False
 outDir = outDir.rstrip('/')
 
 interesting_feature = 'Jet_pt'
+# can be any of 'Jet_pt', 0, 250
+#               'Jet_eta',
+#               'Jet_DeepCSV_trackSip2dSigAboveCharm', 
+#               'Jet_DeepCSV_trackSip3dSigAboveCharm',
+#               'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_0',
+#               'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_0', 0, 10
+#               'Jet_DeepJet_Npfcan_ptrel_0',
+#               'Jet_DeepJet_Npfcan_deltaR_0',
+#               'Jet_DeepJet_sv_mass_0', 0, 8
+#               'Jet_DeepJet_sv_dxysig_0', 0, 15
 interesting_ranges = get_range_from_name(interesting_feature)
-interesting_feature_LEFT_BOUND,interesting_feature_RIGHT_BOUND = str(interesting_ranges[0]) , str(interesting_ranges[1])
+#interesting_feature_LEFT_BOUND,interesting_feature_RIGHT_BOUND = str(interesting_ranges[0]) , str(interesting_ranges[1])
+interesting_feature_LEFT_BOUND,interesting_feature_RIGHT_BOUND = str(0) , str(250)
 #print(interesting_feature, interesting_feature_LEFT_BOUND, interesting_feature_RIGHT_BOUND)
 
 def applyCuts(ln,reg=""):
@@ -329,8 +341,8 @@ plot1D = f'''
      
      # Interesting inputs
      # Central values
-        "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
-        "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+       # "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+       # "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
         "{interesting_feature}_CENTRAL[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
      
      # Attacked with FGSM created for nominal model

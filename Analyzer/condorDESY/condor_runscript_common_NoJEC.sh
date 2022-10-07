@@ -32,7 +32,7 @@
 #    WM="_multi_nominal_5,15,30"
 
     # if only checking with nominal samples, targets are not required (will not apply FGSM attack, i.e. don't need truth)
-    TARGETSNECESSARY="no"
+    TARGETSNECESSARY="yes"
     STOREINTERESTINGINPUTS="yes"
     # OLD!
 #	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
@@ -41,7 +41,7 @@
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210714_2017_$4${WM}/
 
     # NEW!
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/221002_2017_$4${WM}/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/221007_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1

@@ -14,6 +14,6 @@ Request_Memory = 6GB
 on_exit_hold = (ExitBySignal == True) || (ExitStatus != 0) || (ExitCode != 0)
 
 
-queue SEL,INFILE from cmdList_sim_DY_PFNanoDeepJetINPUTS.txt
+queue SEL,INFILE from cmdList_data_DY_PFNanoDeepJetINPUTS_for_testing.txt
 
 
