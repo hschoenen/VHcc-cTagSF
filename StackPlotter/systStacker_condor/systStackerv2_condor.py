@@ -12,7 +12,7 @@ outDir = "output_2017_PFNano" #"190928_2017"
 # 2017
 #DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/220808_2017_DY_DeepJet_Run2_adversarial_eps0p01/"
 #DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/220810_2017_DY_DeepJet_Run2_nominal/"
-DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/221005_2017_DY_DeepJet_Run2_COMPARE/"
+DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/221010_2017_DY_DeepJet_Run2_COMPARE/"
 #TTPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190924_final_2017_TT/"
 #WcPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190924_final_2017_Wc/"
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_Wc_minimal/"
@@ -21,7 +21,7 @@ DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/221005_2017_DY_DeepJet_Run2_COM
 # now preliminary stuff available:
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/220824_2017_Wc_DeepJet_Run2_nominal/"
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/220823_2017_Wc_DeepJet_Run2_adversarial_eps0p01/"
-WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/221005_2017_Wc_DeepJet_Run2_COMPARE/"
+WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/221010_2017_Wc_DeepJet_Run2_COMPARE/"
 
 # 2016
 #DYPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190621_2016_DY/"
@@ -301,7 +301,7 @@ plot1D = f'''
           # CUSTOM NEW TAGGER WITH ADVERSARIAL TRAINING APPLIED
          
    #     "jet_CustomADVCvsL[muJet_idx]",r"DeepJet (Adversarial Training) CvsL",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
-        "jet_CustomADVCvsB[muJet_idx]",r"DeepJet (Adversarial Training) CvsB",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVCvsB[muJet_idx]",r"DeepJet (Adversarial Training) CvsB",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
    #     "jet_CustomADVCvsL[muJet_idx]",r"DeepJet (Adversarial Training) CvsL",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
    #     "jet_CustomADVCvsB[muJet_idx]",r"DeepJet (Adversarial Training) CvsB",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
    #  #   "jet_CustomADVCvsL[0]",r"DeepJet (Adversarial Training) CvsL",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
@@ -341,19 +341,19 @@ plot1D = f'''
      
      # Interesting inputs
      # Central values
-       # "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
-       # "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
-       # "{interesting_feature}_CENTRAL[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+     #   "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+     #   "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+     #   "{interesting_feature}_CENTRAL[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
      
      # Attacked with FGSM created for nominal model
-      #  "{interesting_feature}_NOM_ATT[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
-      #  "{interesting_feature}_NOM_ATT[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
-      #  "{interesting_feature}_NOM_ATT[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+        "{interesting_feature}_ADV_NOM[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+        "{interesting_feature}_ADV_NOM[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+        "{interesting_feature}_ADV_NOM[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
      
      # Attacked with FGSM created for adversarial model
-      #  "{interesting_feature}_ADV_ATT[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
-      #  "{interesting_feature}_ADV_ATT[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
-      #  "{interesting_feature}_ADV_ATT[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+        "{interesting_feature}_ADV_ADV[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+        "{interesting_feature}_ADV_ADV[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+        "{interesting_feature}_ADV_ADV[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
      
             
       #  "jet_CustomNoiseCvsL[muJet_idx]",r"Jet CustomNoise CvsL (#mu)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT

@@ -262,7 +262,7 @@ def predict(glob,cpf,npf,vtx, model_name, device):
         
         #evaluate network on inputs
         model.eval()
-        print('successfully loaded model and checkpoint')
+        #print('successfully loaded model and checkpoint')
         # note: unlike most other models, the pytorch version of DeepJet does not output "probabilities", but the last step needs to be applied on top of the logits
         return nn.Softmax(dim=1)(model(glob,cpf,npf,vtx)).detach().numpy(), model
 
@@ -391,6 +391,9 @@ if __name__ == "__main__":
     #sys.exit()
     n_jets = len(targets)
     
+    # activate this to debug with small set of jets
+    #n_jets = 3000
+    
     if targets_necessary:
         outputTargetsdir  = "outTargets_%s.npy"%(outNo)
         np.save(save_to+outputTargetsdir, targets)
@@ -400,6 +403,7 @@ if __name__ == "__main__":
         inputsdirADVNOM  = "inputsADV_NOM_%s.npy"%(outNo)
         interesting_arrays = np.zeros((len(interesting_inputs), n_jets))
         for i,name in enumerate(interesting_inputs):
+            #continue
             var_group = get_group(name)
             feature_index, cand_ind = get_group_index_from_name(name)
             if var_group == 'glob':
@@ -414,8 +418,8 @@ if __name__ == "__main__":
             del this_column
         np.save(save_to+inputsdir, interesting_arrays)
         if not isMC:
-            np.save(save_to+inputsdirADVADV, interesting_arrays)
             np.save(save_to+inputsdirADVNOM, interesting_arrays)
+            np.save(save_to+inputsdirADVADV, interesting_arrays)
             
         del interesting_arrays
         gc.collect()
@@ -443,7 +447,7 @@ if __name__ == "__main__":
             n_chunks = len(range(0,n_jets,2000))
             #print(n_chunks)
             for i,k in enumerate(range(0,n_jets,2000)):
-                print(i,k)
+                #print(i,k)
                 if i == 0:
                     predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i, device)
                 elif i == n_chunks-1:
@@ -523,7 +527,7 @@ if __name__ == "__main__":
             n_chunks = len(range(0,n_jets,2000))
             #print(n_chunks)
             for i,k in enumerate(range(0,n_jets,2000)):
-                print(i,k)
+                #print(i,k)
                 if i == 0:
                     predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i, device)
                 elif i == n_chunks-1:
@@ -590,8 +594,9 @@ if __name__ == "__main__":
             gc.collect()        
             
             
-            
-            
+        # Also do attack with both models, mainly to store attacked samples
+        if store_interesting_inputs and isMC:
+
             epsilon_factors = {
                 'glob' : torch.Tensor(np.load(epsilons_per_feature['glob']).transpose()).to(device),
                 'cpf' : torch.Tensor(np.load(epsilons_per_feature['cpf']).transpose()).to(device),
@@ -599,23 +604,19 @@ if __name__ == "__main__":
                 'vtx' : torch.Tensor(np.load(epsilons_per_feature['vtx']).transpose()).to(device),
             }
             
-            
-            
-        # Also do attack with both models, mainly to store attacked samples
-        if store_interesting_inputs and isMC:
-
             interesting_ADV_ADV_arrays = np.zeros((len(interesting_inputs), n_jets))
             interesting_ADV_NOM_arrays = np.zeros((len(interesting_inputs), n_jets))       
             # Code to get distorted inputs, two different models
-            n_chunks = len(range(0,n_jets,1000))
+            n_chunks = len(range(0,n_jets,2000))
             #print(n_chunks)
             for m,model_m in enumerate(models):
+                print('Will apply attack to MC, with FGSM targeted to disturb', model_m)
                 thismodel = get_model(model_m, device)
-                for i,k in enumerate(range(0,n_jets,1000)):
+                for i,k in enumerate(range(0,n_jets,2000)):
                     #print(i,k)
                     if i == 0:
-                        glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+1000],cpf[k:k+1000],npf[k:k+1000],vtx[k:k+1000]),
-                                                                                  targets=targets[k:k+1000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=-1, epsilon_factors=epsilon_factors)
+                        glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000]),
+                                                                                  targets=targets[k:k+2000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=-1, epsilon_factors=epsilon_factors)
                         for i,name in enumerate(interesting_inputs):
                             var_group = get_group(name)
                             feature_index, cand_ind = get_group_index_from_name(name)
@@ -628,9 +629,9 @@ if __name__ == "__main__":
                             elif var_group == 'vtx':
                                 this_column = vtx_fgsm[:,cand_ind, feature_index].detach().numpy()
                             if 'adv' in model_m:
-                                interesting_ADV_ADV_arrays[i,k:k+1000] = this_column
+                                interesting_ADV_ADV_arrays[i,k:k+2000] = this_column
                             else:
-                                interesting_ADV_NOM_arrays[i,k:k+1000] = this_column
+                                interesting_ADV_NOM_arrays[i,k:k+2000] = this_column
                             del this_column
                             gc.collect()
                           #  fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
@@ -666,8 +667,8 @@ if __name__ == "__main__":
                         del vtx_fgsm
                         gc.collect()
                     else:
-                        glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+1000],cpf[k:k+1000],npf[k:k+1000],vtx[k:k+1000]),
-                                                                              targets=targets[k:k+1000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=-1, epsilon_factors=epsilon_factors)
+                        glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000]),
+                                                                              targets=targets[k:k+2000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=-1, epsilon_factors=epsilon_factors)
                         for i,name in enumerate(interesting_inputs):
                             var_group = get_group(name)
                             feature_index, cand_ind = get_group_index_from_name(name)
@@ -680,9 +681,9 @@ if __name__ == "__main__":
                             elif var_group == 'vtx':
                                 this_column = vtx_fgsm[:,cand_ind, feature_index].detach().numpy()
                             if 'adv' in model_m:
-                                interesting_ADV_ADV_arrays[i,k:k+1000] = this_column
+                                interesting_ADV_ADV_arrays[i,k:k+2000] = this_column
                             else:
-                                interesting_ADV_NOM_arrays[i,k:k+1000] = this_column
+                                interesting_ADV_NOM_arrays[i,k:k+2000] = this_column
                             del this_column
                             gc.collect()
                           #  fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
@@ -796,15 +797,15 @@ if __name__ == "__main__":
 
         if isMC == True:
             
-            n_chunks = len(range(0,n_jets,1000))
+            n_chunks = len(range(0,n_jets,2000))
             #print(n_chunks)
-            for i,k in enumerate(range(0,n_jets,1000)):
+            for i,k in enumerate(range(0,n_jets,2000)):
                 #print(i,k)
                 if i == 0:
-                    noise_preds, _ = predict(apply_noise(glob[k:k+1000],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
-                                                     apply_noise(cpf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
-                                                     apply_noise(npf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
-                                                     apply_noise(vtx[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
+                    noise_preds, _ = predict(apply_noise(glob[k:k+2000],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
+                                                     apply_noise(cpf[k:k+2000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
+                                                     apply_noise(npf[k:k+2000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
+                                                     apply_noise(vtx[k:k+2000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
                                                      model_name, device)
                 elif i == n_chunks-1:
                     current_noise_preds, _ = predict(apply_noise(glob[k:n_jets],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
@@ -816,10 +817,10 @@ if __name__ == "__main__":
                     del current_noise_preds
                     gc.collect()
                 else:
-                    current_noise_preds, _ = predict(apply_noise(glob[k:k+1000],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
-                                                     apply_noise(cpf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
-                                                     apply_noise(npf[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
-                                                     apply_noise(vtx[k:k+1000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
+                    current_noise_preds, _ = predict(apply_noise(glob[k:k+2000],magn=1e-2,offset=[0],restrict_impact=0.2,var_group='glob'),
+                                                     apply_noise(cpf[k:k+2000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='cpf'),
+                                                     apply_noise(npf[k:k+2000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='npf'),
+                                                     apply_noise(vtx[k:k+2000], magn=1e-2,offset=[0],restrict_impact=0.2,var_group='vtx'),
                                                      model_name, device)
                     noise_preds = np.concatenate((noise_preds,current_noise_preds))
                     del current_noise_preds
@@ -877,13 +878,13 @@ if __name__ == "__main__":
 
             #sys.exit()
             
-            n_chunks = len(range(0,n_jets,1000))
+            n_chunks = len(range(0,n_jets,2000))
             #print(n_chunks)
-            for i,k in enumerate(range(0,n_jets,1000)):
+            for i,k in enumerate(range(0,n_jets,2000)):
                 #print(i,k)
                 if i == 0:
-                    glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+1000],cpf[k:k+1000],npf[k:k+1000],vtx[k:k+1000]),
-                                                                          targets=targets[k:k+1000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
+                    glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000]),
+                                                                          targets=targets[k:k+2000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
                     fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name, device)
                     del glob_fgsm
                     del cpf_fgsm
@@ -903,8 +904,8 @@ if __name__ == "__main__":
                     del current_fgsm_preds
                     gc.collect()
                 else:
-                    glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+1000],cpf[k:k+1000],npf[k:k+1000],vtx[k:k+1000]),
-                                                                          targets=targets[k:k+1000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
+                    glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm = fgsm_attack(epsilon=1e-2,sample=(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000]),
+                                                                          targets=targets[k:k+2000],thismodel=thismodel,thiscriterion=cross_entropy,reduced=True,restrict_impact=0.2)
                     current_fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name, device)
                     del glob_fgsm
                     del cpf_fgsm

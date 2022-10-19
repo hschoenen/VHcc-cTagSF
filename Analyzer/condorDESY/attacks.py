@@ -88,11 +88,11 @@ def fgsm_attack(epsilon=1e-2,sample=None,targets=None,thismodel=None,thiscriteri
         customCpfFactors = epsilon_factors['cpf']
         customNpfFactors = epsilon_factors['npf']
         customVtxFactors = epsilon_factors['vtx']
-        customVtxFactors[2] = customVtxFactors[2] / 2.
-        customVtxFactors[6] = customVtxFactors[6] / 2.
-        customVtxFactors[7] = customVtxFactors[7] / 2.
-        customVtxFactors[8] = customVtxFactors[8] / 2.
-        customVtxFactors[9] = customVtxFactors[9] / 2.
+        customVtxFactors[:,2] = customVtxFactors[:,2] / 2.
+        customVtxFactors[:,6] = customVtxFactors[:,6] / 2.
+        customVtxFactors[:,7] = customVtxFactors[:,7] / 2.
+        customVtxFactors[:,8] = customVtxFactors[:,8] / 2.
+        customVtxFactors[:,9] = customVtxFactors[:,9] / 2.
 
         xadv_glob += epsilon * customGlobFactors * dx_glob
         xadv_cpf += epsilon * customCpfFactors * dx_cpf
