@@ -12,7 +12,8 @@ outDir = "output_2017_PFNano" #"190928_2017"
 # 2017
 #DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/220808_2017_DY_DeepJet_Run2_adversarial_eps0p01/"
 #DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/220810_2017_DY_DeepJet_Run2_nominal/"
-DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/221019_2017_DY_DeepJet_Run2_COMPARE/"
+#DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/2211213_2017_DY_DeepJet_Run2_COMPARESHARPNESSAWARE/"
+DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/221227_2017_DY_ParT_COMPARE/"
 #TTPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190924_final_2017_TT/"
 #WcPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190924_final_2017_Wc/"
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_Wc_minimal/"
@@ -21,7 +22,8 @@ DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/221019_2017_DY_DeepJet_Run2_COM
 # now preliminary stuff available:
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/220824_2017_Wc_DeepJet_Run2_nominal/"
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/220823_2017_Wc_DeepJet_Run2_adversarial_eps0p01/"
-WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/221019_2017_Wc_DeepJet_Run2_COMPARE/"
+#WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/2211213_2017_Wc_DeepJet_Run2_COMPARESHARPNESSAWARE/" # NOTE: ToDo!!! does not exist yet
+WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/221227_2017_DY_ParT_COMPARE/" # NOTE: ToDo!!! does not exist yet
 
 # 2016
 #DYPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190621_2016_DY/"
@@ -68,7 +70,7 @@ muBiasTestIndex = '(muJet_idx==0?1:0)'
 nBinDisc = 60  # was 30 before, now using 60 to be consistent with previous runs (that also plotted the bin slices and therefore used 60 bins)
 if plotBinSlices: nBinDisc = 60 
 '''
-nBinDisc = 20  # back to 30 for the moment, to account for low stats with stat. fluctuations for Wc & TTSEMI sel, 
+nBinDisc = 30  # back to 30 for the moment, to account for low stats with stat. fluctuations for Wc & TTSEMI sel, 
 # to be revisited once all crab jobs finished
 if plotBinSlices: nBinDisc = 30 # 30 is anyway used for BTV-20-001, so should be fine
 
@@ -339,21 +341,190 @@ plot1D = f'''
    #  #   "jet_CustomADVProb_g[0]",r"DeepJet (Adversarial Training) P(g)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
      
      
+     
+     
+     # GSAM (Sharpness aware training by Alexandre)
+     # Variant 1
+     
+   #      "jet_CustomCvsL[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) CvsL",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #      "jet_CustomCvsB[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) CvsB",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #      "jet_CustomCvsL[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) CvsL",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #      "jet_CustomCvsB[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) CvsB",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #      "jet_CustomCvsL[0]",r"DeepJet (Sharpness-aware Training 1) CvsL",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #      "jet_CustomCvsB[0]",r"DeepJet (Sharpness-aware Training 1) CvsB",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #    #  
+   #      "jet_CustomBvsL[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) BvsL",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #  #    "jet_CustomBvsC[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) BvsC",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #      "jet_CustomBvsL[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) BvsL",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #  #    "jet_CustomBvsC[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) BvsC",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #      "jet_CustomBvsL[0]",r"DeepJet (Sharpness-aware Training 1) BvsL",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #      "jet_CustomBvsC[0]",r"DeepJet (Sharpness-aware Training 1) BvsC",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #    #
+   #   #   "jet_CustomProb_b[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(b)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #   #   "jet_CustomProb_b[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(b)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomProb_b[0]",r"DeepJet (Sharpness-aware Training 1) P(b)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #    #
+   #   #   "jet_CustomProb_bb[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(bb)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #   #   "jet_CustomProb_bb[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(bb)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomProb_bb[0]",r"DeepJet (Sharpness-aware Training 1) P(bb)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #    #
+   #   #   "jet_CustomProb_lepb[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(lepb)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #   #   "jet_CustomProb_lepb[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(lepb)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomProb_lepb[0]",r"DeepJet (Sharpness-aware Training 1) P(lepb)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #    #
+   #   #   "jet_CustomProb_c[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(c)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #   #   "jet_CustomProb_c[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(c)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomProb_c[0]",r"DeepJet (Sharpness-aware Training 1) P(c)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #    #
+   #   #   "jet_CustomProb_uds[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(uds)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #   #   "jet_CustomProb_uds[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(uds)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomProb_uds[0]",r"DeepJet (Sharpness-aware Training 1) P(uds)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #    #
+   #   #   "jet_CustomProb_g[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(g)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #   #   "jet_CustomProb_g[muJet_idx]",r"DeepJet (Sharpness-aware Training 1) P(g)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomProb_g[0]",r"DeepJet (Sharpness-aware Training 1) P(g)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   
+   
+     # Variant 2
+     
+   #     "jet_CustomADVCvsL[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) CvsL",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVCvsB[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) CvsB",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVCvsL[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) CvsL",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #     "jet_CustomADVCvsB[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) CvsB",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomADVCvsL[0]",r"DeepJet (Sharpness-aware Training 2) CvsL",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   "jet_CustomADVCvsB[0]",r"DeepJet (Sharpness-aware Training 2) CvsB",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #  
+   #     "jet_CustomADVBvsL[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) BvsL",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVBvsC[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) BvsC",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVBvsL[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) BvsL",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #     "jet_CustomADVBvsC[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) BvsC",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomADVBvsL[0]",r"DeepJet (Sharpness-aware Training 2) BvsL",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   "jet_CustomADVBvsC[0]",r"DeepJet (Sharpness-aware Training 2) BvsC",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_b[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(b)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_b[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(b)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomADVProb_b[0]",r"DeepJet (Sharpness-aware Training 2) P(b)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_bb[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(bb)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_bb[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(bb)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomADVProb_bb[0]",r"DeepJet (Sharpness-aware Training 2) P(bb)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_lepb[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(lepb)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_lepb[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(lepb)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomADVProb_lepb[0]",r"DeepJet (Sharpness-aware Training 2) P(lepb)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_c[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(c)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_c[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(c)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomADVProb_c[0]",r"DeepJet (Sharpness-aware Training 2) P(c)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_uds[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(uds)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_uds[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(uds)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomADVProb_uds[0]",r"DeepJet (Sharpness-aware Training 2) P(uds)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_g[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(g)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_g[muJet_idx]",r"DeepJet (Sharpness-aware Training 2) P(g)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #   "jet_CustomADVProb_g[0]",r"DeepJet (Sharpness-aware Training 2) P(g)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+     
+     
+     
+     # ParT Nominal
+     
+   #     "jet_CustomCvsL[muJet_idx]",r"ParT (Nominal Training) CvsL",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomCvsB[muJet_idx]",r"ParT (Nominal Training) CvsB",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomCvsL[muJet_idx]",r"ParT (Nominal Training) CvsL",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #     "jet_CustomCvsB[muJet_idx]",r"ParT (Nominal Training) CvsB",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomCvsL[0]",r"ParT (Nominal Training) CvsL",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+      "jet_CustomCvsB[0]",r"ParT (Nominal Training) CvsB",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #  
+   #     "jet_CustomBvsL[muJet_idx]",r"ParT (Nominal Training) BvsL",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomBvsC[muJet_idx]",r"ParT (Nominal Training) BvsC",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomBvsL[muJet_idx]",r"ParT (Nominal Training) BvsL",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #     "jet_CustomBvsC[muJet_idx]",r"ParT (Nominal Training) BvsC",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomBvsL[0]",r"ParT (Nominal Training) BvsL",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+      "jet_CustomBvsC[0]",r"ParT (Nominal Training) BvsC",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomProb_b[muJet_idx]",r"ParT (Nominal Training) P(b)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomProb_b[muJet_idx]",r"ParT (Nominal Training) P(b)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomProb_b[0]",r"ParT (Nominal Training) P(b)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomProb_bb[muJet_idx]",r"ParT (Nominal Training) P(bb)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomProb_bb[muJet_idx]",r"ParT (Nominal Training) P(bb)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomProb_bb[0]",r"ParT (Nominal Training) P(bb)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomProb_lepb[muJet_idx]",r"ParT (Nominal Training) P(lepb)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomProb_lepb[muJet_idx]",r"ParT (Nominal Training) P(lepb)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomProb_lepb[0]",r"ParT (Nominal Training) P(lepb)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomProb_c[muJet_idx]",r"ParT (Nominal Training) P(c)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomProb_c[muJet_idx]",r"ParT (Nominal Training) P(c)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomProb_c[0]",r"ParT (Nominal Training) P(c)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomProb_uds[muJet_idx]",r"ParT (Nominal Training) P(uds)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomProb_uds[muJet_idx]",r"ParT (Nominal Training) P(uds)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomProb_uds[0]",r"ParT (Nominal Training) P(uds)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomProb_g[muJet_idx]",r"ParT (Nominal Training) P(g)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomProb_g[muJet_idx]",r"ParT (Nominal Training) P(g)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomProb_g[0]",r"ParT (Nominal Training) P(g)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+     
+     # ParT Adversarial
+     
+   #     "jet_CustomADVCvsL[muJet_idx]",r"ParT (Adversarial Training) CvsL",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVCvsB[muJet_idx]",r"ParT (Adversarial Training) CvsB",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVCvsL[muJet_idx]",r"ParT (Adversarial Training) CvsL",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #     "jet_CustomADVCvsB[muJet_idx]",r"ParT (Adversarial Training) CvsB",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomADVCvsL[0]",r"ParT (Adversarial Training) CvsL",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+      "jet_CustomADVCvsB[0]",r"ParT (Adversarial Training) CvsB",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #  
+   #     "jet_CustomADVBvsL[muJet_idx]",r"ParT (Adversarial Training) BvsL",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVBvsC[muJet_idx]",r"ParT (Adversarial Training) BvsC",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVBvsL[muJet_idx]",r"ParT (Adversarial Training) BvsL",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+   #     "jet_CustomADVBvsC[muJet_idx]",r"ParT (Adversarial Training) BvsC",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomADVBvsL[0]",r"ParT (Adversarial Training) BvsL",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+      "jet_CustomADVBvsC[0]",r"ParT (Adversarial Training) BvsC",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_b[muJet_idx]",r"ParT (Adversarial Training) P(b)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_b[muJet_idx]",r"ParT (Adversarial Training) P(b)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomADVProb_b[0]",r"ParT (Adversarial Training) P(b)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_bb[muJet_idx]",r"ParT (Adversarial Training) P(bb)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_bb[muJet_idx]",r"ParT (Adversarial Training) P(bb)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomADVProb_bb[0]",r"ParT (Adversarial Training) P(bb)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_lepb[muJet_idx]",r"ParT (Adversarial Training) P(lepb)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_lepb[muJet_idx]",r"ParT (Adversarial Training) P(lepb)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomADVProb_lepb[0]",r"ParT (Adversarial Training) P(lepb)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_c[muJet_idx]",r"ParT (Adversarial Training) P(c)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_c[muJet_idx]",r"ParT (Adversarial Training) P(c)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomADVProb_c[0]",r"ParT (Adversarial Training) P(c)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_uds[muJet_idx]",r"ParT (Adversarial Training) P(uds)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_uds[muJet_idx]",r"ParT (Adversarial Training) P(uds)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomADVProb_uds[0]",r"ParT (Adversarial Training) P(uds)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+   #   #
+   #     "jet_CustomADVProb_g[muJet_idx]",r"ParT (Adversarial Training) P(g)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+   #     "jet_CustomADVProb_g[muJet_idx]",r"ParT (Adversarial Training) P(g)",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+      "jet_CustomADVProb_g[0]",r"ParT (Adversarial Training) P(g)",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+     
+     
+     
+     
      # Interesting inputs
      # Central values
-        "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
-        "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
-        "{interesting_feature}_CENTRAL[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+     #   "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+     #   "{interesting_feature}_CENTRAL[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+     #   "{interesting_feature}_CENTRAL[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
      
      # Attacked with FGSM created for nominal model
-        "{interesting_feature}_ADV_NOM[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
-        "{interesting_feature}_ADV_NOM[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
-        "{interesting_feature}_ADV_NOM[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+     #   "{interesting_feature}_ADV_NOM[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+     #   "{interesting_feature}_ADV_NOM[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+     #   "{interesting_feature}_ADV_NOM[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
      
      # Attacked with FGSM created for adversarial model
-        "{interesting_feature}_ADV_ADV[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
-        "{interesting_feature}_ADV_ADV[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
-        "{interesting_feature}_ADV_ADV[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
+     #   "{interesting_feature}_ADV_ADV[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},MSEL,dataset="smu",makeROOT=True,WCWEIGHT
+     #   "{interesting_feature}_ADV_ADV[muJet_idx]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
+     #   "{interesting_feature}_ADV_ADV[0]",r"{interesting_feature}",NBINDISC,{interesting_feature_LEFT_BOUND},{interesting_feature_RIGHT_BOUND},DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
      
             
       #  "jet_CustomNoiseCvsL[muJet_idx]",r"Jet CustomNoise CvsL (#mu)",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT

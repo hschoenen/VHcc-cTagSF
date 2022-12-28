@@ -13,9 +13,12 @@ import torch.nn as nn
 from pytorch_deepjet import DeepJet
 from pytorch_deepjet_run2 import DeepJet_Run2
 from pytorch_deepjet_transformer import DeepJetTransformer
+from ParT import ParticleTransformer
 
-from definitions import *
+import definitions
 from attacks import apply_noise, fgsm_attack
+import definitions_ParT
+from attacks_ParT import first_order_attack
 
 
 
@@ -40,65 +43,167 @@ save_to = ''
 #save_to = '/nfs/dust/cms/user/anstein/DeepJet/test_outputs_for_BTV_meeting_nominal/'
 
 
-def pfnano_to_array(rootfile, isMC):
+def pfnano_to_array(rootfile, isMC, deepjet=True):
     print('Doing cleaning, isMC = ',isMC)
+    print('Is deepjet?', deepjet)
     
-    # Global
-    feature_names = ['Jet_pt', 'Jet_eta',
-                    'Jet_DeepJet_nCpfcand','Jet_DeepJet_nNpfcand',
-                    'Jet_DeepJet_nsv','Jet_DeepJet_npv',
-                    'Jet_DeepCSV_trackSumJetEtRatio',
-                    'Jet_DeepCSV_trackSumJetDeltaR',
-                    'Jet_DeepCSV_vertexCategory',
-                    'Jet_DeepCSV_trackSip2dValAboveCharm',
-                    'Jet_DeepCSV_trackSip2dSigAboveCharm',
-                    'Jet_DeepCSV_trackSip3dValAboveCharm',
-                    'Jet_DeepCSV_trackSip3dSigAboveCharm',
-                    'Jet_DeepCSV_jetNSelectedTracks',
-                    'Jet_DeepCSV_jetNTracksEtaRel'
-                    ]
+    if deepjet:
+        # Global
+        feature_names = ['Jet_pt', 'Jet_eta',
+                        'Jet_DeepJet_nCpfcand','Jet_DeepJet_nNpfcand',
+                        'Jet_DeepJet_nsv','Jet_DeepJet_npv',
+                        'Jet_DeepCSV_trackSumJetEtRatio',
+                        'Jet_DeepCSV_trackSumJetDeltaR',
+                        'Jet_DeepCSV_vertexCategory',
+                        'Jet_DeepCSV_trackSip2dValAboveCharm',
+                        'Jet_DeepCSV_trackSip2dSigAboveCharm',
+                        'Jet_DeepCSV_trackSip3dValAboveCharm',
+                        'Jet_DeepCSV_trackSip3dSigAboveCharm',
+                        'Jet_DeepCSV_jetNSelectedTracks',
+                        'Jet_DeepCSV_jetNTracksEtaRel'
+                        ]
     
-    # CPF
-    cpf = [[f'Jet_DeepJet_Cpfcan_BtagPf_trackEtaRel_{i}',
-            f'Jet_DeepJet_Cpfcan_BtagPf_trackPtRel_{i}',
-            f'Jet_DeepJet_Cpfcan_BtagPf_trackPPar_{i}',
-            f'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_{i}',
-            f'Jet_DeepJet_Cpfcan_BtagPf_trackPParRatio_{i}',
-            f'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dVal_{i}',
-            f'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_{i}',
-            f'Jet_DeepJet_Cpfcan_BtagPf_trackSip3dVal_{i}',
-            f'Jet_DeepJet_Cpfcan_BtagPf_trackSip3dSig_{i}',
-            f'Jet_DeepJet_Cpfcan_BtagPf_trackJetDistVal_{i}',
-            f'Jet_DeepJet_Cpfcan_ptrel_{i}',
-            f'Jet_DeepJet_Cpfcan_drminsv_{i}',
-            f'Jet_DeepJet_Cpfcan_VTX_ass_{i}',
-            f'Jet_DeepJet_Cpfcan_puppiw_{i}',
-            f'Jet_DeepJet_Cpfcan_chi2_{i}',
-            f'Jet_DeepJet_Cpfcan_quality_{i}'] for i in range(25)]
-    feature_names.extend([item for sublist in cpf for item in sublist])
-    # NPF
-    npf = [[f'Jet_DeepJet_Npfcan_ptrel_{i}',
-            f'Jet_DeepJet_Npfcan_deltaR_{i}',
-            f'Jet_DeepJet_Npfcan_isGamma_{i}',
-            f'Jet_DeepJet_Npfcan_HadFrac_{i}',
-            f'Jet_DeepJet_Npfcan_drminsv_{i}',
-            f'Jet_DeepJet_Npfcan_puppiw_{i}'] for i in range(25)]
-    feature_names.extend([item for sublist in npf for item in sublist])
-    # VTX
-    vtx = [[f'Jet_DeepJet_sv_pt_{i}',
-            f'Jet_DeepJet_sv_deltaR_{i}',
-            f'Jet_DeepJet_sv_mass_{i}',
-            f'Jet_DeepJet_sv_ntracks_{i}',
-            f'Jet_DeepJet_sv_chi2_{i}',
-            f'Jet_DeepJet_sv_normchi2_{i}',
-            f'Jet_DeepJet_sv_dxy_{i}',
-            f'Jet_DeepJet_sv_dxysig_{i}',
-            f'Jet_DeepJet_sv_d3d_{i}',
-            f'Jet_DeepJet_sv_d3dsig_{i}',
-            f'Jet_DeepJet_sv_costhetasvpv_{i}',
-            f'Jet_DeepJet_sv_enratio_{i}'] for i in range(4)]
-    feature_names.extend([item for sublist in vtx for item in sublist])
+        # CPF
+        cpf = [[f'Jet_DeepJet_Cpfcan_BtagPf_trackEtaRel_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackPtRel_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackPPar_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackPParRatio_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dVal_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackSip3dVal_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackSip3dSig_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackJetDistVal_{i}',
+                f'Jet_DeepJet_Cpfcan_ptrel_{i}',
+                f'Jet_DeepJet_Cpfcan_drminsv_{i}',
+                f'Jet_DeepJet_Cpfcan_VTX_ass_{i}',
+                f'Jet_DeepJet_Cpfcan_puppiw_{i}',
+                f'Jet_DeepJet_Cpfcan_chi2_{i}',
+                f'Jet_DeepJet_Cpfcan_quality_{i}'] for i in range(25)]
+        feature_names.extend([item for sublist in cpf for item in sublist])
+        # NPF
+        npf = [[f'Jet_DeepJet_Npfcan_ptrel_{i}',
+                f'Jet_DeepJet_Npfcan_deltaR_{i}',
+                f'Jet_DeepJet_Npfcan_isGamma_{i}',
+                f'Jet_DeepJet_Npfcan_HadFrac_{i}',
+                f'Jet_DeepJet_Npfcan_drminsv_{i}',
+                f'Jet_DeepJet_Npfcan_puppiw_{i}'] for i in range(25)]
+        feature_names.extend([item for sublist in npf for item in sublist])
+        # VTX
+        vtx = [[f'Jet_DeepJet_sv_pt_{i}',
+                f'Jet_DeepJet_sv_deltaR_{i}',
+                f'Jet_DeepJet_sv_mass_{i}',
+                f'Jet_DeepJet_sv_ntracks_{i}',
+                f'Jet_DeepJet_sv_chi2_{i}',
+                f'Jet_DeepJet_sv_normchi2_{i}',
+                f'Jet_DeepJet_sv_dxy_{i}',
+                f'Jet_DeepJet_sv_dxysig_{i}',
+                f'Jet_DeepJet_sv_d3d_{i}',
+                f'Jet_DeepJet_sv_d3dsig_{i}',
+                f'Jet_DeepJet_sv_costhetasvpv_{i}',
+                f'Jet_DeepJet_sv_enratio_{i}'] for i in range(4)]
+        feature_names.extend([item for sublist in vtx for item in sublist])
     
+    else: # ParT
+        # Global
+        feature_names = ['Jet_pt', 'Jet_eta',
+                        'Jet_DeepJet_nCpfcand','Jet_DeepJet_nNpfcand',
+                        'Jet_DeepJet_nsv','Jet_DeepJet_npv',
+                        'Jet_DeepCSV_trackSumJetEtRatio',
+                        'Jet_DeepCSV_trackSumJetDeltaR',
+                        'Jet_DeepCSV_vertexCategory',
+                        'Jet_DeepCSV_trackSip2dValAboveCharm',
+                        'Jet_DeepCSV_trackSip2dSigAboveCharm',
+                        'Jet_DeepCSV_trackSip3dValAboveCharm',
+                        'Jet_DeepCSV_trackSip3dSigAboveCharm',
+                        'Jet_DeepCSV_jetNSelectedTracks',
+                        'Jet_DeepCSV_jetNTracksEtaRel'
+                        ]
+    
+        # CPF
+        cpf = [[f'Jet_DeepJet_Cpfcan_BtagPf_trackEtaRel_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackPtRel_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackPPar_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackPParRatio_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dVal_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackSip3dVal_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackSip3dSig_{i}',
+                f'Jet_DeepJet_Cpfcan_BtagPf_trackJetDistVal_{i}',
+                f'Jet_DeepJet_Cpfcan_ptrel_{i}',
+                f'Jet_DeepJet_Cpfcan_drminsv_{i}',
+                f'Jet_ParT_Cpfcan_distminsv_{i}',
+                f'Jet_DeepJet_Cpfcan_VTX_ass_{i}',
+                f'Jet_DeepJet_Cpfcan_puppiw_{i}',
+                f'Jet_DeepJet_Cpfcan_chi2_{i}',
+                f'Jet_DeepJet_Cpfcan_quality_{i}'] for i in range(25)]
+        feature_names.extend([item for sublist in cpf for item in sublist])
+        # NPF
+        npf = [[f'Jet_DeepJet_Npfcan_ptrel_{i}',
+                f'Jet_ParT_Npfcan_etarel_{i}',
+                f'Jet_ParT_Npfcan_phirel_{i}',
+                f'Jet_DeepJet_Npfcan_deltaR_{i}',
+                f'Jet_DeepJet_Npfcan_isGamma_{i}',
+                f'Jet_DeepJet_Npfcan_HadFrac_{i}',
+                f'Jet_DeepJet_Npfcan_drminsv_{i}',
+                f'Jet_DeepJet_Npfcan_puppiw_{i}'] for i in range(25)]
+        feature_names.extend([item for sublist in npf for item in sublist])
+        # VTX
+        vtx = [[f'Jet_DeepJet_sv_pt_{i}',
+                f'Jet_DeepJet_sv_deltaR_{i}',
+                f'Jet_DeepJet_sv_mass_{i}',
+                f'Jet_ParT_sv_etarel_{i}',
+                f'Jet_ParT_sv_phirel_{i}',
+                f'Jet_DeepJet_sv_ntracks_{i}',
+                f'Jet_DeepJet_sv_chi2_{i}',
+                f'Jet_DeepJet_sv_normchi2_{i}',
+                f'Jet_DeepJet_sv_dxy_{i}',
+                f'Jet_DeepJet_sv_dxysig_{i}',
+                f'Jet_DeepJet_sv_d3d_{i}',
+                f'Jet_DeepJet_sv_d3dsig_{i}',
+                f'Jet_DeepJet_sv_costhetasvpv_{i}',
+                f'Jet_DeepJet_sv_enratio_{i}'] for i in range(4)] + \
+              [[f'Jet_ParT_sv_pt_4',
+                f'Jet_ParT_sv_deltaR_4',
+                f'Jet_ParT_sv_mass_4',
+                f'Jet_ParT_sv_etarel_4',
+                f'Jet_ParT_sv_phirel_4',
+                f'Jet_ParT_sv_ntracks_4',
+                f'Jet_ParT_sv_chi2_4',
+                f'Jet_ParT_sv_normchi2_4',
+                f'Jet_ParT_sv_dxy_4',
+                f'Jet_ParT_sv_dxysig_4',
+                f'Jet_ParT_sv_d3d_4',
+                f'Jet_ParT_sv_d3dsig_4',
+                f'Jet_ParT_sv_costhetasvpv_4',
+                f'Jet_ParT_sv_enratio_4']]
+        feature_names.extend([item for sublist in vtx for item in sublist])
+        
+        # CPF 4-vec
+        cpf_4v = [[f'Jet_ParT_Cpfcan_pt_{i}',
+                   f'Jet_ParT_Cpfcan_eta_{i}',
+                   f'Jet_ParT_Cpfcan_phi_{i}',
+                   f'Jet_ParT_Cpfcan_e_{i}'] for i in range(25)]
+        feature_names.extend([item for sublist in cpf_4v for item in sublist])
+        # NPF 4-vec
+        npf_4v = [[f'Jet_ParT_Npfcan_pt_{i}',
+                   f'Jet_ParT_Npfcan_eta_{i}',
+                   f'Jet_ParT_Npfcan_phi_{i}',
+                   f'Jet_ParT_Npfcan_e_{i}'] for i in range(25)]
+        feature_names.extend([item for sublist in npf_4v for item in sublist])
+        # VTX 4-vec
+        vtx_4v = [[f'Jet_DeepJet_sv_pt_{i}',
+                   f'Jet_ParT_sv_eta_{i}',
+                   f'Jet_ParT_sv_phi_{i}',
+                   f'Jet_ParT_sv_e_{i}'] for i in range(4)] + \
+                 [[f'Jet_ParT_sv_pt_4',
+                   f'Jet_ParT_sv_eta_4',
+                   f'Jet_ParT_sv_phi_4',
+                   f'Jet_ParT_sv_e_4']]
+        feature_names.extend([item for sublist in vtx_4v for item in sublist])
+        
+    #print(feature_names)
     number_of_features = len(feature_names)
     
     if isMC == True and targets_necessary:
@@ -164,7 +269,7 @@ def pfnano_to_array(rootfile, isMC):
     return datavectors
 
 
-def preprocess(rootfile_path, isMC):
+def preprocess(rootfile_path, isMC, deepjet=True):
     print('Doing starting clean/prep, isMC: ',isMC)
     #minima = np.load('/nfs/dust/cms/user/anstein/additional_files/default_value_studies_minima.npy')
     #defaults_per_variable = minima - 0.001
@@ -173,7 +278,7 @@ def preprocess(rootfile_path, isMC):
     #print(np.unique(dataset_input_target[:,-1]))
     #sys.exit()
     
-    dataset_input_target = pfnano_to_array(uproot.open(rootfile_path), isMC)
+    dataset_input_target = pfnano_to_array(uproot.open(rootfile_path), isMC, deepjet)
     
     # targets only make sense for MC,
     # but nothing 'breaks' when calling it on Data (the last column is different though, it's all Zeros, see definition above)
@@ -183,27 +288,59 @@ def preprocess(rootfile_path, isMC):
     
     del dataset_input_target
     gc.collect()
+    print(inputs[0])
+    print(len(inputs[0]))
+    if deepjet:
+        slice_glob = definitions.cands_per_variable['glob'] * definitions.vars_per_candidate['glob']
+        slice_cpf = definitions.cands_per_variable['cpf'] * definitions.vars_per_candidate['cpf']
+        slice_npf = definitions.cands_per_variable['npf'] * definitions.vars_per_candidate['npf']
+        slice_vtx = definitions.cands_per_variable['vtx'] * definitions.vars_per_candidate['vtx']
+        glob = inputs[:,0:slice_glob]
+        cpf  = inputs[:,slice_glob:slice_glob+slice_cpf]
+        npf  = inputs[:,slice_glob+slice_cpf:slice_glob+slice_cpf+slice_npf]
+        vtx  = inputs[:,slice_glob+slice_cpf+slice_npf:slice_glob+slice_cpf+slice_npf+slice_vtx]
+    else:
+        slice_glob = definitions_ParT.cands_per_variable['glob'] * definitions_ParT.vars_per_candidate['glob']
+        slice_cpf = definitions_ParT.cands_per_variable['cpf'] * definitions_ParT.vars_per_candidate['cpf']
+        slice_npf = definitions_ParT.cands_per_variable['npf'] * definitions_ParT.vars_per_candidate['npf']
+        slice_vtx = definitions_ParT.cands_per_variable['vtx'] * definitions_ParT.vars_per_candidate['vtx']
+        slice_cpf_4v = definitions_ParT.cands_per_variable['cpf_pts'] * definitions_ParT.vars_per_candidate['cpf_pts']
+        slice_npf_4v = definitions_ParT.cands_per_variable['npf_pts'] * definitions_ParT.vars_per_candidate['npf_pts']
+        slice_vtx_4v = definitions_ParT.cands_per_variable['vtx_pts'] * definitions_ParT.vars_per_candidate['vtx_pts']
+        print(slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v+slice_npf_4v+slice_vtx_4v)
     
-    
-    slice_glob = cands_per_variable['glob'] * vars_per_candidate['glob']
-    slice_cpf = cands_per_variable['cpf'] * vars_per_candidate['cpf']
-    slice_npf = cands_per_variable['npf'] * vars_per_candidate['npf']
-    slice_vtx = cands_per_variable['vtx'] * vars_per_candidate['vtx']
-    
-    glob = inputs[:,0:slice_glob]
-    cpf  = inputs[:,slice_glob:slice_glob+slice_cpf]
-    npf  = inputs[:,slice_glob+slice_cpf:slice_glob+slice_cpf+slice_npf]
-    vtx  = inputs[:,slice_glob+slice_cpf+slice_npf:slice_glob+slice_cpf+slice_npf+slice_vtx]
+        #glob = inputs[:,0:slice_glob]
+        cpf  = inputs[:,slice_glob:slice_glob+slice_cpf]
+        npf  = inputs[:,slice_glob+slice_cpf:slice_glob+slice_cpf+slice_npf]
+        vtx  = inputs[:,slice_glob+slice_cpf+slice_npf:slice_glob+slice_cpf+slice_npf+slice_vtx]
+        #cpf  = inputs[:,0:slice_cpf]
+        #npf  = inputs[:,slice_cpf:slice_cpf+slice_npf]
+        #vtx  = inputs[:,slice_cpf+slice_npf:slice_cpf+slice_npf+slice_vtx]
+        cpf_4v  = inputs[:,slice_glob+slice_cpf+slice_npf+slice_vtx:slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v]
+        npf_4v  = inputs[:,slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v:slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v+slice_npf_4v]
+        vtx_4v  = inputs[:,slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v+slice_npf_4v:slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v+slice_npf_4v+slice_vtx_4v]
 
     #print(glob.shape)
     #print(cpf.shape)
     #print(npf.shape)
     #print(vtx.shape)
     
-    cpf = cpf.reshape((-1,cands_per_variable['cpf'],vars_per_candidate['cpf']))
-    npf = npf.reshape((-1,cands_per_variable['npf'],vars_per_candidate['npf']))
-    vtx = vtx.reshape((-1,cands_per_variable['vtx'],vars_per_candidate['vtx']))
-    return glob,cpf,npf,vtx, targets
+    if deepjet:
+        cpf = cpf.reshape((-1,definitions.cands_per_variable['cpf'],definitions.vars_per_candidate['cpf']))
+        npf = npf.reshape((-1,definitions.cands_per_variable['npf'],definitions.vars_per_candidate['npf']))
+        vtx = vtx.reshape((-1,definitions.cands_per_variable['vtx'],definitions.vars_per_candidate['vtx']))
+    else:
+        cpf = cpf.reshape((-1,definitions_ParT.cands_per_variable['cpf'],definitions_ParT.vars_per_candidate['cpf']))
+        npf = npf.reshape((-1,definitions_ParT.cands_per_variable['npf'],definitions_ParT.vars_per_candidate['npf']))
+        vtx = vtx.reshape((-1,definitions_ParT.cands_per_variable['vtx'],definitions_ParT.vars_per_candidate['vtx']))
+        cpf_4v = cpf_4v.reshape((-1,definitions_ParT.cands_per_variable['cpf_pts'],definitions_ParT.vars_per_candidate['cpf_pts']))
+        npf_4v = npf_4v.reshape((-1,definitions_ParT.cands_per_variable['npf_pts'],definitions_ParT.vars_per_candidate['npf_pts']))
+        vtx_4v = vtx_4v.reshape((-1,definitions_ParT.cands_per_variable['vtx_pts'],definitions_ParT.vars_per_candidate['vtx_pts']))
+        
+    if deepjet:
+        return glob,cpf,npf,vtx, targets
+    else:
+        return cpf,npf,vtx,cpf_4v,npf_4v,vtx_4v, targets
 
 def get_model(model_name, device):
     # Done: use the DF model from external module
@@ -217,13 +354,31 @@ def get_model(model_name, device):
     elif 'DeepJet' in model_name:
         tagger = 'DF'
         model = DeepJet(num_classes = 6)
+    elif 'ParT' in model_name:
+        tagger = 'ParT'
+        model = ParticleTransformer(num_classes = 6,
+                            num_enc = 3,
+                            num_head = 8,
+                            embed_dim = 128,
+                            cpf_dim = 17,
+                            npf_dim = 8,
+                            vtx_dim = 14,
+                            for_inference = False)
 
-    if 'nominal' in model_name:
+    if 'nominal' in model_name and 'ParT' not in model_name:
         modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/nominal/checkpoint_best_loss.pth'
     elif 'adversarial_eps0p01' in model_name:
         modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p01/checkpoint_best_loss.pth'
     elif 'adversarial_eps0p005' in model_name:
         modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p005/checkpoint_best_loss.pth'
+    elif 'GSAM' in model_name and 'GSAM2' not in model_name:
+        modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/SharpnessAware/DeepJet_GSAM.pth'
+    elif 'GSAM2' in model_name:
+        modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/SharpnessAware/DeepJet_GSAM2.pth'
+    elif 'ParT' in model_name and 'ngm' not in model_name:
+        modelpath = f'/nfs/dust/cms/user/anstein/ParT/nominal/checkpoint_epoch_20.pth'
+    elif 'ParT' in model_name and 'ngm' in model_name:
+        modelpath = f'/nfs/dust/cms/user/anstein/ParT/ngm_adversarial/checkpoint_epoch_20.pth'
 
     checkpoint = torch.load(modelpath, map_location=torch.device(device))
     model.load_state_dict(checkpoint["state_dict"])
@@ -231,7 +386,7 @@ def get_model(model_name, device):
     model.to(device)
     return model
     
-def predict(glob,cpf,npf,vtx, model_name, device):
+def predict(glob,cpf,npf,vtx,cpf_4v,npf_4v,vtx_4v, model_name, device):
     with torch.no_grad():
      #  device = torch.device("cpu")
      #  
@@ -264,7 +419,10 @@ def predict(glob,cpf,npf,vtx, model_name, device):
         model.eval()
         #print('successfully loaded model and checkpoint')
         # note: unlike most other models, the pytorch version of DeepJet does not output "probabilities", but the last step needs to be applied on top of the logits
-        return nn.Softmax(dim=1)(model(glob,cpf,npf,vtx)).detach().numpy(), model
+        if 'ParT' in model_name:
+            return nn.Softmax(dim=1)(model((cpf,npf,vtx,cpf_4v,npf_4v,vtx_4v))).detach().numpy(), model
+        else:
+            return nn.Softmax(dim=1)(model(glob,cpf,npf,vtx)).detach().numpy(), model
 
 
     
@@ -346,7 +504,7 @@ if __name__ == "__main__":
     # ToDo: modify once I have my private samples ready
     #parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/"]
     #parentDirList = ["/106X_v2_17/","/106X_v2_17rsb2/","/106X_v2_17rsb3/"]
-    parentDirList = ["/nanotest_add_DeepJet/","/PFNano/"]
+    parentDirList = ["/nanotest_add_DeepJet/","/PFNano/","/RunIISummer20UL17MiniAODv2/"]
     for iParent in parentDirList:
         if iParent in fullName: parentDir = iParent
     if parentDir == "": fullName.split('/')[8]+"/"
@@ -381,14 +539,19 @@ if __name__ == "__main__":
     # Wanted, once I can start using the runscript:
     # NEW:
     # if targets are not necessary, targets will default to placeholder value for all jets
-    glob,cpf,npf,vtx, targets = preprocess('infile.root', isMC)
-    # WIP tests
-    #glob,cpf,npf,vtx, targets = preprocess('root://dcache-cms-xrootd.desy.de:1094//store/user/anstein/PFNano/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220819_222508/0000/nano_mc_2017_UL_forWcMinimal_NANO_1.root', True)
-    #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220807_184642/0000/nano_mc2017_1-1.root', True)
-    #glob,cpf,npf,vtx, targets = preprocess('~/private/pfnano_dev/CMSSW_10_6_20/src/PhysicsTools/PFNano/test/nano106Xv8_on_mini106X_2017_mc_NANO_py_NANO_AddDeepJet.root', True)
-    #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DoubleMuon/Run2017B-09Aug2019_UL2017-v1_PFtestNano/220806_223005/0000/nano_data2017_1.root', isMC)
-    #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220807_184642/0000/nano_mc2017_1-1.root', isMC)
-    #sys.exit()
+    if 'ParT' not in model_name:
+        glob,cpf,npf,vtx, targets = preprocess('infile.root', isMC)
+        #glob,cpf,npf,vtx, targets = preprocess('~/private/pfnano_dev/CMSSW_10_6_30/src/nano_mc_2017_ULv2_allPF_ParT_NANO.root', isMC)
+        # WIP tests
+        #glob,cpf,npf,vtx, targets = preprocess('root://dcache-cms-xrootd.desy.de:1094//store/user/anstein/PFNano/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220819_222508/0000/nano_mc_2017_UL_forWcMinimal_NANO_1.root', True)
+        #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220807_184642/0000/nano_mc2017_1-1.root', True)
+        #glob,cpf,npf,vtx, targets = preprocess('~/private/pfnano_dev/CMSSW_10_6_20/src/PhysicsTools/PFNano/test/nano106Xv8_on_mini106X_2017_mc_NANO_py_NANO_AddDeepJet.root', True)
+        #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DoubleMuon/Run2017B-09Aug2019_UL2017-v1_PFtestNano/220806_223005/0000/nano_data2017_1.root', isMC)
+        #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220807_184642/0000/nano_mc2017_1-1.root', isMC)
+        #sys.exit()
+    else:
+        cpf,npf,vtx,cpf_4v,npf_4v,vtx_4v, targets = preprocess('infile.root', isMC, deepjet=False)
+        #cpf,npf,vtx,cpf_4v,npf_4v,vtx_4v, targets = preprocess('~/private/pfnano_dev/CMSSW_10_6_30/src/nano_mc_2017_ULv2_allPF_ParT_NANO.root', isMC, deepjet=False)
     n_jets = len(targets)
     
     # activate this to debug with small set of jets
@@ -512,8 +675,15 @@ if __name__ == "__main__":
             del predictions
             gc.collect()
     elif 'COMPARE' in model_name:
-        models = ['_DeepJet_Run2_nominal','_DeepJet_Run2_adversarial_eps0p01']
-        short_names = ['','ADV_']
+        if 'SHARPNESSAWARE' in model_name:
+            models = ['_DeepJet_Run2_GSAM','_DeepJet_Run2_GSAM2']
+            short_names = ['','ADV_']
+        elif 'ParT' in model_name:
+            models = ['_ParT_nominal','_ParT_ngm']
+            short_names = ['','ADV_']
+        else:
+            models = ['_DeepJet_Run2_nominal','_DeepJet_Run2_adversarial_eps0p01']
+            short_names = ['','ADV_']
         print('Will run with these models:', models)
         
         for i,model_i in enumerate(models):
@@ -526,20 +696,36 @@ if __name__ == "__main__":
             # probably need to use chunks due to memory constraints here
             n_chunks = len(range(0,n_jets,2000))
             #print(n_chunks)
-            for i,k in enumerate(range(0,n_jets,2000)):
-                #print(i,k)
-                if i == 0:
-                    predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i, device)
-                elif i == n_chunks-1:
-                    current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets], model_i, device)
-                    predictions = np.concatenate((predictions,current_predictions))
-                    del current_predictions
-                    gc.collect()
-                else:
-                    current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000], model_i, device)
-                    predictions = np.concatenate((predictions,current_predictions))
-                    del current_predictions
-                    gc.collect()
+            if 'ParT' in model_name:
+                for i,k in enumerate(range(0,n_jets,2000)):
+                    #print(i,k)
+                    if i == 0:
+                        predictions, _ = predict(None,cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000],cpf_4v[k:k+2000],npf_4v[k:k+2000],vtx_4v[k:k+2000], model_i, device)
+                    elif i == n_chunks-1:
+                        current_predictions, _ = predict(None,cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets],cpf_4v[k:n_jets],npf_4v[k:n_jets],vtx_4v[k:n_jets], model_i, device)
+                        predictions = np.concatenate((predictions,current_predictions))
+                        del current_predictions
+                        gc.collect()
+                    else:
+                        current_predictions, _ = predict(None,cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000],cpf_4v[k:k+2000],npf_4v[k:k+2000],vtx_4v[k:k+2000], model_i, device)
+                        predictions = np.concatenate((predictions,current_predictions))
+                        del current_predictions
+                        gc.collect()
+            else:
+                for i,k in enumerate(range(0,n_jets,2000)):
+                    #print(i,k)
+                    if i == 0:
+                        predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000],None,None,None, model_i, device)
+                    elif i == n_chunks-1:
+                        current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets],None,None,None, model_i, device)
+                        predictions = np.concatenate((predictions,current_predictions))
+                        del current_predictions
+                        gc.collect()
+                    else:
+                        current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000],None,None,None, model_i, device)
+                        predictions = np.concatenate((predictions,current_predictions))
+                        del current_predictions
+                        gc.collect()
             #print(n_jets, 'matches', len(predictions))
             
             bvl = calcBvsL(predictions)

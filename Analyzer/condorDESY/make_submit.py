@@ -3,6 +3,7 @@ from random import random
 
 # use like that:
 # python make_submit.py filelists2017_PFNanoDeepJetINPUTS/inputs_DY_minimal DY 1
+# python make_submit.py filelists2017_PFNanoParT/inputs_DY_minimal DY 1
 
 inputdir = "inputs"
 sel = "Wc"
@@ -30,8 +31,8 @@ if for_testing == 1:
     appendix = '_for_testing'
 else:
     appendix = ''
-f2 = open("cmdList_sim_%s_PFNanoDeepJetINPUTS%s.txt" % (sel, appendix),'w')
-fDATA = open("cmdList_data_%s_PFNanoDeepJetINPUTS%s.txt" % (sel, appendix),'w')
+f2 = open("cmdList_sim_%s_PFNanoParTINPUTS%s.txt" % (sel, appendix),'w')
+fDATA = open("cmdList_data_%s_PFNanoParTINPUTS%s.txt" % (sel, appendix),'w')
 for fl in [i for i in os.listdir(inputdir) if os.path.isfile(os.path.join(inputdir,i))]:
 #  if "Single" in fl or "Double" in fl or "EGamma" in fl or "MuonEG" in fl:
     f3 = open(inputdir.rstrip('/')+"/"+fl,'r')

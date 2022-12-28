@@ -480,10 +480,10 @@ jet_muEF           = std.vector('double')()
 jet_nMuons         = std.vector('double')()
 jet_lepFiltCustom  = std.vector('double')()
 
-jet_btagCMVA       = std.vector('double')()
+# not anymore in ULv2 Jet_btagCMVA       = std.vector('double')()
 jet_btagCSVV2      = std.vector('double')()
 jet_btagDeepB      = std.vector('double')()
-jet_btagDeepC      = std.vector('double')()
+# not anymore in ULv2 jet_btagDeepC      = std.vector('double')()
 
 if not os.path.isfile("A_outPreds_%s.npy"%(outNo)):
     if os.path.isfile("ADV_outPreds_%s.npy"%(outNo)):
@@ -878,9 +878,9 @@ outputTree.Branch('jet_muEF'            ,jet_muEF      )
 outputTree.Branch('jet_nMuons'          ,jet_nMuons      )
 outputTree.Branch('jet_lepFiltCustom'   ,jet_lepFiltCustom      )
 
-outputTree.Branch('jet_btagCMVA'    ,jet_btagCMVA      )
+# not anymore in ULv2 outputTree.Branch('jet_btagCMVA'    ,jet_btagCMVA      )
 outputTree.Branch('jet_btagDeepB'   ,jet_btagDeepB      )
-outputTree.Branch('jet_btagDeepC'   ,jet_btagDeepC      )
+# not anymore in ULv2 outputTree.Branch('jet_btagDeepC'   ,jet_btagDeepC      )
 
 if not os.path.isfile("A_outPreds_%s.npy"%(outNo)):
     if os.path.isfile("ADV_outPreds_%s.npy"%(outNo)):
@@ -1603,9 +1603,9 @@ for entry in inputTree:
     jet_nMuons.clear()
     jet_lepFiltCustom.clear()
 
-    jet_btagCMVA.clear()
+    # not anymore in ULv2 Jet_btagCMVA.clear()
     jet_btagDeepB.clear()
-    jet_btagDeepC.clear()
+    # not anymore in ULv2 jet_btagDeepC.clear()
 
     if not os.path.isfile("A_outPreds_%s.npy"%(outNo)):
         if os.path.isfile("ADV_outPreds_%s.npy"%(outNo)):
@@ -2072,9 +2072,9 @@ for entry in inputTree:
         jet_nMuons.push_back(entry.Jet_nMuons[i])  # same in PFNano
         # jet_lepFiltCustom.push_back(jetFilterFlags[i])
 
-        jet_btagCMVA.push_back(entry.Jet_btagCMVA[i])  # same in PFNano
+        # not anymore in ULv2 Jet_btagCMVA.push_back(entry.Jet_btagCMVA[i])  # same in PFNano
         jet_btagDeepB.push_back(entry.Jet_btagDeepB[i])  # same in PFNano
-        jet_btagDeepC.push_back(entry.Jet_btagDeepC[i])  # same in PFNano
+        # not anymore in ULv2 jet_btagDeepC.push_back(entry.Jet_btagDeepC[i])  # same in PFNano
         jet_btagCSVV2.push_back(entry.Jet_btagCSVV2[i])  # same in PFNano
         jet_btagDeepFlavB.push_back(entry.Jet_btagDeepFlavB[i])  # same in PFNano
         # ============================================================================================================

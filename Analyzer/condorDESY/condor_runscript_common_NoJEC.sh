@@ -26,14 +26,16 @@
 #    WM="_multi_basic_5,10,100"  # example for three epochs of one weighting method
 
     # NEW! Custom ~DeepJet    
-    WM="_DeepJet_Run2_COMPARE" # does nominal and adversarial in one go
+ #   WM="_DeepJet_Run2_COMPARE" # does nominal and adversarial in one go
  #   WM="_DeepJet_Run2_adversarial_eps0p01"
  #   WM="_DeepJet_Run2_nominal"
 #    WM="_multi_nominal_5,15,30"
+ #   WM="_DeepJet_Run2_COMPARESHARPNESSAWARE" # does nominal and adversarial in one go
+    WM="_ParT_COMPARE"
 
     # if only checking with nominal samples, targets are not required (will not apply FGSM attack, i.e. don't need truth)
-    TARGETSNECESSARY="yes"
-    STOREINTERESTINGINPUTS="yes"
+    TARGETSNECESSARY="no"
+    STOREINTERESTINGINPUTS="no"
     # OLD!
 #	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_$4_minimal/
@@ -41,7 +43,7 @@
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210714_2017_$4${WM}/
 
     # NEW!
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/221019_2017_$4${WM}/
+    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/221227_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
@@ -77,7 +79,7 @@
         #cp -r ../${PYFILE} customTaggerInference.py ../nuSolutions.py ../scalefactors* $tmp_dir
         echo "copy scripts to scratch"
         # Note: for new tagger, the inference will run on already preprocessed samples
-        cp -r /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/${PYFILE} /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customDeepJetTaggerInference.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/attacks.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/definitions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/focal_loss.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_transformer.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_run2.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nuSolutions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/scalefactors* $_CONDOR_SCRATCH_DIR
+        cp -r /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/${PYFILE} /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customDeepJetTaggerInference.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/attacks.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/definitions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/focal_loss.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_transformer.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_run2.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/helpers_advertorch.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/attacks_ParT.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/definitions_ParT.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/ParT.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nuSolutions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/scalefactors* $_CONDOR_SCRATCH_DIR
         #echo "changing to tempdir (first time)"
         #cd $tmp_dir
                 
@@ -112,7 +114,7 @@
         #INPPREFIX=""
         echo "copy actual input file"
         xrdcp ${INPPREFIX}${INPFILE} ./infile.root
-        ## Did we found IP address? Use exit status of the grep command ##
+        ## Did we find IP address? Use exit status of the grep command ##
         if [ $? -eq 0 ]
         then
           echo "Success: copied file from Aachen T2."
