@@ -20,7 +20,8 @@ from focal_loss import FocalLoss, focal_loss
 
 print("Torch version =",torch.__version__)
 
-minima = np.load('/nfs/dust/cms/user/anstein/additional_files/default_value_studies_minima.npy')
+# edited to personal directory
+minima = np.load('/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/additional_files/default_value_studies_minima.npy')
 default = 0.001
 #defaults_per_variable = minima - 0.001
 defaults_per_variable = minima - default
@@ -134,7 +135,7 @@ def cleandataset(f, defaults_per_variable, isMC):
 
 def preprocess(rootfile, isMC):
     print('Doing starting clean/prep, isMC: ',isMC)
-    minima = np.load('/nfs/dust/cms/user/anstein/additional_files/default_value_studies_minima.npy')
+    minima = np.load('/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/additional_files/default_value_studies_minima.npy')
     defaults_per_variable = minima - 0.001
     dataset_input_target = cleandataset(uproot.open(rootfile), defaults_per_variable, isMC)
     print(len(dataset_input_target))
@@ -149,7 +150,7 @@ def preprocess(rootfile, isMC):
     for i in range(0,67): # use already calculated scalers (same for all files),
         # for the calculation, only train samples and only non-defaults were used
         #scaler = StandardScaler().fit(inputs[:,i][inputs[:,i]!=defaults_per_variable[i]].reshape(-1,1))
-        scaler = torch.load(f'/nfs/dust/cms/user/anstein/additional_files/scalers/scaler_{i}_with_default_{default}.pt')
+        scaler = torch.load(f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/additional_files/scalers/scaler_{i}_with_default_{default}.pt')
         inputs[:,i]   = torch.Tensor(scaler.transform(inputs[:,i].reshape(-1,1)).reshape(1,-1))
         scalers.append(scaler)
 
@@ -250,7 +251,7 @@ def predict(inputs, targets, scalers, method):
                           nn.ReLU(),
                           nn.Linear(100, 4),
                           nn.Softmax(dim=1))
-
+        
         if method == '_new':
             #allweights = compute_class_weight(
             #       'balanced',
@@ -263,7 +264,8 @@ def predict(inputs, targets, scalers, method):
             #class_weights = torch.FloatTensor(np.array([ 0.37333512, 24.65012434,  2.25474568,  1.1942229 ])).to(device)
             #criterion = nn.CrossEntropyLoss(weight=class_weights)
             criterion = nn.CrossEntropyLoss()
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_all_TT_350_epochs_v10_GPU_weighted_new_49_datasets_with_default_0.001.pt'
+            # edited to personal directory
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/model_all_TT_350_epochs_v10_GPU_weighted_new_49_datasets_with_default_0.001.pt'
 
 
         # ==========================================================================
@@ -273,11 +275,11 @@ def predict(inputs, targets, scalers, method):
 
         elif method == '_ptetaflavloss20':
             criterion = nn.CrossEntropyLoss(reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_124_epochs_v10_GPU_weighted_ptetaflavloss_20_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/model_124_epochs_v10_GPU_weighted_ptetaflavloss_20_datasets_with_default_0.001_-1.pt'
 
         elif method == '_ptetaflavloss278':
             criterion = nn.CrossEntropyLoss(reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_1_epochs_v10_GPU_weighted_ptetaflavloss_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/model_1_epochs_v10_GPU_weighted_ptetaflavloss_278_datasets_with_default_0.001_-1.pt'
 
         #
         #
@@ -295,14 +297,14 @@ def predict(inputs, targets, scalers, method):
             alpha = None  # weights are handled differently, not with the focal loss but with sample weights if wanted
             gamma = 2
             criterion = FocalLoss(alpha, gamma, reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
 
         elif method == '_flatptetaflavloss_focalloss':
             # for focal loss: parameters
             alpha = None  # weights are handled differently, not with the focal loss but with sample weights if wanted
             gamma = 2
             criterion = FocalLoss(alpha, gamma, reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_200_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/model_200_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
 
         #
         #
@@ -321,35 +323,35 @@ def predict(inputs, targets, scalers, method):
             alpha = None
             gamma = 2.0
             criterion = FocalLoss(alpha, gamma, reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_250_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/model_250_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
 
         elif method == '_flat_230_gamma2.0_alphaNone':
             # for focal loss: parameters
             alpha = None
             gamma = 2.0
             criterion = FocalLoss(alpha, gamma, reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_230_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/model_230_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_278_datasets_with_default_0.001_-1.pt'
 
         elif method == '_notflat_100_gamma20.0_alphaNone':
             # for focal loss: parameters
             alpha = None
             gamma = 20.0
             criterion = FocalLoss(alpha, gamma, reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_100_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma20.0_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/model_100_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma20.0_278_datasets_with_default_0.001_-1.pt'
 
         elif method == '_notflat_100_gamma4.0_alpha0.4,0.4,0.2,0.2':
             # for focal loss: parameters
             alpha = torch.Tensor([0.4,0.4,0.2,0.2])
             gamma = 4.0
             criterion = FocalLoss(alpha, gamma, reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_100_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma4.0_alpha0.4,0.4,0.2,0.2_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/model_100_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma4.0_alpha0.4,0.4,0.2,0.2_278_datasets_with_default_0.001_-1.pt'
 
         elif method == '_flat_200_gamma25.0_alphaNone':
             # for focal loss: parameters
             alpha = None
             gamma = 25.0
             criterion = FocalLoss(alpha, gamma, reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_200_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_gamma25.0_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/model_200_epochs_v10_GPU_weighted_flatptetaflavloss_focalloss_gamma25.0_278_datasets_with_default_0.001_-1.pt'
 
         #
         #
@@ -367,7 +369,7 @@ def predict(inputs, targets, scalers, method):
             alpha = None
             gamma = 25.0
             criterion = FocalLoss(alpha, gamma, reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/adv_tr/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_adv_tr_eps0.01_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/adv_tr/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_adv_tr_eps0.01_278_datasets_with_default_0.001_-1.pt'
             
         # only epoch 200
         elif method == '_notflat_200_gamma25.0_alphaNone':
@@ -375,7 +377,7 @@ def predict(inputs, targets, scalers, method):
             alpha = None
             gamma = 25.0
             criterion = FocalLoss(alpha, gamma, reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/basic_tr/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/basic_tr/model_200_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_278_datasets_with_default_0.001_-1.pt'
             
         
         # special cases that can handle different epochs (checkpoints)    
@@ -385,7 +387,7 @@ def predict(inputs, targets, scalers, method):
             alpha = None
             gamma = 25.0
             criterion = FocalLoss(alpha, gamma, reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/adv_tr/model_{epoch}_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_adv_tr_eps0.01_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/adv_tr/model_{epoch}_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_adv_tr_eps0.01_278_datasets_with_default_0.001_-1.pt'
             
         elif method.startswith('basic'):
             epoch = method.split('basic_')[-1]
@@ -393,7 +395,7 @@ def predict(inputs, targets, scalers, method):
             alpha = None
             gamma = 25.0
             criterion = FocalLoss(alpha, gamma, reduction='none')
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/basic_tr/model_{epoch}_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_278_datasets_with_default_0.001_-1.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/basic_tr/model_{epoch}_epochs_v10_GPU_weighted_ptetaflavloss_focalloss_gamma25.0_278_datasets_with_default_0.001_-1.pt'
             
 
         #
@@ -404,7 +406,7 @@ def predict(inputs, targets, scalers, method):
         # old
         else:
             criterion = nn.CrossEntropyLoss()
-            modelPath = f'/nfs/dust/cms/user/anstein/pretrained_models/model_all_TT_350_epochs_v10_GPU_weighted_as_is_49_datasets_with_default_0.001.pt'
+            modelPath = f'/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/pretrained_models/model_all_TT_350_epochs_v10_GPU_weighted_as_is_49_datasets_with_default_0.001.pt'
 
         checkpoint = torch.load(modelPath, map_location=torch.device(device))
         model.load_state_dict(checkpoint["model_state_dict"])

@@ -366,9 +366,11 @@ def get_model(model_name, device):
                             for_inference = False)
 
     if 'nominal' in model_name and 'ParT' not in model_name:
-        modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/nominal/checkpoint_best_loss.pth'
+        # edited to personal directory
+        modelpath = f'/nfs/dust/cms/user/hschonen/DeepJet/Train_{tagger}/nominal/checkpoint_best_loss.pth'
     elif 'adversarial_eps0p01' in model_name:
-        modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p01/checkpoint_best_loss.pth'
+        # edited to personal directory
+        modelpath = f'/nfs/dust/cms/user/hschonen/DeepJet/Train_{tagger}/fgsm/checkpoint_best_loss.pth'
     elif 'adversarial_eps0p005' in model_name:
         modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p005/checkpoint_best_loss.pth'
     elif 'GSAM' in model_name and 'GSAM2' not in model_name:
@@ -504,7 +506,8 @@ if __name__ == "__main__":
     # ToDo: modify once I have my private samples ready
     #parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/"]
     #parentDirList = ["/106X_v2_17/","/106X_v2_17rsb2/","/106X_v2_17rsb3/"]
-    parentDirList = ["/nanotest_add_DeepJet/","/PFNano/","/RunIISummer20UL17MiniAODv2/"]
+    # edited for new files
+    parentDirList = ["/nanotest_add_DeepJet/","/PFNano/","/RunIISummer20UL17MiniAODv2/","/PFNano_ParT/"]
     for iParent in parentDirList:
         if iParent in fullName: parentDir = iParent
     if parentDir == "": fullName.split('/')[8]+"/"

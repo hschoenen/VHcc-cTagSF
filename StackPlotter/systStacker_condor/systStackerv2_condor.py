@@ -1,6 +1,6 @@
 from definitions import get_range_from_name
 import sys
-sys.path.append('~/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/')
+sys.path.append('~/private/aisafety/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/')
 
 outDir = "output_2017_PFNano" #"190928_2017"
 
@@ -13,7 +13,7 @@ outDir = "output_2017_PFNano" #"190928_2017"
 #DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/220808_2017_DY_DeepJet_Run2_adversarial_eps0p01/"
 #DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/220810_2017_DY_DeepJet_Run2_nominal/"
 #DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/2211213_2017_DY_DeepJet_Run2_COMPARESHARPNESSAWARE/"
-DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/221227_2017_DY_ParT_COMPARE/"
+DYPath = "/nfs/dust/cms/user/hschonen/ctag_condor/2023_2017_DY_DeepJet_Run2_COMPARE/"
 #TTPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190924_final_2017_TT/"
 #WcPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190924_final_2017_Wc/"
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_Wc_minimal/"
@@ -23,7 +23,7 @@ DYPath = "/nfs/dust/cms/user/anstein/ctag_condor/221227_2017_DY_ParT_COMPARE/"
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/220824_2017_Wc_DeepJet_Run2_nominal/"
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/220823_2017_Wc_DeepJet_Run2_adversarial_eps0p01/"
 #WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/2211213_2017_Wc_DeepJet_Run2_COMPARESHARPNESSAWARE/" # NOTE: ToDo!!! does not exist yet
-WcPath = "/nfs/dust/cms/user/anstein/ctag_condor/221227_2017_DY_ParT_COMPARE/" # NOTE: ToDo!!! does not exist yet
+WcPath = "/nfs/dust/cms/user/hschonen/ctag_condor/2023_2017_Wc_DeepJet_Run2_COMPARE/" # NOTE: ToDo!!! does not exist yet
 
 # 2016
 #DYPath = "/nfs/dust/cms/user/spmondal/ctag_condor/190621_2016_DY/"
@@ -58,7 +58,7 @@ SFhistSuff = [""] #"_ValuesSystOnlyUp","_ValuesSystOnlyDown"]   # "" for nominal
 
 plotExtra = False
 plotsysts = False
-plotBinSlices = False #True  # needed if one wants to derive SFs later
+plotBinSlices = True #True  # needed if one wants to derive SFs later
 validateSFs = False
 addsel = '' #'&& jet_CvsL[max(0.,muJet_idx)] > 0.8 && jet_CvsB[max(0.,muJet_idx)] > 0.1'
  #'&& jet_Pt[max(0.,muJet_idx)] > 80 && jet_Pt[max(0.,muJet_idx)] < 10000'
@@ -70,9 +70,9 @@ muBiasTestIndex = '(muJet_idx==0?1:0)'
 nBinDisc = 60  # was 30 before, now using 60 to be consistent with previous runs (that also plotted the bin slices and therefore used 60 bins)
 if plotBinSlices: nBinDisc = 60 
 '''
-nBinDisc = 30  # back to 30 for the moment, to account for low stats with stat. fluctuations for Wc & TTSEMI sel, 
+nBinDisc = 60  # back to 30 for the moment, to account for low stats with stat. fluctuations for Wc & TTSEMI sel, 
 # to be revisited once all crab jobs finished
-if plotBinSlices: nBinDisc = 30 # 30 is anyway used for BTV-20-001, so should be fine
+if plotBinSlices: nBinDisc = 60 # 30 is anyway used for BTV-20-001, so should be fine
 
 plotBinnedKins = False
 normMCtodata = True # should make blue and red line in ratio overlap at exactly 1

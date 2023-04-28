@@ -28,11 +28,14 @@
     # NEW! Custom ~DeepJet    
  #   WM="_DeepJet_Run2_COMPARE" # does nominal and adversarial in one go
  #   WM="_DeepJet_Run2_adversarial_eps0p01"
- #   WM="_DeepJet_Run2_nominal"
 #    WM="_multi_nominal_5,15,30"
  #   WM="_DeepJet_Run2_COMPARESHARPNESSAWARE" # does nominal and adversarial in one go
-    WM="_ParT_COMPARE"
-
+    #WM="_ParT_COMPARE"
+    
+    # edit
+    #WM="_DeepJet_Run2_nominal"
+    WM="_DeepJet_Run2_COMPARE"
+    
     # if only checking with nominal samples, targets are not required (will not apply FGSM attack, i.e. don't need truth)
     TARGETSNECESSARY="no"
     STOREINTERESTINGINPUTS="no"
@@ -42,8 +45,8 @@
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210708_2017_$4${WM}/
 #    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210714_2017_$4${WM}/
 
-    # NEW!
-    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/221227_2017_$4${WM}/
+    # edited to personal directory
+    export OUTPUTDIR=/nfs/dust/cms/user/hschonen/ctag_condor/2023_2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
@@ -79,7 +82,8 @@
         #cp -r ../${PYFILE} customTaggerInference.py ../nuSolutions.py ../scalefactors* $tmp_dir
         echo "copy scripts to scratch"
         # Note: for new tagger, the inference will run on already preprocessed samples
-        cp -r /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/${PYFILE} /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customDeepJetTaggerInference.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/attacks.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/definitions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/focal_loss.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_transformer.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_run2.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/helpers_advertorch.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/attacks_ParT.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/definitions_ParT.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/ParT.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nuSolutions.py /afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/scalefactors* $_CONDOR_SCRATCH_DIR
+        # edited to personal directories
+        cp -r /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/${PYFILE} /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/customDeepJetTaggerInference.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/attacks.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/definitions.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/focal_loss.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_transformer.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_run2.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/helpers_advertorch.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/attacks_ParT.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/definitions_ParT.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/ParT.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/nuSolutions.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/scalefactors* $_CONDOR_SCRATCH_DIR
         #echo "changing to tempdir (first time)"
         #cd $tmp_dir
                 
@@ -101,9 +105,10 @@
         
         #echo "changing to scratch"
         #cd $_CONDOR_SCRATCH_DIR
+        # edited to personal proxy
         echo "set up proxy"
-        if [ -f "x509up_u38320" ]; then
-           export X509_USER_PROXY=x509up_u38320
+        if [ -f "x509up_u38609" ]; then
+           export X509_USER_PROXY=x509up_u38609
         fi
         echo "    voms-proxy-info -all"
         voms-proxy-info -all
@@ -153,7 +158,8 @@
         echo $PATH
         mkdir $ENVDIR
         echo "setup conda"
-        tar -xzf /nfs/dust/cms/user/anstein/${ENVNAME}.tar.gz -C ${ENVDIR}
+        # edited to personal directory
+        tar -xzf /nfs/dust/cms/user/hschonen/${ENVNAME}.tar.gz -C ${ENVDIR}
         #./${ENVDIR}/bin/activate
         source ${ENVNAME}/bin/activate
         echo "    which python3"
@@ -227,7 +233,7 @@
         #rm -r $tmp_dir
         
         echo "Clean up after yourself"
-        rm x509up_u38320
+        rm x509up_u38609
         #rm *.root *.pem *.pcm *.so *.tar.gz *.py *.cc *.h *.npy
         rm *.root *.py *.cc *.npy
         rm -r ./${ENVDIR} ./scalefactors*

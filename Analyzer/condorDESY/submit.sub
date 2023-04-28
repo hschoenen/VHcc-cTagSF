@@ -1,10 +1,15 @@
 universe = vanilla
+
+# edit to choose different runscript
 Executable = condor_runscript_common_NoJEC.sh
-Output = /nfs/dust/cms/user/anstein/ctag_condor/Analyzer_logs_ParT/$(SEL)_ParT/log-$(ClusterId).$(ProcId).out
-Error  = /nfs/dust/cms/user/anstein/ctag_condor/Analyzer_logs_ParT/$(SEL)_ParT/log-$(ClusterId).$(ProcId).err
-Log    = /nfs/dust/cms/user/anstein/ctag_condor/Analyzer_logs_ParT/$(SEL)_ParT/log-$(ClusterId).$(ProcId).log
+
+# edited to personal directory
+Output = /nfs/dust/cms/user/hschonen/ctag_condor/Analyzer_logs/$(SEL)_data/log-$(ClusterId).$(ProcId).out
+Error  = /nfs/dust/cms/user/hschonen/ctag_condor/Analyzer_logs/$(SEL)_data/log-$(ClusterId).$(ProcId).err
+Log    = /nfs/dust/cms/user/hschonen/ctag_condor/Analyzer_logs/$(SEL)_data/log-$(ClusterId).$(ProcId).log
+
 arguments    = $(ClusterId) $(ProcId) $(INFILE) $(SEL)
-transfer_input_files = x509up_u38320
+transfer_input_files = x509up_u38609
 transfer_output_files = ""
 Should_Transfer_Files = YES
 max_materialize  = 3000
@@ -13,7 +18,7 @@ Notification = never
 #Request_Memory = 6GB
 on_exit_hold = (ExitBySignal == True) || (ExitStatus != 0) || (ExitCode != 0)
 
-
+# edit cmdList.txt file: (data/sim) (Wc/DY/TT)
 queue SEL,INFILE from cmdList_data_DY_PFNanoParTINPUTS.txt
 
 
