@@ -1,8 +1,8 @@
 universe = vanilla
 Executable = condor_runscript.sh
-Output = /nfs/dust/cms/user/hschonen/ctag_condor/StackPlotter_logs/nominal_tr/log-$(ClusterId).$(ProcId).out
-Error  = /nfs/dust/cms/user/hschonen/ctag_condor/StackPlotter_logs/nominal_tr/log-$(ClusterId).$(ProcId).err
-Log    = /nfs/dust/cms/user/hschonen/ctag_condor/StackPlotter_logs/nominal_tr/log-$(ClusterId).$(ProcId).log
+Output = /nfs/dust/cms/user/hschonen/ctag_condor/StackPlotter_logs/log-$(ClusterId).$(ProcId).out
+Error  = /nfs/dust/cms/user/hschonen/ctag_condor/StackPlotter_logs/log-$(ClusterId).$(ProcId).err
+Log    = /nfs/dust/cms/user/hschonen/ctag_condor/StackPlotter_logs/log-$(ClusterId).$(ProcId).log
 arguments    = $(ClusterId) $(ProcId)
 #transfer_input_files = ""
 #transfer_output_files = ""

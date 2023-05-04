@@ -34,10 +34,10 @@ integer_variables_by_candidate = {
     #'pxl' : ,
 }
 epsilons_per_feature = {
-    'glob' : '/nfs/dust/cms/user/anstein/ctag_condor/Train_DF_Run2/auxiliary/global_epsilons.npy',
-    'cpf' : '/nfs/dust/cms/user/anstein/ctag_condor/Train_DF_Run2/auxiliary/cpf_epsilons.npy',
-    'npf' : '/nfs/dust/cms/user/anstein/ctag_condor/Train_DF_Run2/auxiliary/npf_epsilons.npy',
-    'vtx' : '/nfs/dust/cms/user/anstein/ctag_condor/Train_DF_Run2/auxiliary/vtx_epsilons.npy',
+    'glob' : '/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/epsilons/global_epsilons.npy',
+    'cpf' : '/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/epsilons/cpf_epsilons.npy',
+    'npf' : '/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/epsilons/npf_epsilons.npy',
+    'vtx' : '/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/epsilons/vtx_epsilons.npy',
     #'pxl' : ,
 }
 # Global
@@ -56,44 +56,44 @@ global_names = ['Jet_pt', 'Jet_eta',
                 ]
 feature_names = global_names.copy()
 # CPF
-cpf = [[f'Jet_DeepJet_Cpfcan_BtagPf_trackEtaRel_{i}',
-        f'Jet_DeepJet_Cpfcan_BtagPf_trackPtRel_{i}',
-        f'Jet_DeepJet_Cpfcan_BtagPf_trackPPar_{i}',
-        f'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_{i}',
-        f'Jet_DeepJet_Cpfcan_BtagPf_trackPParRatio_{i}',
-        f'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dVal_{i}',
-        f'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_{i}',
-        f'Jet_DeepJet_Cpfcan_BtagPf_trackSip3dVal_{i}',
-        f'Jet_DeepJet_Cpfcan_BtagPf_trackSip3dSig_{i}',
-        f'Jet_DeepJet_Cpfcan_BtagPf_trackJetDistVal_{i}',
-        f'Jet_DeepJet_Cpfcan_ptrel_{i}',
-        f'Jet_DeepJet_Cpfcan_drminsv_{i}',
-        f'Jet_DeepJet_Cpfcan_VTX_ass_{i}',
-        f'Jet_DeepJet_Cpfcan_puppiw_{i}',
-        f'Jet_DeepJet_Cpfcan_chi2_{i}',
-        f'Jet_DeepJet_Cpfcan_quality_{i}'] for i in range(25)]
+cpf = [['Jet_DeepJet_Cpfcan_BtagPf_trackEtaRel_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_BtagPf_trackPtRel_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_BtagPf_trackPPar_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_BtagPf_trackDeltaR_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_BtagPf_trackPParRatio_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dVal_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_BtagPf_trackSip2dSig_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_BtagPf_trackSip3dVal_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_BtagPf_trackSip3dSig_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_BtagPf_trackJetDistVal_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_ptrel_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_drminsv_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_VTX_ass_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_puppiw_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_chi2_{}'.format(i),
+        'Jet_DeepJet_Cpfcan_quality_{}'.format(i)] for i in range(25)]
 feature_names.extend([item for sublist in cpf for item in sublist])
 # NPF
-npf = [[f'Jet_DeepJet_Npfcan_ptrel_{i}',
-        f'Jet_DeepJet_Npfcan_deltaR_{i}',
-        f'Jet_DeepJet_Npfcan_isGamma_{i}',
-        f'Jet_DeepJet_Npfcan_HadFrac_{i}',
-        f'Jet_DeepJet_Npfcan_drminsv_{i}',
-        f'Jet_DeepJet_Npfcan_puppiw_{i}'] for i in range(25)]
+npf = [['Jet_DeepJet_Npfcan_ptrel_{}'.format(i),
+        'Jet_DeepJet_Npfcan_deltaR_{}'.format(i),
+        'Jet_DeepJet_Npfcan_isGamma_{}'.format(i),
+        'Jet_DeepJet_Npfcan_HadFrac_{}'.format(i),
+        'Jet_DeepJet_Npfcan_drminsv_{}'.format(i),
+        'Jet_DeepJet_Npfcan_puppiw_{}'.format(i)] for i in range(25)]
 feature_names.extend([item for sublist in npf for item in sublist])
 # VTX
-vtx = [[f'Jet_DeepJet_sv_pt_{i}',
-        f'Jet_DeepJet_sv_deltaR_{i}',
-        f'Jet_DeepJet_sv_mass_{i}',
-        f'Jet_DeepJet_sv_ntracks_{i}',
-        f'Jet_DeepJet_sv_chi2_{i}',
-        f'Jet_DeepJet_sv_normchi2_{i}',
-        f'Jet_DeepJet_sv_dxy_{i}',
-        f'Jet_DeepJet_sv_dxysig_{i}',
-        f'Jet_DeepJet_sv_d3d_{i}',
-        f'Jet_DeepJet_sv_d3dsig_{i}',
-        f'Jet_DeepJet_sv_costhetasvpv_{i}',
-        f'Jet_DeepJet_sv_enratio_{i}'] for i in range(4)]
+vtx = [['Jet_DeepJet_sv_pt_{}'.format(i),
+        'Jet_DeepJet_sv_deltaR_{}'.format(i),
+        'Jet_DeepJet_sv_mass_{}'.format(i),
+        'Jet_DeepJet_sv_ntracks_{}'.format(i),
+        'Jet_DeepJet_sv_chi2_{}'.format(i),
+        'Jet_DeepJet_sv_normchi2_{}'.format(i),
+        'Jet_DeepJet_sv_dxy_{}'.format(i),
+        'Jet_DeepJet_sv_dxysig_{}'.format(i),
+        'Jet_DeepJet_sv_d3d_{}'.format(i),
+        'Jet_DeepJet_sv_d3dsig_{}'.format(i),
+        'Jet_DeepJet_sv_costhetasvpv_{}'.format(i),
+        'Jet_DeepJet_sv_enratio_{}'.format(i)] for i in range(4)]
 feature_names.extend([item for sublist in vtx for item in sublist])
 
 
@@ -196,26 +196,26 @@ def get_group_index_from_name(name):
 
 def get_range_from_name(name):
     if name in global_names:
-        ranges = np.load('/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/global_ranges.npy')[global_names.index(name)]
+        ranges = np.load('/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/global_ranges.npy')[global_names.index(name)]
     elif name in cpf_flat:
         main_name = ''
         for item in name.split('_')[:-1]:
             main_name += item + '_'
         main_name = main_name[:-1]
         can_index = int(name.split('_')[-1])
-        ranges = np.load('/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/cpf_ranges.npy')[cpf_main_names.index(main_name)][can_index]
+        ranges = np.load('/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/cpf_ranges.npy')[cpf_main_names.index(main_name)][can_index]
     elif name in npf_flat:
         main_name = ''
         for item in name.split('_')[:-1]:
             main_name += item + '_'
         main_name = main_name[:-1]
         can_index = int(name.split('_')[-1])
-        ranges = np.load('/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/npf_ranges.npy')[npf_main_names.index(main_name)][can_index]
+        ranges = np.load('/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/npf_ranges.npy')[npf_main_names.index(main_name)][can_index]
     elif name in vtx_flat:
         main_name = ''
         for item in name.split('_')[:-1]:
             main_name += item + '_'
         main_name = main_name[:-1]
         can_index = int(name.split('_')[-1])
-        ranges = np.load('/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/vtx_ranges.npy')[vtx_main_names.index(main_name)][can_index]
+        ranges = np.load('/afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/vtx_ranges.npy')[vtx_main_names.index(main_name)][can_index]
     return ranges
