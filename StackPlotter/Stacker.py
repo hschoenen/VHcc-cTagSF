@@ -650,34 +650,9 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
     saveName = filePre+getbrText(brName)+SFhistSuff+"_"+filePost
     for rem in [" ","?",":","="]:
         saveName = saveName.replace(rem,"")
-    #if not selections == "":
-        #for iSel, selection in enumerate(selections):
-            #if selection in ["hardMu_Jet_PtRatio",["M_dz",0],["M_dxy",0],["M_sip3d",0]]: continue
-            #if selection in ["hardE_Jet_PtRatio",["E_dz",0],["E_dxy",0],["E_sip3d",0]]: continue
-            #saveName += "+"
-            #if type(selection) is str:
-                #saveName += selection+"_"+str(cuts[iSel][0])+"-"+str(cuts[iSel][1])
-            #elif type(selection) is list:
-                #saveName += selection[0]+"_"+str(selection[1])+"_"+str(cuts[iSel][0])+"-"+str(cuts[iSel][1])
-    # ----------------------------------------------------------------
 
     if not doCombine:
-        # ================= Make individual histograms ===================
-        # WHists = []
         integrals = []
-        # for WPath in WPaths:
-        #     histo, nTot = makeHisto(WPath,"Events",brName,brLabel,nbins,start,end,weightName=MCWeightName,divideByFlav=True,selections=selections,cuts=cuts,brName2D=brName2D,nbins2=nbins2,start2=start2,end2=end2,varBin1=array('d',varBin1),varBin2=array('d',varBin2))
-        #     for idx in range(4):
-        #         WHists.append(histo[idx])
-        #         integrals.append(nTot)
-        #         # integrals.append(eff_xsec[WPath.strip('/').split('/')[-1]])
-        #
-        # allHists = WHists[:]
-        # for dir in samplePaths:
-        #     histo, nTot = makeHisto(dir,"Events",brName,brLabel,nbins,start,end,weightName=MCWeightName,selections=selections,cuts=cuts,brName2D=brName2D,nbins2=nbins2,start2=start2,end2=end2,varBin1=array('d',varBin1),varBin2=array('d',varBin2))
-        #     allHists.append(histo)
-        #     integrals.append(nTot)
-        #     # integrals.append(eff_xsec[dir.strip('/').split('/')[-1]])
         allHists=[]
         histsToFlMap = []
         for dir in AllSamplePaths:
@@ -691,9 +666,6 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
                 histsToFlMap.append(flName)
             print "Done."
             if makeBinWtTxt: binWtTxtFileDict[flName] = binWtDict
-        
-        # ROOT.gInterpreter.ProcessLine("TFile *nf = new TFile(\"text.root\",\"RECREATE\"); nf->cd(); SFUnc->Write(); nf->Close()")
-        # ----------------------------------------------------------------
 
         # ================= Evaluate normalization factors ===================
         normFactors = []

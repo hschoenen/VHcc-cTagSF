@@ -19,6 +19,6 @@ Notification = never
 on_exit_hold = (ExitBySignal == True) || (ExitStatus != 0) || (ExitCode != 0)
 
 # edit cmdList.txt file: (data/sim) (Wc/DY/TT)
-queue SEL,INFILE from cmdList_data_DY_PFNanoParTINPUTS.txt
+queue SEL,INFILE from cmdList_data_Wc_PFNanoParTINPUTS.txt
 
 
