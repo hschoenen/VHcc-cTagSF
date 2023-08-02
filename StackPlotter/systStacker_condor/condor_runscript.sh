@@ -1,9 +1,9 @@
-	OUTPUTDIR=/nfs/dust/cms/user/hschonen/ctag_condor/systPlots_2023/
+ADVERSARIAL_MODEL_NAME="fgsm-0_1"
+	OUTPUTDIR=/nfs/dust/cms/user/hschonen/DataMC/${ADVERSARIAL_MODEL_NAME}/systPlots_2023/
 	OUTPUTNAME=output_2017_PFNano
 
 	CONDOR_CLUSTER_ID=$1
 	CONDOR_PROCESS_ID=$2
-
         export PATH=/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/bin:/cvmfs/grid.cern.ch/emi3ui-latest/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/bin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/sbin:$PATH
         echo "echo PATH:"
         echo $PATH
