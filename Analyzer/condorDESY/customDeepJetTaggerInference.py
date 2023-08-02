@@ -20,11 +20,10 @@ from attacks import apply_noise, fgsm_attack
 import definitions_ParT
 from attacks_ParT import first_order_attack
 
-
-
 import time
-# Not (yet) for DeepJet
-#from focal_loss import FocalLoss, focal_loss
+
+# choose model
+adversarial_model_name = 'fgsm-0_05'
 
 def cross_entropy_one_hot(input, target):
     _, labels = target.max(dim=1)
@@ -32,7 +31,6 @@ def cross_entropy_one_hot(input, target):
 # we don't need one-hot-encoded targets, using 0 to 5 works as well
 def cross_entropy(input, target):
     return nn.CrossEntropyLoss()(input, target)
-
 
 print("Torch version =",torch.__version__)
 
@@ -271,19 +269,11 @@ def pfnano_to_array(rootfile, isMC, deepjet=True):
 
 def preprocess(rootfile_path, isMC, deepjet=True):
     print('Doing starting clean/prep, isMC: ',isMC)
-    #minima = np.load('/nfs/dust/cms/user/anstein/additional_files/default_value_studies_minima.npy')
-    #defaults_per_variable = minima - 0.001
-    #dataset_input_target = cleandataset(uproot.open(rootfile_path), defaults_per_variable, isMC)
-    #print(len(dataset_input_target))
-    #print(np.unique(dataset_input_target[:,-1]))
-    #sys.exit()
-    
     dataset_input_target = pfnano_to_array(uproot.open(rootfile_path), isMC, deepjet)
     
     # targets only make sense for MC,
     # but nothing 'breaks' when calling it on Data (the last column is different though, it's all Zeros, see definition above)
     targets = torch.Tensor(dataset_input_target[:,-1]).long()
-    
     inputs = torch.Tensor(dataset_input_target[:,0:-1])
     
     del dataset_input_target
@@ -308,23 +298,13 @@ def preprocess(rootfile_path, isMC, deepjet=True):
         slice_npf_4v = definitions_ParT.cands_per_variable['npf_pts'] * definitions_ParT.vars_per_candidate['npf_pts']
         slice_vtx_4v = definitions_ParT.cands_per_variable['vtx_pts'] * definitions_ParT.vars_per_candidate['vtx_pts']
         print(slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v+slice_npf_4v+slice_vtx_4v)
-    
-        #glob = inputs[:,0:slice_glob]
         cpf  = inputs[:,slice_glob:slice_glob+slice_cpf]
         npf  = inputs[:,slice_glob+slice_cpf:slice_glob+slice_cpf+slice_npf]
         vtx  = inputs[:,slice_glob+slice_cpf+slice_npf:slice_glob+slice_cpf+slice_npf+slice_vtx]
-        #cpf  = inputs[:,0:slice_cpf]
-        #npf  = inputs[:,slice_cpf:slice_cpf+slice_npf]
-        #vtx  = inputs[:,slice_cpf+slice_npf:slice_cpf+slice_npf+slice_vtx]
         cpf_4v  = inputs[:,slice_glob+slice_cpf+slice_npf+slice_vtx:slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v]
         npf_4v  = inputs[:,slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v:slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v+slice_npf_4v]
         vtx_4v  = inputs[:,slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v+slice_npf_4v:slice_glob+slice_cpf+slice_npf+slice_vtx+slice_cpf_4v+slice_npf_4v+slice_vtx_4v]
 
-    #print(glob.shape)
-    #print(cpf.shape)
-    #print(npf.shape)
-    #print(vtx.shape)
-    
     if deepjet:
         cpf = cpf.reshape((-1,definitions.cands_per_variable['cpf'],definitions.vars_per_candidate['cpf']))
         npf = npf.reshape((-1,definitions.cands_per_variable['npf'],definitions.vars_per_candidate['npf']))
@@ -343,8 +323,6 @@ def preprocess(rootfile_path, isMC, deepjet=True):
         return cpf,npf,vtx,cpf_4v,npf_4v,vtx_4v, targets
 
 def get_model(model_name, device):
-    # Done: use the DF model from external module
-    
     if 'DeepJet_Run2' in model_name:
         tagger = 'DF_Run2'
         model = DeepJet_Run2(num_classes = 6)
@@ -364,70 +342,42 @@ def get_model(model_name, device):
                             npf_dim = 8,
                             vtx_dim = 14,
                             for_inference = False)
-
-    if 'nominal' in model_name and 'ParT' not in model_name:
-        # edited to personal directory
-        modelpath = f'/nfs/dust/cms/user/hschonen/DeepJet/Train_{tagger}/nominal/checkpoint_best_loss.pth'
-    elif 'adversarial_eps0p01' in model_name:
-        # edited to personal directory
-        modelpath = f'/nfs/dust/cms/user/hschonen/DeepJet/Train_{tagger}/fgsm/checkpoint_best_loss.pth'
-    elif 'adversarial_eps0p005' in model_name:
-        modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p005/checkpoint_best_loss.pth'
-    elif 'GSAM' in model_name and 'GSAM2' not in model_name:
-        modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/SharpnessAware/DeepJet_GSAM.pth'
-    elif 'GSAM2' in model_name:
-        modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/SharpnessAware/DeepJet_GSAM2.pth'
-    elif 'ParT' in model_name and 'ngm' not in model_name:
-        modelpath = f'/nfs/dust/cms/user/anstein/ParT/nominal/checkpoint_epoch_20.pth'
-    elif 'ParT' in model_name and 'ngm' in model_name:
-        modelpath = f'/nfs/dust/cms/user/anstein/ParT/ngm_adversarial/checkpoint_epoch_20.pth'
-
+    else:
+        tagger = 'DF_Run2'
+        model = DeepJet_Run2(num_classes = 6)
+        
+    # edited to personal directories
+    modelpath = f'/nfs/dust/cms/user/hschonen/auxiliary/models/{model_name}/checkpoint_best_loss.pth'
+    #if 'nominal' in model_name and 'ParT' not in model_name:
+        #modelpath = f'/nfs/dust/cms/user/hschonen/DeepJet/Train_{tagger}/nominal/checkpoint_best_loss.pth'
+    #elif 'adversarial_eps0p01' in model_name:
+        #modelpath = f'/nfs/dust/cms/user/hschonen/DeepJet/Train_{tagger}/fgsm/checkpoint_best_loss.pth'
+    #elif 'adversarial_eps0p005' in model_name:
+        #modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p005/checkpoint_best_loss.pth'
+    #elif 'GSAM' in model_name and 'GSAM2' not in model_name:
+        #modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/SharpnessAware/DeepJet_GSAM.pth'
+    #elif 'GSAM2' in model_name:
+        #modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/SharpnessAware/DeepJet_GSAM2.pth'
+    #elif 'ParT' in model_name and 'ngm' not in model_name:
+        #modelpath = f'/nfs/dust/cms/user/anstein/ParT/nominal/checkpoint_epoch_20.pth'
+    #elif 'ParT' in model_name and 'ngm' in model_name:
+        #modelpath = f'/nfs/dust/cms/user/anstein/ParT/ngm_adversarial/checkpoint_epoch_20.pth'
+        
     checkpoint = torch.load(modelpath, map_location=torch.device(device))
     model.load_state_dict(checkpoint["state_dict"])
-
     model.to(device)
     return model
-    
+
 def predict(glob,cpf,npf,vtx,cpf_4v,npf_4v,vtx_4v, model_name, device):
     with torch.no_grad():
-     #  device = torch.device("cpu")
-     #  
-     #  # Done: use the DF model from external module
-     #  if 'DeepJet_Run2' in model_name:
-     #      tagger = 'DF_Run2'
-     #      model = DeepJet_Run2(num_classes = 6)
-     #  elif 'DeepJetTransformer' in model_name:
-     #      tagger = 'DF_Transformer'
-     #      model = DeepJetTransformer(num_classes = 4)
-     #  elif 'DeepJet' in model_name:
-     #      tagger = 'DF'
-     #      model = DeepJet(num_classes = 6)
-     #  
-     #  if 'nominal' in model_name:
-     #      modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/nominal/checkpoint_best_loss.pth'
-     #  elif 'adversarial_eps0p01' in model_name:
-     #      modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p01/checkpoint_best_loss.pth'
-     #  elif 'adversarial_eps0p005' in model_name:
-     #      modelpath = f'/nfs/dust/cms/user/anstein/DeepJet/Train_{tagger}/adversarial_eps0p005/checkpoint_best_loss.pth'
-
-     #  checkpoint = torch.load(modelpath, map_location=torch.device(device))
-     #  model.load_state_dict(checkpoint["state_dict"])
-
-     #  model.to(device)
-        
         model = get_model(model_name, device)
-        
         #evaluate network on inputs
         model.eval()
-        #print('successfully loaded model and checkpoint')
-        # note: unlike most other models, the pytorch version of DeepJet does not output "probabilities", but the last step needs to be applied on top of the logits
         if 'ParT' in model_name:
             return nn.Softmax(dim=1)(model((cpf,npf,vtx,cpf_4v,npf_4v,vtx_4v))).detach().numpy(), model
         else:
             return nn.Softmax(dim=1)(model(glob,cpf,npf,vtx)).detach().numpy(), model
 
-
-    
 def calcBvsL(matching_predictions):
     custom_BvL = np.where( ((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]) >= 0) \
                           & (matching_predictions[:,3] < 1.) \
@@ -435,13 +385,9 @@ def calcBvsL(matching_predictions):
                           & (matching_predictions[:,4]+matching_predictions[:,5] >= 0),
                           (matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]+matching_predictions[:,4]+matching_predictions[:,5]),
                           (-1.0)*np.ones(n_jets))
-    
     custom_BvL[(custom_BvL < 0.000001) & (custom_BvL > -0.000001)] = 0.000001
     custom_BvL[(np.isnan(custom_BvL)) & (np.isinf(custom_BvL))] = -1.0
     print('Number of BvL values below 0:',sum(custom_BvL[custom_BvL < 0.]))
-    # not limiting the discriminator here, as this should be done in Stacker
-    #custom_BvL[custom_BvL > 0.99999] = 0.99999
-    
     return custom_BvL
 
 
@@ -449,14 +395,11 @@ def calcBvsC(matching_predictions):
     custom_BvC = np.where( ((matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]) > 0.) \
                           & ((matching_predictions[:,3]) > 0.) \
                           & (matching_predictions[:,4]+matching_predictions[:,5] >= 0.),
-                          (matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]+matching_predictions[:,3]),
+                    (matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2])/(matching_predictions[:,0]+matching_predictions[:,1]+matching_predictions[:,2]+matching_predictions[:,3]),
                           (-1.0)*np.ones(n_jets))
     
     custom_BvC[(custom_BvC < 0.000001) & (custom_BvC > -0.000001)] = 0.000001
     custom_BvC[(np.isnan(custom_BvC)) & (np.isinf(custom_BvC))] = -1.0
-    # not limiting the discriminator here, as this should be done in Stacker
-    #custom_BvC[custom_BvC > 0.99999] = 0.99999
-    
     return custom_BvC
     
     
@@ -469,9 +412,6 @@ def calcCvsB(matching_predictions):
     
     custom_CvB[(custom_CvB < 0.000001) & (custom_CvB > -0.000001)] = 0.000001
     custom_CvB[(np.isnan(custom_CvB)) & (np.isinf(custom_CvB))] = -1.0
-    # not limiting the discriminator here, as this should be done in Stacker
-    #custom_CvB[custom_CvB > 0.99999] = 0.99999
-    
     return custom_CvB
     
     
@@ -485,9 +425,6 @@ def calcCvsL(matching_predictions):
     
     custom_CvL[(custom_CvL < 0.000001) & (custom_CvL > -0.000001)] = 0.000001
     custom_CvL[(np.isnan(custom_CvL)) & (np.isinf(custom_CvL))] = -1.0
-    # not limiting the discriminator here, as this should be done in Stacker
-    #custom_CvL[custom_CvL > 0.99999] = 0.99999
-    
     return custom_CvL
 
 
@@ -499,19 +436,14 @@ if __name__ == "__main__":
     parentDir = ""
     # default era, will be overwritten
     era = 2016
-
     
     print("Will open file %s."%(fullName))
     
-    # ToDo: modify once I have my private samples ready
-    #parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/"]
-    #parentDirList = ["/106X_v2_17/","/106X_v2_17rsb2/","/106X_v2_17rsb3/"]
     # edited for new files
     parentDirList = ["/nanotest_add_DeepJet/","/PFNano/","/RunIISummer20UL17MiniAODv2/","/PFNano_ParT/"]
     for iParent in parentDirList:
         if iParent in fullName: parentDir = iParent
     if parentDir == "": fullName.split('/')[8]+"/"
-    
     
     if "2017" in fullName: era = 2017
     if "2018" and not "2017" in fullName: era = 2018   # this is needed because both 2017 and 2018 appear in the new file names
@@ -519,9 +451,7 @@ if __name__ == "__main__":
     sampName=fullName.split(parentDir)[1].split('/')[0]
     channel=sampName
     print('sampName:', sampName)
-#    sampNo=fullName.split(parentDir)[1].split('/')[1].split('_')[-1]
-# new version to prevent overwriting of files for PFNano filenames
-# splitting here at the underscore would destroy uniqueness (example: Data for DY, DoubleMuon)
+
     sampNo=fullName.split(parentDir)[1].split('/')[1]
     dirNo=fullName.split(parentDir)[1].split('/')[3][-1]
     flNo=fullName.split(parentDir)[1].split('/')[-1].rstrip('.root').split('_')[-1]
@@ -537,32 +467,21 @@ if __name__ == "__main__":
     
     device = torch.device("cpu")
     
-    # OLD: inputs, targets, scalers = preprocess(fullName, isMC)
-    # OLD: inputs, targets, scalers = preprocess('infile.root', isMC)
-    # Wanted, once I can start using the runscript:
-    # NEW:
     # if targets are not necessary, targets will default to placeholder value for all jets
     if 'ParT' not in model_name:
         glob,cpf,npf,vtx, targets = preprocess('infile.root', isMC)
-        #glob,cpf,npf,vtx, targets = preprocess('~/private/pfnano_dev/CMSSW_10_6_30/src/nano_mc_2017_ULv2_allPF_ParT_NANO.root', isMC)
-        # WIP tests
-        #glob,cpf,npf,vtx, targets = preprocess('root://dcache-cms-xrootd.desy.de:1094//store/user/anstein/PFNano/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220819_222508/0000/nano_mc_2017_UL_forWcMinimal_NANO_1.root', True)
-        #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220807_184642/0000/nano_mc2017_1-1.root', True)
-        #glob,cpf,npf,vtx, targets = preprocess('~/private/pfnano_dev/CMSSW_10_6_20/src/PhysicsTools/PFNano/test/nano106Xv8_on_mini106X_2017_mc_NANO_py_NANO_AddDeepJet.root', True)
-        #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DoubleMuon/Run2017B-09Aug2019_UL2017-v1_PFtestNano/220806_223005/0000/nano_data2017_1.root', isMC)
-        #glob,cpf,npf,vtx, targets = preprocess('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anstein/PFNano/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2_PFtestNano/220807_184642/0000/nano_mc2017_1-1.root', isMC)
-        #sys.exit()
     else:
         cpf,npf,vtx,cpf_4v,npf_4v,vtx_4v, targets = preprocess('infile.root', isMC, deepjet=False)
-        #cpf,npf,vtx,cpf_4v,npf_4v,vtx_4v, targets = preprocess('~/private/pfnano_dev/CMSSW_10_6_30/src/nano_mc_2017_ULv2_allPF_ParT_NANO.root', isMC, deepjet=False)
     n_jets = len(targets)
     
     # activate this to debug with small set of jets
     #n_jets = 3000
     
+    # default: no
     if targets_necessary:
         outputTargetsdir  = "outTargets_%s.npy"%(outNo)
         np.save(save_to+outputTargetsdir, targets)
+    # default: no
     if store_interesting_inputs:
         inputsdir  = "inputsCENTRAL_%s.npy"%(outNo)
         inputsdirADVADV  = "inputsADV_ADV_%s.npy"%(outNo)
@@ -586,11 +505,11 @@ if __name__ == "__main__":
         if not isMC:
             np.save(save_to+inputsdirADVNOM, interesting_arrays)
             np.save(save_to+inputsdirADVADV, interesting_arrays)
-            
         del interesting_arrays
         gc.collect()
         
     # to check multiple epochs of a given weighting method at once (using always 3 epochs should make sense, as previous tests were done on raw/noise/FGSM = 3 different sets)
+    # default: no
     if model_name.startswith('_multi_'):
         letters = ['A','B','C']  # using the same three letters all the time means that the Analyzer code does not need to be updated for every possible epoch
         if 'nominal' in model_name:
@@ -608,10 +527,8 @@ if __name__ == "__main__":
             outputCvsLdir  = f"{letters[i]}_outCvsL_%s.npy"%(outNo)
             outputBvsCdir  = f"{letters[i]}_outBvsC_%s.npy"%(outNo)
             outputBvsLdir  = f"{letters[i]}_outBvsL_%s.npy"%(outNo)
-            
             # probably need to use chunks due to memory constraints here
             n_chunks = len(range(0,n_jets,2000))
-            #print(n_chunks)
             for i,k in enumerate(range(0,n_jets,2000)):
                 #print(i,k)
                 if i == 0:
@@ -626,35 +543,27 @@ if __name__ == "__main__":
                     np.concatenate((predictions,current_predictions))
                     del current_predictions
                     gc.collect()
-            #print(n_jets, 'matches', len(predictions))
-            
             bvl = calcBvsL(predictions)
             print('Raw bvl, bvc, cvb, cvl')
             print(min(bvl), max(bvl))
             np.save(save_to+outputBvsLdir, bvl)
             del bvl
             gc.collect()
-
             bvc = calcBvsC(predictions)
             print(min(bvc), max(bvc))
             np.save(save_to+outputBvsCdir, bvc)
             del bvc
             gc.collect()
-
             cvb = calcCvsB(predictions)
-            
             print(min(cvb), max(cvb))
             np.save(save_to+outputCvsBdir, cvb)
             del cvb
             gc.collect()
             cvl = calcCvsL(predictions)
-            
             print(min(cvl), max(cvl))
             np.save(save_to+outputCvsLdir, cvl)
             del cvl
             gc.collect()
-            
-            
             predictions[:,0][predictions[:,0] > 0.99999] = 0.99999
             predictions[:,1][predictions[:,1] > 0.99999] = 0.99999
             predictions[:,2][predictions[:,2] > 0.99999] = 0.99999
@@ -688,20 +597,16 @@ if __name__ == "__main__":
             models = ['_DeepJet_Run2_nominal','_DeepJet_Run2_adversarial_eps0p01']
             short_names = ['','ADV_']
         print('Will run with these models:', models)
-        
         for i,model_i in enumerate(models):
             outputPredsdir = f"{short_names[i]}outPreds_%s.npy"%(outNo)
             outputCvsBdir  = f"{short_names[i]}outCvsB_%s.npy"%(outNo)
             outputCvsLdir  = f"{short_names[i]}outCvsL_%s.npy"%(outNo)
             outputBvsCdir  = f"{short_names[i]}outBvsC_%s.npy"%(outNo)
             outputBvsLdir  = f"{short_names[i]}outBvsL_%s.npy"%(outNo)
-            
             # probably need to use chunks due to memory constraints here
             n_chunks = len(range(0,n_jets,2000))
-            #print(n_chunks)
             if 'ParT' in model_name:
                 for i,k in enumerate(range(0,n_jets,2000)):
-                    #print(i,k)
                     if i == 0:
                         predictions, _ = predict(None,cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000],cpf_4v[k:k+2000],npf_4v[k:k+2000],vtx_4v[k:k+2000], model_i, device)
                     elif i == n_chunks-1:
@@ -716,7 +621,6 @@ if __name__ == "__main__":
                         gc.collect()
             else:
                 for i,k in enumerate(range(0,n_jets,2000)):
-                    #print(i,k)
                     if i == 0:
                         predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000],None,None,None, model_i, device)
                     elif i == n_chunks-1:
@@ -729,34 +633,28 @@ if __name__ == "__main__":
                         predictions = np.concatenate((predictions,current_predictions))
                         del current_predictions
                         gc.collect()
-            #print(n_jets, 'matches', len(predictions))
-            
+            # calculate and save discriminators
             bvl = calcBvsL(predictions)
             print('Raw bvl, bvc, cvb, cvl')
             print(min(bvl), max(bvl))
             np.save(save_to+outputBvsLdir, bvl)
             del bvl
             gc.collect()
-
             bvc = calcBvsC(predictions)
             print(min(bvc), max(bvc))
             np.save(save_to+outputBvsCdir, bvc)
             del bvc
             gc.collect()
-
             cvb = calcCvsB(predictions)
-            
             print(min(cvb), max(cvb))
             np.save(save_to+outputCvsBdir, cvb)
             del cvb
             gc.collect()
             cvl = calcCvsL(predictions)
-            
             print(min(cvl), max(cvl))
             np.save(save_to+outputCvsLdir, cvl)
             del cvl
             gc.collect()
-            
             # constraining predictions is fine, they are not touched by Stacker
             # but we expect (want) them to be probabilities
             predictions[:,0][predictions[:,0] > 0.999999] = 0.999999
@@ -780,19 +678,15 @@ if __name__ == "__main__":
             print(min(predictions[:,5]), max(predictions[:,5]))
             np.save(save_to+outputPredsdir, predictions)
             del predictions
-            gc.collect()        
-            
-            
+            gc.collect()         
         # Also do attack with both models, mainly to store attacked samples
         if store_interesting_inputs and isMC:
-
             epsilon_factors = {
                 'glob' : torch.Tensor(np.load(epsilons_per_feature['glob']).transpose()).to(device),
                 'cpf' : torch.Tensor(np.load(epsilons_per_feature['cpf']).transpose()).to(device),
                 'npf' : torch.Tensor(np.load(epsilons_per_feature['npf']).transpose()).to(device),
                 'vtx' : torch.Tensor(np.load(epsilons_per_feature['vtx']).transpose()).to(device),
             }
-            
             interesting_ADV_ADV_arrays = np.zeros((len(interesting_inputs), n_jets))
             interesting_ADV_NOM_arrays = np.zeros((len(interesting_inputs), n_jets))       
             # Code to get distorted inputs, two different models
@@ -849,7 +743,6 @@ if __name__ == "__main__":
                                 interesting_ADV_NOM_arrays[i,k:n_jets] = this_column
                             del this_column
                             gc.collect()
-                          #  fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
                         del glob_fgsm
                         del cpf_fgsm
                         del npf_fgsm
@@ -875,18 +768,88 @@ if __name__ == "__main__":
                                 interesting_ADV_NOM_arrays[i,k:k+2000] = this_column
                             del this_column
                             gc.collect()
-                          #  fgsm_preds, _ = predict(glob_fgsm, cpf_fgsm, npf_fgsm, vtx_fgsm, model_name)
                         del glob_fgsm
                         del cpf_fgsm
                         del npf_fgsm
                         del vtx_fgsm
                         gc.collect()
-
                 if 'adv' in model_m:
                     np.save(save_to+inputsdirADVADV, interesting_ADV_ADV_arrays)
                 else:
                     np.save(save_to+inputsdirADVNOM, interesting_ADV_NOM_arrays)
-            
+                    
+    elif 'COMPLETE' in model_name:
+        models = ['nominal',adversarial_model_name]
+        short_names = ['','ADV_']
+        print('Will run with these models:', models)
+        
+        for i,model_i in enumerate(models):
+            outputPredsdir = f"{short_names[i]}outPreds_%s.npy"%(outNo)
+            outputCvsBdir  = f"{short_names[i]}outCvsB_%s.npy"%(outNo)
+            outputCvsLdir  = f"{short_names[i]}outCvsL_%s.npy"%(outNo)
+            outputBvsCdir  = f"{short_names[i]}outBvsC_%s.npy"%(outNo)
+            outputBvsLdir  = f"{short_names[i]}outBvsL_%s.npy"%(outNo)
+            # probably need to use chunks due to memory constraints here
+            n_chunks = len(range(0,n_jets,2000))
+            # get model predictions
+            for i,k in enumerate(range(0,n_jets,2000)):
+                if i == 0:
+                    predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000],None,None,None, model_i, device)
+                elif i == n_chunks-1:
+                    current_predictions, _ = predict(glob[k:n_jets],cpf[k:n_jets],npf[k:n_jets],vtx[k:n_jets],None,None,None, model_i, device)
+                    predictions = np.concatenate((predictions,current_predictions))
+                    del current_predictions
+                    gc.collect()
+                else:
+                    current_predictions, _ = predict(glob[k:k+2000],cpf[k:k+2000],npf[k:k+2000],vtx[k:k+2000],None,None,None, model_i, device)
+                    predictions = np.concatenate((predictions,current_predictions))
+                    del current_predictions
+                    gc.collect()
+            # calculate discriminator values
+            bvl = calcBvsL(predictions)
+            print('Raw bvl, bvc, cvb, cvl')
+            print(min(bvl), max(bvl))
+            np.save(save_to+outputBvsLdir, bvl)
+            del bvl
+            gc.collect()
+            bvc = calcBvsC(predictions)
+            print(min(bvc), max(bvc))
+            np.save(save_to+outputBvsCdir, bvc)
+            del bvc
+            gc.collect()
+            cvb = calcCvsB(predictions)
+            print(min(cvb), max(cvb))
+            np.save(save_to+outputCvsBdir, cvb)
+            del cvb
+            gc.collect()
+            cvl = calcCvsL(predictions)
+            print(min(cvl), max(cvl))
+            np.save(save_to+outputCvsLdir, cvl)
+            del cvl
+            gc.collect()
+            # constraining predictions is fine (not touched by Stacker), but we expect (want) them to be probabilities
+            predictions[:,0][predictions[:,0] > 0.999999] = 0.999999
+            predictions[:,1][predictions[:,1] > 0.999999] = 0.999999
+            predictions[:,2][predictions[:,2] > 0.999999] = 0.999999
+            predictions[:,3][predictions[:,3] > 0.999999] = 0.999999
+            predictions[:,4][predictions[:,4] > 0.999999] = 0.999999
+            predictions[:,5][predictions[:,5] > 0.999999] = 0.999999
+            predictions[:,0][predictions[:,0] < 0.000001] = 0.000001
+            predictions[:,1][predictions[:,1] < 0.000001] = 0.000001
+            predictions[:,2][predictions[:,2] < 0.000001] = 0.000001
+            predictions[:,3][predictions[:,3] < 0.000001] = 0.000001
+            predictions[:,4][predictions[:,4] < 0.000001] = 0.000001
+            predictions[:,5][predictions[:,5] < 0.000001] = 0.000001
+            print('Raw b, bb, lepb, c, uds, g min and max (after cutting over-/underflow)')
+            print(min(predictions[:,0]), max(predictions[:,0]))
+            print(min(predictions[:,1]), max(predictions[:,1]))
+            print(min(predictions[:,2]), max(predictions[:,2]))
+            print(min(predictions[:,3]), max(predictions[:,3]))
+            print(min(predictions[:,4]), max(predictions[:,4]))
+            print(min(predictions[:,5]), max(predictions[:,5]))
+            np.save(save_to+outputPredsdir, predictions)
+            del predictions
+            gc.collect()        
             
     # just one training at a given epoch, but with Noise or FGSM attack applied to MC
     else:        

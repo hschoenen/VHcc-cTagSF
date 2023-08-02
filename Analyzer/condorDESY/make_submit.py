@@ -8,25 +8,14 @@ from random import random
 inputdir = "inputs"
 sel = "Wc"
 for_testing = 0
-#runscript = "condor_runscript_Wc.sh"
+
 if len(sys.argv) > 1:
     inputdir = sys.argv[1]
 if len(sys.argv) > 2:
     sel = sys.argv[2]
 if len(sys.argv) > 3:
     for_testing = int(sys.argv[3])
-#    runscript = sys.argv[2]
 
-#f1 = open("submit_base.sub","r")
-#f = open("submit.sub","w")
-#for line in f1:
-#    ln = line.replace('condor_runscript.sh', runscript)
-#    f.write(line)
-#f1.close()
-
-#if 'DY' in runscript and 'NoJEC' not in runscript: f.write("+RequestRuntime = 18000\n\n")
-#f.write("\nqueue SEL,INFILE from cmdList.txt\n")
-#f.close()
 if for_testing == 1:
     appendix = '_for_testing'
 else:

@@ -8,16 +8,7 @@ import nuSolutions as nu
 import types, math, json
 import itertools
 
-#with open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customLogfile.txt", "a") as log:
-#    log.write('All modules loaded\n')
-
 start_time = time.time()
-############### FOR INTERACTIVE RUN ##############
-# fileName = "/store/user/lmastrol/VHcc_2016V4_Aug18/JetsToLNu_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/arizzi-RunIIMoriond17-DeepAndR105/180909_010329/0000/tree_1.root"
-#fileName = "/store/user/lmastrol/VHcc_2016V4_Aug18/SingleElectron/arizzi-NanoDeepAndReg2016Run2094/180817_113615/0000/tree_122.root"
-# channel  = 'JetsToLNu'
-#version = 'v2'
-##################################################
 
 start_time = time.time()
 JECNameList = ["nom","jesTotalUp","jesTotalDown","jerUp","jerDown"]
@@ -62,7 +53,6 @@ else:
         fileName = "/" + '/'.join(fullName.split('/')[fullName.split('/').index("store"):])
 print "Will open file %s."%(pref+fileName)
 
-# including anstein private PFNano
 # edited for different file directories
 parentDirList = ["VHcc_2017V5_Dec18/","NanoCrabProdXmas/","/2016/","2016_v2/","/2017/","2017_v2","/2018/","VHcc_2016V4bis_Nov18/","/106X_v2_17/","/106X_v2_17rsb2/","/106X_v2_17rsb3/","/nanotest_add_DeepJet/","/PFNano/","/PFNano_ParT/"]
 for iParent in parentDirList:
@@ -72,52 +62,21 @@ if parentDir == "": fullName.split('/')[8]+"/"
 if "2017" in fullName: era = 2017
 if "2018" and not "2017" in fullName: era = 2018
 
-#if "spmondal" in fullName and fullName.startswith('/pnfs/'):
-##    parentDir = 'VHbbPostNano2016_V5_CtagSF/'
-    #parentDir = fullName.split('/')[8]+"/"
-    #if "2017" in fullName: era = 2017
-    #if "/2017/" in fullName: parentDir = "2017/"
-        
-#if "VHcc_2017V5_Dec18" in fullName and fullName.startswith('/pnfs/'):
-    #parentDir = 'VHcc_2017V5_Dec18/'
-    #era = 2017
-#if fullName.startswith('/store/'):
-    #if "lmastrol" in fullName:
-        #pref = "/pnfs/desy.de/cms/tier2"
-    #else:
-        #pref = "root://xrootd-cms.infn.it//"
-        #parentDir="NanoCrabProdXmas/"
-        #isNano = True
-#elif fullName.startswith('root:'):
-    #pref = ""
-#else:
-    #pref = "file:"
-
-#with open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/condorDESY/customLogfile.txt", "a") as log:
-#    log.write('Attempting to load the file will start\n')
-#    log.write(pref+fileName)
-#iFile = TFile.Open(str('root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root'))
-#iFile = TFile.Open(pref+fileName)
-#iFile = TFile.Open(str(sys.argv[2])+"/infile.root")
 print "Current working directory: %s" % os.getcwd()
 print "Files in this directory: %s" % os.listdir(os.getcwd())
 iFile = TFile.Open("infile.root")
-#iFile = TFile.Open("/afs/desy.de/user/a/anstein/private/aisafety/SF/VHcc-cTagSF/Analyzer/nano_mc2017_1-1156.root")
 inputTree = iFile.Get("Events")
 inputTree.SetBranchStatus("*",1)
 
 sampName=fullName.split(parentDir)[1].split('/')[0]
 channel=sampName
-# sampNo=fullName.split(parentDir)[1].split('/')[1].split('_')[-1]
-# new version to prevent overwriting of files for PFNano filenames
-# splitting here at the underscore would destroy uniqueness (example: Data for DY, DoubleMuon)
+
 sampNo=fullName.split(parentDir)[1].split('/')[1]
 dirNo=fullName.split(parentDir)[1].split('/')[3][-1]
 flNo=fullName.split(parentDir)[1].split('/')[-1].rstrip('.root').split('_')[-1]
 outNo= "%s_%s_%s"%(sampNo,dirNo,flNo)
 
 if "_" in channel: channel=channel.split("_")[0]
-# channel="Generic"
 if not 'Single' in channel and not 'Double' in channel and not 'EGamma' in channel and not 'MET' in channel:
     isMC = True
 else:
@@ -144,18 +103,9 @@ if "OUTPUTDIR" in os.environ:
     condoroutdir = os.environ["OUTPUTDIR"]
     condoroutfile = "%s/%s/outTree_%s.root"%(condoroutdir,sampName,outNo)
     if os.path.isfile("%s/%s/outTree_%s.root"%(condoroutdir,sampName,outNo)):
-        #print "Output file already exists. Aborting job."
         print "Outfile file: %s"%condoroutfile
-        #sys.exit(99)  # currently deactivated (overwrite file instead)
-#if isMC:
-    #customTaggerProbs = np.load("%s/%s/outPreds_%s_new.npy"%(condoroutdir,sampName,outNo))  # just do it with the loss weighted model first here
-    #customTaggerBvsL  = np.load("%s/%s/outBvsL_%s_new.npy"%(condoroutdir,sampName,outNo))  # if one wants no weighting, replace _new with _as_is
+        
 if not os.path.isfile("A_outPreds_%s.npy"%(outNo)):
-    # not doing multi-epoch evaluation
-    
-    # check if doing comparison between nominal & adversarial
-    # or if doing one model, but with different samples
-    
     if os.path.isfile("ADV_outPreds_%s.npy"%(outNo)):
         customTaggerProbs = np.load("outPreds_%s.npy"%(outNo)) 
         customTaggerBvsL  = np.load("outBvsL_%s.npy"%(outNo))  
@@ -2599,7 +2549,7 @@ for entry in inputTree:
     jet_nJet[0]            = len(j_Pt_List)
     # ==========================================================================
 
-    # ==================== Semileptonic tt c jet enrichment ====================
+    # ==================== Semileptonic 'TT'c jet enrichment ====================
     if jet_nJet[0] >= 4:
         permutejets = range(int(jet_nJet[0]))
         permutejets.remove(int(muJet_idx[0]))

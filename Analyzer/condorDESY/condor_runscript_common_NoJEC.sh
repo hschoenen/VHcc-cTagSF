@@ -1,5 +1,15 @@
 #!/bin/bash
     
+    # choose name of adversarial mode
+    ADVERSARIAL_MODEL_NAME="fgsm-0_05"
+    WM="_DeepJet_Run2_COMPLETE" # do nominal and a adversarial model at the same time
+#   WM="_DeepJet_Run2_COMPARE" # does nominal and adversarial in one go
+#   WM="_DeepJet_Run2_nominal"
+#   WM="_DeepJet_Run2_adversarial_eps0p01"
+#   WM="_multi_nominal_5,15,30"
+#   WM="_DeepJet_Run2_COMPARESHARPNESSAWARE" # does nominal and adversarial in one go
+#   WM="_ParT_COMPARE"
+    
     echo $HOSTNAME
     echo "Who am I?"
     whoami
@@ -20,33 +30,12 @@
     echo "CONDOR_SCRATCH_DIR = $_CONDOR_SCRATCH_DIR"
     ls -lh
     
-    # OLD! Custom ~DeepCSV
-    # adjust the weighting method, look up the definitions in customTaggerInference.py
-#    WM="_notflat_200_gamma25.0_alphaNone"  # example for single weighting method alone (using raw/Noise/FGSM inputs)
-#    WM="_multi_basic_5,10,100"  # example for three epochs of one weighting method
-
-    # NEW! Custom ~DeepJet    
- #   WM="_DeepJet_Run2_COMPARE" # does nominal and adversarial in one go
- #   WM="_DeepJet_Run2_adversarial_eps0p01"
-#    WM="_multi_nominal_5,15,30"
- #   WM="_DeepJet_Run2_COMPARESHARPNESSAWARE" # does nominal and adversarial in one go
-    #WM="_ParT_COMPARE"
-    
-    # edit
-    #WM="_DeepJet_Run2_nominal"
-    WM="_DeepJet_Run2_COMPARE"
-    
     # if only checking with nominal samples, targets are not required (will not apply FGSM attack, i.e. don't need truth)
     TARGETSNECESSARY="no"
     STOREINTERESTINGINPUTS="no"
-    # OLD!
-#	export OUTPUTDIR=/nfs/dust/cms/user/spmondal/ctag_condor/210225_2017_SemiT_$4/
-#    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210402_2017_$4_minimal/
-#    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210708_2017_$4${WM}/
-#    export OUTPUTDIR=/nfs/dust/cms/user/anstein/ctag_condor/210714_2017_$4${WM}/
 
     # edited to personal directory
-    export OUTPUTDIR=/nfs/dust/cms/user/hschonen/ctag_condor/2023_2017_$4${WM}/
+    export OUTPUTDIR=/nfs/dust/cms/user/hschonen/DataMC/${ADVERSARIAL_MODEL_NAME}/2017_$4${WM}/
 	OUTPUTNAME=outTree.root
 
 	CONDOR_CLUSTER_ID=$1
@@ -66,8 +55,6 @@
         fi
         
         
-        #which xrdcp
-        
         export PATH=/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/bin:/cvmfs/grid.cern.ch/emi3ui-latest/sbin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/bin:/cvmfs/grid.cern.ch/emi3ui-latest/usr/sbin:$PATH
         echo "    echo PATH:"
         echo $PATH
@@ -77,82 +64,49 @@
         id -n -g
         echo "    pwd"
         pwd
-        #echo "creating tempdir and copy"
-        #tmp_dir=$(mktemp -d)
-        #cp -r ../${PYFILE} customTaggerInference.py ../nuSolutions.py ../scalefactors* $tmp_dir
         echo "copy scripts to scratch"
-        # Note: for new tagger, the inference will run on already preprocessed samples
         # edited to personal directories
         cp -r /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/${PYFILE} /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/customDeepJetTaggerInference.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/attacks.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/definitions.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/focal_loss.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_transformer.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/pytorch_deepjet_run2.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/helpers_advertorch.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/attacks_ParT.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/definitions_ParT.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/condorDESY/ParT.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/nuSolutions.py /afs/desy.de/user/h/hschonen/aisafety/VHcc-cTagSF/Analyzer/scalefactors* $_CONDOR_SCRATCH_DIR
-        #echo "changing to tempdir (first time)"
-        #cd $tmp_dir
-                
-        
-        #echo "setting up the environment"
-        #cd /cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_10_2_0_pre6/src
-        #source /cvmfs/cms.cern.ch/cmsset_default.sh
-        #which xrdcp
-        #eval `scramv1 runtime -sh`
-        
+
         echo "setting up the grid commands"
         source /cvmfs/grid.cern.ch/centos7-umd4-ui-4_200423/etc/profile.d/setup-c7-ui-example.sh
-        #source /cvmfs/cms.cern.ch/common/crab-setup.sh prod
-        #source /cvmfs/cms.cern.ch/cmsset_default.sh
-        #cd /cvmfs/cms.cern.ch/slc7_amd64_gcc900/cms/cmssw/CMSSW_11_3_0_pre3/src
-        #eval "$(scramv1 runtime -sh)"
         echo "    which xrdcp"
         which xrdcp
         
-        #echo "changing to scratch"
-        #cd $_CONDOR_SCRATCH_DIR
-        # edited to personal proxy
+        
         echo "set up proxy"
+        # edited to personal voms
         if [ -f "x509up_u38609" ]; then
            export X509_USER_PROXY=x509up_u38609
         fi
         echo "    voms-proxy-info -all"
         voms-proxy-info -all
-        #echo "test if copy with proxy works"
-        #xrdcp -d 1 -f root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1708.root /dev/null
+        
         INPPREFIX="root://grid-cms-xrootd.physik.rwth-aachen.de:1094/"
         INPPREFIX2="root://dcache-cms-xrootd.desy.de:1094/"
-        #INPPREFIX=""
         echo "copy actual input file"
         xrdcp ${INPPREFIX}${INPFILE} ./infile.root
         ## Did we find IP address? Use exit status of the grep command ##
         if [ $? -eq 0 ]
         then
           echo "Success: copied file from Aachen T2."
-        #  exit 0
         else
           echo "Failure: could not find file on Aachen T2. Use DESY T2 instead."
           INPPREFIX=${INPPREFIX2}
           xrdcp ${INPPREFIX}${INPFILE} ./infile.root
           echo "Success: copied file from DESY T2."
-        #  exit 0
         fi
-        
         
         echo "    echo PATH:"
         echo $PATH
-        #source /cvmfs/grid.cern.ch/etc/profile.d/setup-cvmfs-ui.sh
-        #echo "changing to tempdir (second time)"
-        #cd $tmp_dir
-        #pwd
         echo "    content of pwd"
         ls -lh
         
-        
-        
-        
-        
         echo "    which python3"
         which python3
-        #eval `scram unsetenv -sh`
-#        ENVNAME=my-env
+        
         ENVNAME=deepjet-env
         ENVDIR=$ENVNAME
-
         export PATH
         echo "    echo PATH:"
         echo $PATH
@@ -160,7 +114,6 @@
         echo "setup conda"
         # edited to personal directory
         tar -xzf /nfs/dust/cms/user/hschonen/${ENVNAME}.tar.gz -C ${ENVDIR}
-        #./${ENVDIR}/bin/activate
         source ${ENVNAME}/bin/activate
         echo "    which python3"
         which python3
@@ -169,13 +122,9 @@
         echo "    echo PATH:"
         echo $PATH
         echo "start with custom tagger"
-#        python3 customTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR}
+        
+        # execute customDeepJetTaggerInference.py
         python3 customDeepJetTaggerInference.py ${INPPREFIX}${INPFILE} ${WM} ${OUTPUTDIR} ${TARGETSNECESSARY} ${STOREINTERESTINGINPUTS}
-        
-        # use this to debug only inference part
-        #exit 0
-        
-        
         
         echo "setting up the environment (CMSSW)"
         cd /cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_10_2_0_pre6/src
@@ -192,8 +141,7 @@
         pwd
         ls -ls
         
-        
-        #path_without_pref=${INPFILE#"$INPPREFIX"}
+        # execute WcSelection_new.py, DYJetSelection_new.py or TTbSelection.py"
         echo "running python script (Analyzer)"
         python ${PYFILE} ${INPFILE}
         
@@ -219,22 +167,9 @@
             sleep 60
         done
         echo "copied output successfully"
-
-#        python -c "import sys,ROOT; f=ROOT.TFile(''); sys.exit(int(f.IsZombie() and 99))"
-#        rc=$?
-#        if [[ $rc != 0 ]]
-#        then
-#            echo "copy failed (either bad output from cp or file is Zombie)"
-#            exit $rc
-#        fi
-
-        #echo "delete tmp dir"
-        #cd $TMP
-        #rm -r $tmp_dir
         
         echo "Clean up after yourself"
         rm x509up_u38609
-        #rm *.root *.pem *.pcm *.so *.tar.gz *.py *.cc *.h *.npy
         rm *.root *.py *.cc *.npy
         rm -r ./${ENVDIR} ./scalefactors*
 

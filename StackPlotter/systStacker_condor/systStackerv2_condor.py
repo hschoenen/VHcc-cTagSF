@@ -1,11 +1,14 @@
 from definitions import get_range_from_name
 import sys
+import numpy as np
 sys.path.append('~/aisafety/VHcc-cTagSF/Analyzer/condorDESY/auxiliary/')
 
-outDir = "output_2017_PFNano" #"190928_2017"
+# choose adversarial model
+adversarial_model_name = 'fgsm-0_1'
 
-DYPath = "/nfs/dust/cms/user/hschonen/ctag_condor/2023_2017_DY_DeepJet_Run2_COMPARE/"
-WcPath = "/nfs/dust/cms/user/hschonen/ctag_condor/2023_2017_Wc_DeepJet_Run2_COMPARE/" 
+outDir = "output_2017_PFNano" #"190928_2017"
+DYPath = f"/nfs/dust/cms/user/hschonen/DataMC/{adversarial_model_name}/2017_DY_DeepJet_Run2_COMPLETE/"
+WcPath = f"/nfs/dust/cms/user/hschonen/DataMC/{adversarial_model_name}/2017_Wc_DeepJet_Run2_COMPLETE/" 
 
 systs = [
          "central",
@@ -23,7 +26,7 @@ SFhistSuff = [""] #"_ValuesSystOnlyUp","_ValuesSystOnlyDown"]   # "" for nominal
 
 plotExtra = False
 plotsysts = False
-plotBinSlices = True #True  # needed if one wants to derive SFs later
+plotBinSlices = False #True  # needed if one wants to derive SFs later
 validateSFs = False
 addsel = '' #'&& jet_CvsL[max(0.,muJet_idx)] > 0.8 && jet_CvsB[max(0.,muJet_idx)] > 0.1'
  #'&& jet_Pt[max(0.,muJet_idx)] > 80 && jet_Pt[max(0.,muJet_idx)] < 10000'
@@ -49,7 +52,7 @@ interesting_feature = 'Jet_DeepJet_Npfcan_deltaR_0'
 interesting_ranges = get_range_from_name(interesting_feature)
 interesting_feature_LEFT_BOUND,interesting_feature_RIGHT_BOUND = str(interesting_ranges[0]) , str(interesting_ranges[1])
 
-def applyCuts(ln,reg=""):
+def applyCuts(ln,reg="",pt_eta_domain=[0,0,0,0]):
     ln = ln.replace('ZMASSCUT','[85,95,\"invert\"]')
     ln = ln.replace('CVXBINNING','varBin1=[-0.2,0.,0.2,0.4,0.6,0.8,1.],varBin2=[-0.2,0.,0.2,0.4,0.6,0.8,1.]')
     ln = ln.replace('JETIDX',muBiasTestIndex)
@@ -102,6 +105,14 @@ def applyCuts(ln,reg=""):
     ln = ln.replace('UNICUT','')
 
     if not reg=="": ln = ln.replace('REG',reg)
+    
+    # selection for jet_pt and jet_eta
+    if np.sum(pt_eta_domain)!=0:
+        jet_index = 'muJet_idx'
+        if 'DY_m' in ln:
+            jet_index = '0'
+        pt_eta_sel = f'selections="jet_Pt[{jet_index}] > {pt_eta_domain[0]} && jet_Pt[{jet_index}] < {pt_eta_domain[1]} && jet_Eta[{jet_index}] > {pt_eta_domain[2]} && jet_Eta[{jet_index}] < {pt_eta_domain[3]} && '
+        ln = ln.replace('selections="',pt_eta_sel)
     return ln
 
 arguments = '''
@@ -120,8 +131,8 @@ arguments = '''
 '''
 
 plot1D = '''
-        # Nominal Deepjet Model
-        
+          # All jets
+          # Nominal Deepjet Model
          "jet_CustomCvsL[muJet_idx]",r"DeepJet (Nominal Training) CvsL",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
          "jet_CustomCvsB[muJet_idx]",r"DeepJet (Nominal Training) CvsB",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
          "jet_CustomCvsL[muJet_idx]",r"DeepJet (Nominal Training) CvsL",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
@@ -134,9 +145,7 @@ plot1D = '''
          "jet_CustomBvsC[muJet_idx]",r"DeepJet (Nominal Training) BvsC",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
          "jet_CustomBvsL[0]",r"DeepJet (Nominal Training) BvsL",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
          "jet_CustomBvsC[0]",r"DeepJet (Nominal Training) BvsC",NBINDISC,-0.2,1,DYSELM,dataset="dmu",makeROOT=True,DYWEIGHT
-   
           # Adversarial Deepjet Model
-         
         "jet_CustomADVCvsL[muJet_idx]",r"DeepJet (Adversarial Training) CvsL",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
         "jet_CustomADVCvsB[muJet_idx]",r"DeepJet (Adversarial Training) CvsB",NBINDISC,-0.2,1,MSEL,dataset="smu",makeROOT=True,WCWEIGHT
         "jet_CustomADVCvsL[muJet_idx]",r"DeepJet (Adversarial Training) CvsL",NBINDISC,-0.2,1,TTSEMISELM,dataset="smu",makeROOT=True,TTSEMIWEIGHT
@@ -216,34 +225,31 @@ onlyKins =  '''
 
 '''
 
-# Jobs
+# open job list file
 cmdList = open("cmdList.txt","w")
 
 if addsel!='': print("WARNING: YOU HAVE A CUSTOM SELECTION APPLIED!")
 for systname in systs:
     global syst
     syst=systname
-
+    
+    # false
     if plotsysts and plot2D:
         args=[applyCuts(line.strip()) for line in arguments.split("\n") if not line.strip()=="" and not line.strip().startswith("#")]
         for i, line in enumerate(args):
             cmdList.write("Stacker.plotStack("+line.strip()+")\n")
-            
+    # false
     if plotBinSlices:        
         if not plotsysts and not "central" in systname: continue
-        
         #varBin1=[-0.2,0.,0.2,0.4,0.6,0.8,1.]
         #varBin2=[-0.2,0.,0.2,0.4,0.6,0.8,1.]
         varBin1=[-0.2,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.]
         varBin2=[-0.2,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.]
-        
         args=[line.strip() for line in plot1D.split("\n") if not line.strip()=="" and not line.strip().startswith("#")]
-        
         # this adds the jobs for the stacked histograms, but without the eventual additional specifications (like normalization) to the command list
         # and if this for some reason runs after the later jobs, this overwrites the actually normalized plots
         #for i, line in enumerate(args):
         #    cmdList.write("Stacker.plotStack("+applyCuts(line).strip()+")\n")
-            
         for i in range(1,len(varBin1)-1):            
             for iline, line in enumerate(args):
                 deepsuff = ""
@@ -255,15 +261,12 @@ for systname in systs:
                 if line.strip().startswith('"jet_Custom_B_'): deepsuff="Custom_B_"
                 if line.strip().startswith('"jet_Custom_C_'): deepsuff="Custom_C_"
                 if line.strip().startswith('"jet_%sCvsL'%deepsuff): continue
-                
                 for sel in ["ESEL","MSEL","TTSELEE","TTSELMM","TTSELME","TTSEMISELE","TTSEMISELM"]:
                     line = line.replace(sel,sel+'+" && jet_%sCvsL[muJet_idx] >= %f && jet_%sCvsL[muJet_idx] < %f"'%(deepsuff,varBin1[i],deepsuff,varBin1[i+1]))
                 for sel in ["DYSELE","DYSELM"]:
                     line = line.replace(sel,sel+'+" && jet_%sCvsL[0] >= %.2f && jet_%sCvsL[0] < %.2f"'%(deepsuff,varBin1[i],deepsuff,varBin1[i+1]))
-                    
                 line += ',filePost="%sCvsL_%.2f-%.2f"'%(deepsuff,varBin1[i],varBin1[i+1])
-                # cmdList.write("Stacker.plotStack("+applyCuts(line).strip()+",makePNG=False)\n")
-                    
+                # cmdList.write("Stacker.plotStack("+applyCuts(line).strip()+",makePNG=False)\n")   
         for i in range(1,len(varBin2)-1):
             for iline, line in enumerate(args):
                 deepsuff = ""
@@ -275,27 +278,26 @@ for systname in systs:
                 if line.strip().startswith('"jet_Custom_B_'): deepsuff="Custom_B_"
                 if line.strip().startswith('"jet_Custom_C_'): deepsuff="Custom_C_"
                 if line.strip().startswith('"jet_%sCvsB'%deepsuff): continue
-                
                 for sel in ["ESEL","MSEL","TTSELEE","TTSELMM","TTSELME","TTSEMISELE","TTSEMISELM"]:
                     line = line.replace(sel,sel+'+" && jet_%sCvsB[muJet_idx] >= %f && jet_%sCvsB[muJet_idx] < %f"'%(deepsuff,varBin2[i],deepsuff,varBin2[i+1]))
                 for sel in ["DYSELE","DYSELM"]:
                     line = line.replace(sel,sel+'+" && jet_%sCvsB[0] >= %f && jet_%sCvsB[0] < %f"'%(deepsuff,varBin2[i],deepsuff,varBin2[i+1]))
-                
                 line += ',filePost="%sCvsB_%.2f-%.2f"'%(deepsuff,varBin2[i],varBin2[i+1])
                 cmdList.write("Stacker.plotStack("+applyCuts(line).strip()+",makePNG=False)\n")
 
+    # true
     if "central" in systname:
         moreargs = ""
-#        if validateSFs:
         moreargs+=",drawDataMCRatioLine=True"
+        # true
         if normMCtodata:
             moreargs+=",normTotalMC=True"
+        # false
         if plotExtra:
-        
             args=[applyCuts(line.strip()) for line in onlyCentral.split("\n")+plot1D.split('\n') if not line.strip()=="" and not line.strip().startswith("#")]
             for i, line in enumerate(args):
                 cmdList.write("Stacker.plotStack("+line.strip()+moreargs+")\n")
-
+        # false
         if validateSFs:
             args=[applyCuts(line.strip()) for line in plot1D.split('\n') if not line.strip()=="" and not line.strip().startswith("#")]
             for i, line in enumerate(args):
@@ -307,9 +309,13 @@ for systname in systs:
                         cmdList.write("Stacker.plotStack(%s,SFfile=\"%s\",SFhistSuff=\"%s\",drawDataMCRatioLine=True)\n"%(line.strip(),SF,histsuff))
         else:
             args=[applyCuts(line.strip()) for line in plot1D.split('\n') if not line.strip()=="" and not line.strip().startswith("#")]
-            #print(args)
             for i, line in enumerate(args):
-                #pass
                 cmdList.write("Stacker.plotStack(%s)\n"%(line.strip()+moreargs))
-
+        pt_binning = [0,50,100,2000]
+        eta_binning = [-3,-1,0,1,3]
+        for i in range(len(pt_binning)-1):
+            for j in range(len(eta_binning)-1):
+                args=[applyCuts(line.strip(), pt_eta_domain=[pt_binning[i],pt_binning[i+1],eta_binning[j],eta_binning[j+1]]) for line in plot1D.split('\n') if not line.strip()=="" and not line.strip().startswith("#")]
+                for k, line in enumerate(args):
+                    cmdList.write("Stacker.plotStack(%s)\n"%(line.strip()+moreargs))
 cmdList.close()
