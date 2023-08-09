@@ -609,8 +609,8 @@ def plotStack(brName,brLabel,nbins,start,end,selections="",cuts=[], dataset="", 
         print(min_pt,' ',max_pt)
         pt_eta_sel = pt_eta_sel + '_pt_{}-{}'.format(min_pt,max_pt)
     if 'jet_Eta' in selections:
-        min_eta = selections.split('jet_Eta['+jetindex+'] > ')[1].split(' &&')[0]
-        max_eta = selections.split('jet_Eta['+jetindex+'] < ')[1].split(' &&')[0]
+        min_eta = selections.split('abs(jet_Eta['+jetindex+']) > ')[1].split(' &&')[0]
+        max_eta = selections.split('abs(jet_Eta['+jetindex+']) < ')[1].split(' &&')[0]
         print(min_eta,' ',max_eta)
         pt_eta_sel = pt_eta_sel + '_eta_{}-{}'.format(min_eta,max_eta)
     pt_eta_sel = pt_eta_sel.replace('.','_')

@@ -1,7 +1,7 @@
 #!/bin/bash
     
     # choose name of adversarial mode
-    ADVERSARIAL_MODEL_NAME="fgsm-0_05"
+    ADVERSARIAL_MODEL_NAME="fgsm-0_125"
     WM="_DeepJet_Run2_COMPLETE" # do nominal and a adversarial model at the same time
 #   WM="_DeepJet_Run2_COMPARE" # does nominal and adversarial in one go
 #   WM="_DeepJet_Run2_nominal"

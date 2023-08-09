@@ -23,7 +23,7 @@ from attacks_ParT import first_order_attack
 import time
 
 # choose model
-adversarial_model_name = 'fgsm-0_05'
+adversarial_model_name = 'fgsm-0_125'
 
 def cross_entropy_one_hot(input, target):
     _, labels = target.max(dim=1)

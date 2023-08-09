@@ -1,4 +1,4 @@
-ADVERSARIAL_MODEL_NAME="fgsm-0_1"
+ADVERSARIAL_MODEL_NAME="fgsm-0_125"
 	OUTPUTDIR=/nfs/dust/cms/user/hschonen/DataMC/${ADVERSARIAL_MODEL_NAME}/systPlots_2023/
 	OUTPUTNAME=output_2017_PFNano
 
